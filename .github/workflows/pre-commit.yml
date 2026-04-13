@@ -1,8 +1,6 @@
 name: pre-commit
 
 on:
-  push:
-    branches-ignore: [main, gh-pages]
   pull_request:
     branches: [main]
 
@@ -14,8 +12,11 @@ jobs:
 
       - name: Install taplo
         run: |
-          curl -sL https://github.com/tamasfe/taplo/releases/latest/download/taplo-full-linux-x86_64.gz \
-            | gunzip -c > /usr/local/bin/taplo && chmod +x /usr/local/bin/taplo
+          VERSION=$(curl -fsSL https://api.github.com/repos/tamasfe/taplo/releases/latest \
+            | grep '"tag_name"' | sed -E 's/.*"([^"]+)".*/\1/')
+          curl -fsSL "https://github.com/tamasfe/taplo/releases/download/${VERSION}/taplo-full-linux-x86_64.gz" \
+            | gunzip -c > /usr/local/bin/taplo
+          chmod +x /usr/local/bin/taplo
 
       - uses: actions/setup-node@v4
         with:
