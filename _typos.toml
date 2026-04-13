@@ -1,0 +1,6 @@
+[files]
+extend-exclude = ["*.bib", "public/"]
+
+[default.extend-words]
+# Add project-specific words that should not be flagged, e.g.:
+# "ND" = "ND"
