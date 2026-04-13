@@ -1,6 +1,8 @@
 # The URL the site will be built for
 base_url = "https://edadaltocg.github.io/"
 
+default_language = "en"
+
 # Whether to automatically compile all Sass files in the sass directory
 compile_sass = true
 
@@ -110,3 +112,28 @@ security_header_referrer = "strict-origin-when-cross-origin"
 
 # PWA
 webmanifest = "manifest.min.json" # Required for PWAs
+
+
+[translations]
+Blog = "Blog"
+About = "About"
+Posts = "Posts"
+Tags = "Tags"
+Categories = "Categories"
+Contact = "Contact"
+Privacy = "Privacy"
+Sitemap = "Sitemap"
+Search = "Search"
+Updated = "Updated"
+Index = "Index"
+Recent = "Recent"
+home = "home"
+menu = "Menu"
+search_placeholder = "Search..."
+back_home = "← Home"
+back_blog = "← Blog"
+toc = "Content"
+references = "References"
+comments = "Comments"
+reading_time_prefix = "Reading time:"
+reading_time_unit = "min"
