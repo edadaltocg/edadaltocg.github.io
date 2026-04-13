@@ -14,9 +14,10 @@ repos:
     hooks:
       - id: taplo
         name: taplo fmt
-        language: system
+        language: rust
         entry: taplo fmt
         types: [toml]
+        additional_dependencies: [taplo-cli]
 
       - id: bibtex-tidy
         name: bibtex-tidy

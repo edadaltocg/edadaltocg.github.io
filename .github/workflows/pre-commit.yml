@@ -10,14 +10,6 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Install taplo
-        run: |
-          VERSION=$(curl -fsSL https://api.github.com/repos/tamasfe/taplo/releases/latest \
-            | grep '"tag_name"' | sed -E 's/.*"([^"]+)".*/\1/')
-          curl -fsSL "https://github.com/tamasfe/taplo/releases/download/${VERSION}/taplo-full-linux-x86_64.gz" \
-            | gunzip -c > /usr/local/bin/taplo
-          chmod +x /usr/local/bin/taplo
-
       - uses: actions/setup-node@v4
         with:
           node-version: lts/*
