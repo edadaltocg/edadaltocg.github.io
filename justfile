@@ -3,6 +3,7 @@ alias b := build
 alias p := preview
 alias f := format
 alias fmt := format-check
+alias l := lint
 
 default:
   just --list
@@ -44,6 +45,9 @@ bib2html:
 
 notebook2markdown path:
   jupyter-nbconvert --to markdown {{path}}
+
+lint:
+  pre-commit run --all-files
 
 format:
   prettier --write .
