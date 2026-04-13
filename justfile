@@ -1,12 +1,16 @@
 alias i := install
 alias b := build
 alias p := preview
+alias f := format
+alias fmt := format-check
 
 default:
   just --list
 
 install:
-  brew install zola
+  brew install zola taplo pre-commit
+  npm install -g prettier bibtex-tidy markdownlint-cli2
+  pre-commit install
 
 build:
   zola build
@@ -36,5 +40,16 @@ bib2html:
 notebook2markdown path:
   jupyter-nbconvert --to markdown {{path}}
 
-deploy:
+format:
+  prettier --write .
+  taplo fmt
+  markdownlint-cli2 --fix "**/*.md"
+  find publications -name "*.bib" -exec bibtex-tidy --modify {} \;
 
+format-check:
+  prettier --check .
+  taplo fmt --check
+  markdownlint-cli2 "**/*.md"
+  find publications -name "*.bib" -exec bibtex-tidy --no-modify {} \;
+
+deploy:
