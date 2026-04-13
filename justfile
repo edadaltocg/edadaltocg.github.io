@@ -47,7 +47,7 @@ notebook2markdown path:
   jupyter-nbconvert --to markdown {{path}}
 
 lint:
-  pre-commit run --all-files
+  pre-commit run --all-files --verbose
 
 format:
   prettier --write .
