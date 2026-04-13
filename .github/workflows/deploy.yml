@@ -1,13 +1,38 @@
-name: Build and deploy GH Pages
-on: push
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
 jobs:
-  build:
+  deploy:
     runs-on: ubuntu-latest
     steps:
-      - name: checkout
-        uses: actions/checkout@v3.0.0
-      - name: build_and_deploy
-        uses: shalzz/zola-deploy-action@v0.17.2
-        env:
-          PAGES_BRANCH: gh-pages
-          TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - uses: actions/checkout@v4
+
+      - name: Install Zola
+        run: |
+          curl -sL https://github.com/getzola/zola/releases/download/v0.21.0/zola-v0.21.0-x86_64-unknown-linux-gnu.tar.gz \
+            | tar xz -C /usr/local/bin
+
+      - name: Build site
+        run: zola build
+
+      - name: Minify HTML / CSS / JS
+        run: |
+          curl -sL https://github.com/tdewolff/minify/releases/latest/download/minify_linux_amd64.tar.gz \
+            | tar xz -C /usr/local/bin minify
+          find public -name "*.html" -exec minify --type=html -o {} {} \;
+          find public -name "*.css" -not -name "*.min.css" -exec minify --type=css -o {} {} \;
+          find public -name "*.js"  -not -name "*.min.js"  -exec minify --type=js  -o {} {} \;
+
+      - name: Deploy to gh-pages
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./public
+          publish_branch: gh-pages

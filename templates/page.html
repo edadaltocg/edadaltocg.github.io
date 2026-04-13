@@ -13,7 +13,7 @@
 <article class="container">
   <h2>{{ page.title }}</h2>
   {% if page.date or page.taxonomies %}
-  <p>
+  <p class="taxonomies">
     {% if page.date %}{{ page.date | date(format="%-d %B, %Y") }}{% endif %}
 
     {% set_global sorted_taxonomies = [] %}
@@ -32,12 +32,19 @@
     {% endfor %}
   </p>
   {% endif %}
-  <div></div>
+  <p id="read-time" class="taxonomies"></p>
+  {% block begin_article %}
+  {% endblock begin_article %}
   {{ page.content | safe }}
+
+{% block end_article %}
+{% endblock end_article %}
+
 </article>
+
+{% block after_article %}
+{% endblock after_article %}
 
 {% endblock content %}
 
-{% block after_content %}
-{% endblock after_content%}
 
