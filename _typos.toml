@@ -2,7 +2,8 @@
 extend-exclude = ["*.bib", "*.css", "*.js", "public/"]
 
 [default.extend-words]
-# Proper nouns — not typos
+# Proper nouns and foreign words — not typos
 "Aeronáutica" = "Aeronáutica"
 "Tecnológico" = "Tecnológico"
-"Gif" = "Gif"
+"Instituto" = "Instituto"
+"sur" = "sur"
