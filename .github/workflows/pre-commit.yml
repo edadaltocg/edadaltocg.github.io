@@ -1,0 +1,27 @@
+name: pre-commit
+
+on:
+  push:
+    branches-ignore: [main, gh-pages]
+  pull_request:
+    branches: [main]
+
+jobs:
+  pre-commit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install taplo
+        run: |
+          curl -sL https://github.com/tamasfe/taplo/releases/latest/download/taplo-full-linux-x86_64.gz \
+            | gunzip -c > /usr/local/bin/taplo && chmod +x /usr/local/bin/taplo
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: lts/*
+
+      - name: Install Node tools
+        run: npm install -g prettier bibtex-tidy markdownlint-cli2
+
+      - uses: pre-commit/action@v3.0.1
