@@ -3,11 +3,11 @@
     <ul class="styless-list">
       <li>
         <a href="/">
-          home
+          {{ trans(key="home") }}
         </a>
       </li>
     </ul>
-    <p>Menu</p>
+    <p>{{ trans(key="menu") }}</p>
     <ul class="styless-list">
       {% for menu_item in config.extra.footer_menu %}
       <li>
@@ -17,7 +17,7 @@
       </li>
       {% endfor %}
     </ul>
-    <p>Search</p>
+    <p>{{ trans(key="Search") }}</p>
     <div class="search-container">
       <div style="position: relative; display: flex; align-items: center;">
         <input type="text" id="search" placeholder="" style="padding-right: 30px;">
