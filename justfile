@@ -6,7 +6,7 @@ default:
   just --list
 
 install:
-  brew install zola
+  brew install zola minify
 
 build:
   zola build
@@ -23,7 +23,12 @@ optimize_media:
   gs -sDEVICE=pdfwrite -dNOPAUSE -dQUIET -dBATCH -dPDFSETTINGS=/screen -dCompatibilityLevel=1.4 -sOutputFile=output.pdf input.pdf
 
 minify:
-  ...
+  #!/usr/bin/env bash
+  set -euo pipefail
+  command -v minify >/dev/null 2>&1 || { echo "minify not found. Install with: brew install minify"; exit 1; }
+  find public -name "*.html" -exec minify --type=html -o {} {} \;
+  find public -name "*.css" -not -name "*.min.css" -exec minify --type=css -o {} {} \;
+  find public -name "*.js" -not -name "*.min.js" -exec minify --type=js -o {} {} \;
 
 PANDOC_INPUT := "publications/pandoc-input.md"
 OUTPUT_HTML := "out/list.html"
@@ -36,5 +41,16 @@ bib2html:
 notebook2markdown path:
   jupyter-nbconvert --to markdown {{path}}
 
-deploy:
-
+deploy: build minify
+  #!/usr/bin/env bash
+  set -euo pipefail
+  WORKTREE=$(mktemp -d)
+  trap "git worktree remove --force '$WORKTREE' 2>/dev/null || true" EXIT
+  git fetch origin gh-pages
+  git worktree add "$WORKTREE" gh-pages
+  rsync -a --delete --exclude='.git' public/ "$WORKTREE/"
+  git -C "$WORKTREE" add -A
+  git -C "$WORKTREE" diff --cached --quiet \
+    || git -C "$WORKTREE" commit -m "deploy: $(date -u '+%Y-%m-%d %H:%M:%S UTC')"
+  git -C "$WORKTREE" push origin gh-pages
+  echo "Deployed to gh-pages."
