@@ -1,0 +1,9 @@
+/* #disqus_thread { */
+/* color: "CanvasText"; */
+/*   background-color: "Canvas; */
+/* } */
+#disqus_thread {
+  color: "CanvasText";
+  background-color: "Canvas";
+  padding: 15px;
+}
