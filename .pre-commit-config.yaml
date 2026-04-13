@@ -10,6 +10,13 @@ repos:
       - id: markdownlint-cli2
         args: [--fix]
 
+  - repo: https://github.com/crate-ci/typos
+    rev: v1.30.2
+    hooks:
+      - id: typos
+        args: [--write-changes]
+        files: ^(.*\.md$|i18n/.*\.toml$)
+
   - repo: local
     hooks:
       - id: taplo
