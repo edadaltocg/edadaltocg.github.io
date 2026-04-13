@@ -190,22 +190,22 @@ div.logo {
     font-size: calc(var(--base-fontsize) / var(--header-scale));
     margin-top: calc(var(--line-height) * 1.5rem);
   }
+
   p,
-  code,
-  pre,
-  pre span,
-  kbd,
-  samp,
+  .katex,
   li {
-    font-size: calc(var(--base-fontsize) * 0.8);
+    font-size: calc(var(--base-fontsize) * 0.85);
   }
+
   .search-container {
     width: 100%;
     max-width: none;
   }
+
   #headshot {
     max-width: 128px;
   }
+
   #name {
     margin-top: 0px;
     line-height: 1;
@@ -213,13 +213,84 @@ div.logo {
       0.8 * var(--base-fontsize) * var(--header-scale) * var(--header-scale)
     );
   }
+
   #subtitle {
     margin-bottom: 0px;
   }
 }
 
 #name {
+  margin-top: 0px;
 }
 
 #subtitle {
+}
+
+a.ref-link {
+  font-size: 1rem;
+  text-decoration: none;
+}
+
+#references {
+  font-size: 0.9rem;
+
+  dl {
+    display: grid;
+    overflow: hidden;
+    grid-template-columns: max-content minmax(0, 1fr);
+    row-gap: 0.8rem;
+  }
+
+  dt {
+    grid-column-start: 1;
+    padding-right: 0.8rem;
+  }
+
+  dd {
+    grid-column-start: 2;
+    -webkit-hyphens: auto;
+    -moz-hyphens: auto;
+    -ms-hyphens: auto;
+    hyphens: auto;
+  }
+}
+
+details {
+  background: none;
+  border: none;
+}
+
+pre.mermaid {
+  text-align: center;
+  overflow-x: auto;
+  white-space: nowrap;
+}
+
+em.center {
+  display: flex;
+  text-align: center;
+  justify-content: center;
+  align-items: center;
+}
+
+.copy-btn {
+  position: absolute;
+  top: 4px;
+  right: 10px;
+  background-color: transparent;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.8em;
+  padding: 5px 10px;
+  z-index: 10; /* Ensure it's on top of everything */
+}
+
+.copy-btn i {
+  font-size: 1em;
+}
+
+.copy-btn:hover {
+  color: var(--accent);
 }

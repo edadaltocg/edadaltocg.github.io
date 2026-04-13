@@ -12,7 +12,7 @@
   /* Consolas, Menlo, Monaco, "Andale Mono", "Ubuntu Mono", monospace; */
 
   /* Body font size. By default, effectively 18.4px, based on 16px as 'root em' */
-  --base-fontsize: 1.125rem;
+  --base-fontsize: 1.21em;
 
   /* Major third scale progression - see https://type-scale.com/ */
   --header-scale: 1.25;
@@ -535,6 +535,7 @@ pre {
   border: 0px solid var(--border);
   border-radius: 8px;
   line-height: 1rem;
+  position: relative;
 }
 
 pre[data-linenos] {

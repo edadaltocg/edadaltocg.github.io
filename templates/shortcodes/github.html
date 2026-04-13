@@ -1,0 +1,18 @@
+<script>
+  fetch('https://api.github.com/repos/bzhangGo/rmsnorm/contents/rmsnorm_torch.py#L12-L58')
+    .then(function (response) {
+      return response.json();
+    }).then(function (data) {
+      var decodedContent = atob(data['content'].replace(/\n/g, ''));
+      var container = document.getElementById('github-content');
+      var innermostElement = container;
+      while (innermostElement.firstElementChild) {
+        innermostElement = innermostElement.firstElementChild;
+      }
+      innermostElement.textContent = decodedContent;
+    });
+</script>
+
+<div id="github-content">
+  {{body | trim | markdown | safe}}
+</div>
