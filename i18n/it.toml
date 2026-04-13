@@ -23,8 +23,6 @@ back_blog = "← Blog"
 toc = "Contenuto"
 references = "Riferimenti"
 comments = "Commenti"
-reading_time_prefix = "Tempo di lettura:"
-reading_time_unit = "min"
 
 copyright_override = '© $CURRENT_YEAR $SITE_TITLE • I contenuti del sito sono sotto licenza <a rel="noopener" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a>.'
 
