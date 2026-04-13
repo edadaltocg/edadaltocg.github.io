@@ -1,0 +1,7 @@
+repos:
+  - repo: https://github.com/crate-ci/typos
+    rev: v1.30.2
+    hooks:
+      - id: typos
+        args: [--write-changes]
+        types_or: [markdown]
