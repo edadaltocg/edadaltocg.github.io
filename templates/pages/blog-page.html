@@ -1,7 +1,91 @@
 {% extends "page.html" %}
 
-{% block after_content %}
+{% block after_header %}
+<nav>
+  <a href="{{ config.base_url }}blog">&LeftArrow; Blog</a>
+</nav>
+{% endblock after_header %}
+
+{% block begin_article %}
+
+{% if page.toc %}
+    <h3>Content</h3>
+    <ul>
+    {% for h2 in page.toc %}
+        <li>
+            <a href="{{ h2.permalink | safe }}">{{ h2.title }}</a>
+            {% if h2.children %}
+                <ul>
+                    {% for h3 in h2.children %}
+                        <li>
+                            <a href="{{ h3.permalink | safe }}">{{ h3.title }}</a>
+                            {% if h3.children %}
+                                <ul>
+                                    {% for h4 in h3.children %}
+                                        <li>
+                                            <a href="{{ h4.permalink | safe }}">{{ h4.title }}</a>
+                                        </li>
+                                    {% endfor %}
+                                </ul>
+                            {% endif %}
+                        </li>
+                    {% endfor %}
+                </ul>
+            {% endif %}
+        </li>
+    {% endfor %}
+    </ul>
+{% endif %}
+
+{% endblock begin_article %}
+
+{% block end_article %}
+{% if page.colocated_path %}
+    {% set citations = load_data(path=page.colocated_path ~ "references.bib", format="bibtex", required=false) %}
+{% else %}
+    {% set citations = [] %}
+{% endif %}
+{% if citations %}
+    <div id="references">
+    {% set has_references = citations.bibliographies | length > 0 %}
+    {% if has_references %}
+        <h2>References</h2>
+        <dl>
+        {% for citation in citations.bibliographies %}
+            {{ macros::ref(bibliography=citation,num=loop.index) }}
+        {% endfor %}
+        </dl>
+    {% endif %}
+    </div>
+{% endif %}
+{% endblock end_article %}
+
+{% block after_article %}
+<hr>
+<h2>Comments</h2>
 <div id="disqus_thread"></div>
+{% endblock after_article %}
+
+{% block after_content %}
+
+<script>
+// https://github.com/KaTeX/KaTeX/blob/main/docs/autorender.md
+document.addEventListener("DOMContentLoaded", function() {
+    renderMathInElement(document.body, {
+        // customised options
+            delimiters: [
+            {left: '$$', right: '$$', display: true},
+            {left: '$', right: '$', display: false},
+            // {left: '\(', right: '\)', display: false},
+            // {left: '\[', right: '\]', display: true},
+            {left: "\begin{equation}", right: "\end{equation}", display: true},
+            {left: "\begin{align}", right: "\end{align}", display: true},
+        ],
+        throwOnError : false
+    });
+});
+</script>
+
 <script>
   /**
 TODO:
@@ -22,4 +106,109 @@ TODO:
 </script>
 <noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by
     Disqus.</a></noscript>
+  <!-- <script type="module"> -->
+  <!--   import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs'; -->
+  <!--   mermaid.initialize({ startOnLoad: true, theme: 'base', darkMode: true }); -->
+  <!-- </script> -->
+<script type="module">
+  import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs';
+  // mermaid.initialize({ startOnLoad: false });
+  // await mermaid.run({
+  //     querySelector: '.mermaid',
+  //     postRenderCallback: (id) => {
+  //         const container = document.getElementById("diagram-container");
+  //         const svgElement = container.querySelector("svg");
+  //
+  //         // Initialize Panzoom
+  //         const panzoomInstance = Panzoom(svgElement, {
+  //             maxScale: 5,
+  //             minScale: 0.5,
+  //             step: 0.1,
+  //         });
+  //
+  //         // Add mouse wheel zoom
+  //         container.addEventListener("wheel", (event) => {
+  //             panzoomInstance.zoomWithWheel(event);
+  //         });
+  //     }
+  // });
+</script>
+
+<script>
+  document.addEventListener("DOMContentLoaded", () => {
+    pseudocode.renderElement(document.getElementById("algorithm"));
+    pseudocode.renderClass("pseudocode");
+  })
+</script>
+
+<script>
+document.querySelectorAll('pre code').forEach(codeBlock => {
+  const pre = codeBlock.parentElement;
+  const wrapper = document.createElement('div');
+  wrapper.className = 'code-wrapper';
+  pre.parentNode.insertBefore(wrapper, pre);
+  wrapper.appendChild(pre);
+
+  const button = document.createElement('button');
+  button.className = 'copy-btn';
+  button.setAttribute('aria-label', 'Copy to clipboard');
+
+  // Add Font Awesome icons
+  const icon = document.createElement('i');
+  icon.className = 'fas fa-copy';
+  button.appendChild(icon);
+
+  wrapper.appendChild(button);
+
+  button.addEventListener('click', () => {
+    const text = codeBlock.innerText;
+    navigator.clipboard.writeText(text).then(() => {
+      icon.className = 'fas fa-check'; // Change to check icon
+      button.setAttribute('aria-label', 'Copied!');
+      setTimeout(() => {
+        icon.className = 'fas fa-copy';
+        button.setAttribute('aria-label', 'Copy to clipboard');
+      }, 2000);
+    }).catch(err => console.error('Failed to copy:', err));
+  });
+});
+</script>
+
+
+<script>
+function estimateReadTime(content) {
+    // Step 1: Extract and count words
+    const words = content.split(/\s+/).filter(word => word.length > 0);
+    const wordCount = words.length;
+
+    // Step 2: Determine average reading speed (words per minute)
+    const averageReadingSpeed = 200; // you can adjust this number
+
+    // Step 3: Calculate reading time in minutes
+    const readTimeInMinutes = Math.ceil(wordCount / averageReadingSpeed);
+
+    // Return the estimated reading time
+    return readTimeInMinutes;
+}
+
+function displayReadTime() {
+    // Select the article element to assess content
+    const articleElement = document.querySelector('article');
+    const content = articleElement.innerText || articleElement.textContent || '';
+
+    // Calculate estimated reading time
+    const readTime = estimateReadTime(content);
+
+    // Update the paragraph element with the id 'read-time'
+    const readTimeParagraph = document.getElementById('read-time');
+    readTimeParagraph.textContent = `Reading time: ${readTime} min`;
+}
+
+// Wait for the DOM to fully load, then calculate and display the read time
+window.addEventListener('DOMContentLoaded', function() {
+    displayReadTime();
+});
+</script>
+
+
 {% endblock after_content%}

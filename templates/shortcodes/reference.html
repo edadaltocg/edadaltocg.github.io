@@ -1,0 +1,11 @@
+{% set citations = load_data(path=page.colocated_path ~ "references.bib", format="bibtex", required=false) %}
+{% if citations %}
+{% for bib in citations.bibliographies %}
+{% if bib.citation_key == key %}
+{% set_global num = loop.index %}
+{% endif %}
+{% endfor %}
+<sup>
+  <a href="#bibref-{{ key }}" class="ref-link">[{{ num | default(value="#noref") }}]</a>
+</sup>
+{% endif %}
