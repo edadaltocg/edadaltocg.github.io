@@ -8,7 +8,11 @@ title="CV"
 
 ---
 
-_Core expertise: Confidence calibration, uncertainty quantification, robustness testing, anomaly and out-of-distribution detection, conformal prediction, experimental design, hyperparameter optimisation._
+### Core Expertise
+
+Confidence calibration, uncertainty quantification, robustness testing, anomaly and out-of-distribution detection, conformal prediction, experimental design, hyperparameter optimisation.
+
+---
 
 ### Experience
 
