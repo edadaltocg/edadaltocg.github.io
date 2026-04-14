@@ -10,13 +10,21 @@ repos:
       - id: markdownlint-cli2
         args: [--fix]
 
+  - repo: https://github.com/crate-ci/typos
+    rev: v1.30.2
+    hooks:
+      - id: typos
+        args: [--write-changes]
+        files: ^(.*\.md$|i18n/.*\.toml$)
+
   - repo: local
     hooks:
       - id: taplo
         name: taplo fmt
-        language: system
+        language: rust
         entry: taplo fmt
         types: [toml]
+        additional_dependencies: [taplo-cli]
 
       - id: bibtex-tidy
         name: bibtex-tidy
@@ -24,3 +32,9 @@ repos:
         additional_dependencies: [bibtex-tidy]
         entry: bibtex-tidy --modify
         files: \.bib$
+  - repo: https://github.com/crate-ci/typos
+    rev: v1.30.2
+    hooks:
+      - id: typos
+        args: [--write-changes]
+        types_or: [markdown]

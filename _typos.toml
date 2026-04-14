@@ -1,6 +1,9 @@
 [files]
-extend-exclude = ["*.bib", "public/"]
+extend-exclude = ["*.bib", "*.css", "*.js", "public/"]
 
 [default.extend-words]
-# Add project-specific words that should not be flagged, e.g.:
-# "ND" = "ND"
+# Proper nouns and foreign words — not typos
+"Aeronáutica" = "Aeronáutica"
+"Tecnológico" = "Tecnológico"
+"Instituto" = "Instituto"
+"sur" = "sur"

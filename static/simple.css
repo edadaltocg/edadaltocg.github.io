@@ -1,8 +1,7 @@
 /* Set the global variables for everything. Change these to use your own fonts and colours. */
 :root {
   /* Set sans-serif & mono fonts */
-  --sans-font:
-    "Söhne", sans-serif, Helvetica, "Helvetica Neue", sans-serif, "Fira Code", Menlo,
+  --sans-font: "Söhne", sans-serif, Helvetica, "Helvetica Neue", sans-serif, "Fira Code", Menlo,
     DejaVu Sans Mono, Monaco, Consolas, Ubuntu Mono, monospace;
   /* -apple-system, BlinkMacSystemFont, "Avenir Next", Avenir, */
   /* "Nimbus Sans L", Roboto, Noto, "Segoe UI", Arial, Helvetica, */
@@ -363,8 +362,7 @@ input {
 
 /* Add arrow to  */
 select {
-  background-image:
-    linear-gradient(45deg, transparent 49%, var(--text) 51%),
+  background-image: linear-gradient(45deg, transparent 49%, var(--text) 51%),
     linear-gradient(135deg, var(--text) 51%, transparent 49%);
   background-position: calc(100% - 20px), calc(100% - 15px);
   background-size:
