@@ -8,14 +8,7 @@
   "orientation": "any",
   "start_url": "/",
   "scope": "/",
-  "categories": [
-    "developer",
-    "development",
-    "productivity",
-    "research",
-    "AI",
-    "ML"
-  ],
+  "categories": ["developer", "development", "productivity", "research", "AI", "ML"],
   "icons": [
     {
       "src": "/android-chrome-192x192.png",

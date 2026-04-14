@@ -1,0 +1,13 @@
+# Build output
+public/
+
+# Zola templates use Tera syntax incompatible with Prettier's HTML parser
+templates/
+
+# Generated / pre-minified files
+static/syntax-theme-dark.css
+static/syntax-theme-light.css
+static/manifest.min.json
+
+# Tooling
+.claude/

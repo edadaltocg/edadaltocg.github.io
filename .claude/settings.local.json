@@ -1,0 +1,15 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git push:*)",
+      "Bash(gh repo:*)",
+      "Bash(zola build:*)",
+      "WebFetch(domain:raw.githubusercontent.com)",
+      "WebFetch(domain:www.getzola.org)",
+      "Bash(chmod +x:*)",
+      "Bash(git:*)",
+      "Bash(pre-commit install:*)",
+      "Bash(just format-check:*)"
+    ]
+  }
+}

@@ -1,0 +1,93 @@
+{% macro bibstrip(in) %}
+{{ in | replace(from="---",to="—") | replace(from="--", to="-") | replace(from="{",to="") | replace(from="}", to="") |
+safe }}
+{% endmacro bibstrip %}
+
+{% macro bib_book(ref) %}
+{{ ref.tags.author }},
+<em>{{ ref.tags.title }}</em>,
+{{ ref.tags.publisher }},
+{{ ref.tags.year }}
+{% endmacro bib_book %}
+
+{% macro bib_article(ref) %}
+{{ ref.tags.author }},
+"{{ ref.tags.title }}",
+<em>{{ ref.tags.journal }}</em>,
+vol. {{ ref.tags.volume }},
+{% if ref.tags.month %}{{ ref.tags.month }}{% endif %}
+{{ ref.tags.year }}
+{% endmacro bib_article %}
+
+{% macro bib_inproceedings(ref) %}
+{{ ref.tags.author }},
+"{{ ref.tags.title }},"
+in <em>{{ ref.tags.booktitle }}</em>,
+{{ ref.tags.year }},
+{% endmacro bib_inproceedings %}
+
+{% macro bib_manual(ref) %}
+{{ ref.tags.author }},
+<em>{{ ref.tags.title }}</em>,
+{{ ref.tags.organization }},
+{{ ref.tags.address }},
+{% if ref.tags.edition %}{{ ref.tags.edition }},{% endif %}
+{% if ref.tags.month %}{{ ref.tags.month }}{% endif %}
+{{ ref.tags.year }}.
+{% endmacro bib_manual %}
+
+{% macro bib_thesis(ref, type) %}
+{{ ref.tags.author }},
+"{{ ref.tags.title }},"
+{{ type }},
+{{ ref.tags.school }},
+{{ ref.tags.address }},
+{{ ref.tags.year }}
+{% endmacro bib_thesis %}
+
+{% macro bib_mastersthesis(ref) %}
+{{ macros::bib_thesis(ref=ref,type="M.S. Thesis") }}
+{% endmacro bib_mastersthesis %}
+
+{% macro bib_phdthesis(ref) %}
+{{ macros::bib_thesis(ref=ref,type="Ph.D. dissertation") }}
+{% endmacro bib_phdthesis %}
+
+{% macro bib_misc(ref) %}
+{% if ref.tags.author %}{{ ref.tags.author }},{% endif %}
+{{ ref.tags.title }},
+{% if ref.tags.publisher %}{{ ref.tags.publisher }},{% endif %}
+{% if ref.tags.year %}{{ ref.tags.year }},{% endif %}
+{% if ref.tags.doi %}
+<a href="https://doi.org/{{ ref.tags.doi }}">{{ ref.tags.doi }}</a>
+{% elif ref.tags.url %}
+<a href="{{ ref.tags.url }}" target="_blank">{{ ref.tags.url }}</a>
+{% endif %}
+{% endmacro bib_misc %}
+
+{% macro bib_ref(bibliography,num) %}
+{% if bibliography.entry_type == "book" %}
+{{ macros::bib_book(ref=bibliography) }}
+{% elif bibliography.entry_type == "article" %}
+{{ macros::bib_article(ref=bibliography) }}
+{% elif bibliography.entry_type == "inproceedings" %}
+{{ macros::bib_inproceedings(ref=bibliography) }}
+{% elif bibliography.entry_type == "misc" %}
+{{ macros::bib_misc(ref=bibliography) }}
+{% elif bibliography.entry_type == "mastersthesis" %}
+{{ macros::bib_mastersthesis(ref=bibliography) }}
+{% elif bibliography.entry_type == "phdthesis" %}
+{{ macros::bib_phdthesis(ref=bibliography) }}
+{% elif bibliography.entry_type == "manual" %}
+{{ macros::bib_manual(ref=bibliography) }}
+{% elif bibliography.entry_type == "githubissue" %}
+{{ macros::bib_githubissue(ref=bibliography) }}
+{% else %}
+unsupported reference type
+{% endif %}
+{% endmacro bib_ref %}
+
+{% macro ref(bibliography,num) %}
+<dt class="ref-num" id="bibref-{{ bibliography.citation_key }}">[{{ num }}]</dt>
+<dd>{{ macros::bibstrip(in=macros::bib_ref(bibliography=bibliography,num=num)) }}</dd>
+{% endmacro ref %}
