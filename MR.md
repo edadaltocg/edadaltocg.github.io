@@ -1,6 +1,6 @@
 # PRs to open on GitHub
 
-Go to **https://github.com/edadaltocg/edadaltocg.github.io/pulls** and create one PR per branch.
+Go to **<https://github.com/edadaltocg/edadaltocg.github.io/pulls>** and create one PR per branch.
 
 ---
 
@@ -10,7 +10,7 @@ Go to **https://github.com/edadaltocg/edadaltocg.github.io/pulls** and create on
 
 **Body:**
 
-```
+```markdown
 ## Summary
 
 - Replace hardcoded English strings in all templates with Zola `trans()` calls so the UI language follows the page language automatically
@@ -33,7 +33,7 @@ Go to **https://github.com/edadaltocg/edadaltocg.github.io/pulls** and create on
 
 **Body:**
 
-```
+```markdown
 ## Summary
 
 - Update `deploy.yml` to trigger only on push to `main` (+ manual dispatch via `workflow_dispatch`)
@@ -59,7 +59,7 @@ Go to **https://github.com/edadaltocg/edadaltocg.github.io/pulls** and create on
 
 **Body:**
 
-```
+```markdown
 ## Summary
 
 - Add `renovate.json` configured to open dependency update PRs every weekend
@@ -82,7 +82,7 @@ Go to **https://github.com/edadaltocg/edadaltocg.github.io/pulls** and create on
 
 **Body:**
 
-```
+```markdown
 ## Summary
 
 Formatters added:

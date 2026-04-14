@@ -26,6 +26,6 @@ comments = "Commenti"
 
 copyright_override = '© $CURRENT_YEAR $SITE_TITLE • I contenuti del sito sono sotto licenza <a rel="noopener" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a>.'
 
-404_not_found = "Pagina non trovata, forse spostata o non in questa lingua"
+404_not_found = "Pagina non trovata, force spostata o non in questa lingua"
 404_try_search = "Prova a cercare o"
 404_go_home = "vai alla pagina principale"

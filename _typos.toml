@@ -7,3 +7,5 @@ extend-exclude = ["*.bib", "*.css", "*.js", "public/"]
 "Tecnológico" = "Tecnológico"
 "Instituto" = "Instituto"
 "sur" = "sur"
+"Categorie" = "Categorie"
+"vai" = "vai"

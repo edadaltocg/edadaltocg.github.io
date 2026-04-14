@@ -19,7 +19,7 @@ Recent = "Recente"
 Powered_by = "Feito com"
 and = "e"
 more = "mais"            # "...more" read more links
-series_parts = "Série"   # $NUMBER_OF_PARTS Serie de piezas : 10 Part Series
+series_parts = "Série"   # $NUMBER_OF_PARTS Series de piezas : 10 Part Series
 
 ### © $CURRENT_YEAR $SITE_TITLE • Website content is licensed <a rel="noopener" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a>.
 copyright_override = '© $CURRENT_YEAR $SITE_TITLE • O conteúdo do site tem licença <a rel="noopener" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a>.'
