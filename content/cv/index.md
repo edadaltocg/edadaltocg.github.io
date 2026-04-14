@@ -10,7 +10,9 @@ title="CV"
 
 ### Core Expertise
 
-Confidence calibration, uncertainty quantification, robustness testing, anomaly and out-of-distribution detection, conformal prediction, experimental design, hyperparameter optimisation.
+- **AI Evaluation:** Metrics design, large-scale evaluation workflows, data processing infrastructure, data lineage and versioning, performance monitoring, sim2real gap computation.
+- **AI Safety:** Conformal risk control, conformal prediction, confidence calibration, uncertainty quantification, robustness testing, out-of-distribution/anomaly detection, operational design domain definition.
+- **Experimental Design:** Bayesian hyperparameter optimisation, statistical hypothesis testing, ablation studies.
 
 ---
 
@@ -126,7 +128,7 @@ _C: Conference · J: Journal · W: Workshop_
 
 ### Patents
 
-1. **Eduardo Dadalto**, Gianluca Detommaso, Michele Donini. _Method and System for Improving Object Tracking_. Patent application filed.
+- **[P1]** **Eduardo Dadalto**, M. Donini, G. Detommaso. _Method and System for Improving Object Tracking_. Filed. 2026.
 
 ---
 
