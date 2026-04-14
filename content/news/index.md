@@ -2,6 +2,10 @@
 title="News"
 +++
 
+### 2025
+
+- **03. March**: Joined [Helsing](https://helsing.ai/) as an AI Research Engineer on the AI Assurance team.
+
 ### 2024
 
 - **08. August**: Went to San Francisco and launched our API platform for data scientists.
