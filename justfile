@@ -9,8 +9,7 @@ default:
   just --list
 
 install:
-  brew install zola taplo pre-commit
-  npm install -g prettier bibtex-tidy markdownlint-cli2
+  brew install zola pre-commit
   pre-commit install
 
 build:
