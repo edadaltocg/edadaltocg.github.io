@@ -2,14 +2,14 @@
 
 {% block after_header %}
 <nav>
-  <a href="{{ config.base_url }}blog">&LeftArrow; Blog</a>
+  <a href="{{ config.base_url }}blog">{{ trans(key="back_blog") }}</a>
 </nav>
 {% endblock after_header %}
 
 {% block begin_article %}
 
 {% if page.toc %}
-    <h3>Content</h3>
+    <h3>{{ trans(key="toc") }}</h3>
     <ul>
     {% for h2 in page.toc %}
         <li>
@@ -49,7 +49,7 @@
     <div id="references">
     {% set has_references = citations.bibliographies | length > 0 %}
     {% if has_references %}
-        <h2>References</h2>
+        <h2>{{ trans(key="references") }}</h2>
         <dl>
         {% for citation in citations.bibliographies %}
             {{ macros::ref(bibliography=citation,num=loop.index) }}
@@ -62,7 +62,7 @@
 
 {% block after_article %}
 <hr>
-<h2>Comments</h2>
+<h2>{{ trans(key="comments") }}</h2>
 <div id="disqus_thread"></div>
 {% endblock after_article %}
 
@@ -201,7 +201,7 @@ function displayReadTime() {
 
     // Update the paragraph element with the id 'read-time'
     const readTimeParagraph = document.getElementById('read-time');
-    readTimeParagraph.textContent = `Reading time: ${readTime} min`;
+    readTimeParagraph.textContent = `{{ trans(key="reading_time_prefix") }} ${readTime} {{ trans(key="reading_time_unit") }}`;
 }
 
 // Wait for the DOM to fully load, then calculate and display the read time

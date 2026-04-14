@@ -1,18 +1,46 @@
 alias i := install
 alias b := build
 alias p := preview
+alias f := format
+alias fmt := format-check
 
 default:
   just --list
 
 install:
-  brew install zola minify
+  brew install zola minify taplo pre-commit
+  npm install -g prettier bibtex-tidy markdownlint-cli2
+  pre-commit install
+
+format:
+  prettier --write .
+  taplo fmt
+  markdownlint-cli2 --fix "**/*.md"
+  find publications -name "*.bib" -exec bibtex-tidy --modify {} \;
+
+format-check:
+  prettier --check .
+  taplo fmt --check
+  markdownlint-cli2 "**/*.md"
+  find publications -name "*.bib" -exec bibtex-tidy --no-modify {} \;
 
 build:
   zola build
 
 preview:
   zola serve --open
+
+
+PANDOC_INPUT := "publications/pandoc-input.md"
+OUTPUT_HTML := "out/list.html"
+BIBLIOGRAPHY := "publications/publications.bib"
+
+bib2html:
+  mkdir -p out
+  pandoc --citeproc {{PANDOC_INPUT}} -o {{OUTPUT_HTML}} --bibliography={{BIBLIOGRAPHY}}
+
+notebook2markdown path:
+  jupyter-nbconvert --to markdown {{path}}
 
 optimize_media:
   pngquant --skip-if-larger --strip --quality=93-93 --speed 1 *.png
@@ -29,17 +57,6 @@ minify:
   find public -name "*.html" -exec minify --type=html -o {} {} \;
   find public -name "*.css" -not -name "*.min.css" -exec minify --type=css -o {} {} \;
   find public -name "*.js" -not -name "*.min.js" -exec minify --type=js -o {} {} \;
-
-PANDOC_INPUT := "publications/pandoc-input.md"
-OUTPUT_HTML := "out/list.html"
-BIBLIOGRAPHY := "publications/publications.bib"
-
-bib2html:
-  mkdir -p out
-  pandoc --citeproc {{PANDOC_INPUT}} -o {{OUTPUT_HTML}} --bibliography={{BIBLIOGRAPHY}}
-
-notebook2markdown path:
-  jupyter-nbconvert --to markdown {{path}}
 
 deploy: build minify
   #!/usr/bin/env bash

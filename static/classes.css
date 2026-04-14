@@ -155,24 +155,21 @@ div.logo {
 @media only screen and (max-width: 720px) {
   h1 {
     font-size: calc(
-      0.8 * var(--base-fontsize) * var(--header-scale) * var(--header-scale) *
-        var(--header-scale) * var(--header-scale)
+      0.8 * var(--base-fontsize) * var(--header-scale) * var(--header-scale) * var(--header-scale) *
+        var(--header-scale)
     );
     margin-top: calc(var(--line-height) * 1.5rem);
   }
 
   h2 {
     font-size: calc(
-      0.8 * var(--base-fontsize) * var(--header-scale) * var(--header-scale) *
-        var(--header-scale)
+      0.8 * var(--base-fontsize) * var(--header-scale) * var(--header-scale) * var(--header-scale)
     );
     margin-top: calc(var(--line-height) * 1.5rem);
   }
 
   h3 {
-    font-size: calc(
-      0.8 * var(--base-fontsize) * var(--header-scale) * var(--header-scale)
-    );
+    font-size: calc(0.8 * var(--base-fontsize) * var(--header-scale) * var(--header-scale));
     margin-top: calc(var(--line-height) * 1.5rem);
   }
 
@@ -209,9 +206,7 @@ div.logo {
   #name {
     margin-top: 0px;
     line-height: 1;
-    font-size: calc(
-      0.8 * var(--base-fontsize) * var(--header-scale) * var(--header-scale)
-    );
+    font-size: calc(0.8 * var(--base-fontsize) * var(--header-scale) * var(--header-scale));
   }
 
   #subtitle {
