@@ -10,17 +10,6 @@ title="CV"
 
 _Core expertise: Confidence calibration, uncertainty quantification, robustness testing, anomaly and out-of-distribution detection, conformal prediction, experimental design, hyperparameter optimisation._
 
-### Contact Information
-
-- **Full Name:** Eduardo Dadalto Câmara Gomes
-- **Email:** edadaltocg[at]gmail.com
-- **Location:** Paris, Île-de-France, France
-- **Website:** [edadaltocg.github.io](https://www.edadaltocg.github.io)
-- **GitHub:** [github.com/edadaltocg](https://www.github.com/edadaltocg)
-- **LinkedIn:** [linkedin.com/in/edadaltocg](https://www.linkedin.com/in/edadaltocg/)
-
----
-
 ### Experience
 
 #### [Helsing](https://helsing.ai/)
@@ -204,9 +193,8 @@ São José dos Campos, Brazil | February 2020
 
 ### Research Grants
 
-Compute research grant (AD011012803R) at [Jean-Zay](https://www.cnrs.fr/en/press/jean-zay-frances-most-powerful-supercomputer-research) a French HPC/AI cluster. | 2021 - 2024
-
-PhD funding from the PSPC AIDA project (2019-PSPC-09) granted by [BPI-France](https://www.bpifrance.com/). | 2020 - 2024
+- Compute research grant (AD011012803R) at [Jean-Zay](https://www.cnrs.fr/en/press/jean-zay-frances-most-powerful-supercomputer-research), a French HPC/AI cluster. _(2021–2024)_
+- PhD funding from the PSPC AIDA project (2019-PSPC-09) granted by [BPI-France](https://www.bpifrance.com/). _(2020–2024)_
 
 ---
 
@@ -215,11 +203,13 @@ PhD funding from the PSPC AIDA project (2019-PSPC-09) granted by [BPI-France](ht
 #### [Detectors](https://github.com/edadaltocg/detectors)
 
 _May 2023_
+
 Open source package to accelerate research on out-of-distribution (OOD) detection for computer vision applications.
 
 #### [Todd](https://github.dev/icannos/Todd/) / [ToddBenchmark](https://github.dev/icannos/ToddBenchmark)
 
 _February 2023_
+
 Open source package to accelerate research on out-of-distribution (OOD) detection for textual applications.
 
 ---
@@ -239,3 +229,4 @@ Open source package to accelerate research on out-of-distribution (OOD) detectio
 - **Side projects:** Co-created [Prompt Riddle](https://promptriddle.com), an online indie enigma-solving game with 5k+ players.
 - **Sports:** Brazilian jiu-jitsu, futsal.
 - **Rocketry:** Launched and recovered a rocket that reached a 10,000 ft apogee as part of the ITA's Rocket Design team during the 2017 [IREC](https://www.soundingrocket.org/what-is-irec.html) competition (placed 7th/109 teams) in Las Cruces, NM, USA, sponsored by Virgin Galactic.
+- **Personal interests:** Traveling, board games & puzzles.
