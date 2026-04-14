@@ -100,7 +100,6 @@ body {
 /* Make the header bg full width, but the content inline with body */
 header {
   /* background: var(--accent-bg); */
-  border-bottom: 1px solid var(--border);
   text-align: left;
   padding: 0rem 0rem;
   /* width: 100vw; */
