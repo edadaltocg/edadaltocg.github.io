@@ -21,10 +21,9 @@ repos:
     hooks:
       - id: taplo
         name: taplo fmt
-        language: rust
+        language: system
         entry: taplo fmt
         types: [toml]
-        additional_dependencies: [taplo-cli]
 
       - id: bibtex-tidy
         name: bibtex-tidy
@@ -32,9 +31,3 @@ repos:
         additional_dependencies: [bibtex-tidy]
         entry: bibtex-tidy --modify
         files: \.bib$
-  - repo: https://github.com/crate-ci/typos
-    rev: v1.30.2
-    hooks:
-      - id: typos
-        args: [--write-changes]
-        types_or: [markdown]

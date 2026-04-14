@@ -17,4 +17,15 @@ jobs:
       - name: Install Node tools
         run: npm install -g prettier bibtex-tidy markdownlint-cli2
 
+      - name: Cache taplo
+        id: cache-taplo
+        uses: actions/cache@v4
+        with:
+          path: ~/.cargo/bin/taplo
+          key: taplo-${{ runner.os }}-v1
+
+      - name: Install taplo
+        if: steps.cache-taplo.outputs.cache-hit != 'true'
+        run: cargo install taplo-cli
+
       - uses: pre-commit/action@v3.0.1
