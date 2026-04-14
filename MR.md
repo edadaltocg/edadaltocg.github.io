@@ -86,16 +86,19 @@ Go to **<https://github.com/edadaltocg/edadaltocg.github.io/pulls>** and create 
 ## Summary
 
 Formatters added:
+
 - **prettier** — CSS, JS, JSON, Markdown (config: `.prettierrc.json`; HTML templates excluded via `.prettierignore`)
 - **taplo** — TOML files (config: `taplo.toml`)
 - **markdownlint-cli2** — Markdown style rules (config: `.markdownlint.json`; MD013/MD033/MD041 disabled for prose and front matter)
 - **bibtex-tidy** — BibTeX bibliography files
 
 Pre-commit hook:
+
 - `.pre-commit-config.yaml` runs all formatters on staged files before every commit
 - Run `just install` to register the hook locally via `pre-commit install`
 
 CI:
+
 - `build.yml` gains a `format` job that runs all format checks on every PR to `main`
 
 Also applies all formatters to existing files (CSS, JS, JSON, BibTeX).
