@@ -4,6 +4,8 @@ title="CV"
 
 ## Eduardo Dadalto, PhD in ML
 
+[Download PDF](/cv.pdf)
+
 ---
 
 _Core expertise: Confidence calibration, uncertainty quantification, robustness testing, anomaly and out-of-distribution detection, conformal prediction, experimental design, hyperparameter optimisation._
@@ -16,7 +18,6 @@ _Core expertise: Confidence calibration, uncertainty quantification, robustness 
 - **Website:** [edadaltocg.github.io](https://www.edadaltocg.github.io)
 - **GitHub:** [github.com/edadaltocg](https://www.github.com/edadaltocg)
 - **LinkedIn:** [linkedin.com/in/edadaltocg](https://www.linkedin.com/in/edadaltocg/)
-- **PDF Version:** [cv.pdf](/cv.pdf)
 
 ---
 
