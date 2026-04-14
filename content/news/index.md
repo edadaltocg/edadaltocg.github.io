@@ -4,7 +4,7 @@ title="News"
 
 ### 2025
 
-- **03. March**: Joined [Helsing](https://helsing.ai/) as an AI Research Engineer on the AI Assurance team in Paris.
+- **03. March**: Joined [Helsing](https://helsing.ai/) as an AI Research Engineer on the AI Assurance team.
 
 ### 2024
 
