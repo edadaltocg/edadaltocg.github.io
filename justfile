@@ -60,16 +60,3 @@ format-check:
   markdownlint-cli2 "**/*.md"
   find publications -name "*.bib" -exec bibtex-tidy --no-modify {} \;
 
-deploy: build minify
-  #!/usr/bin/env bash
-  set -euo pipefail
-  WORKTREE=$(mktemp -d)
-  trap "git worktree remove --force '$WORKTREE' 2>/dev/null || true" EXIT
-  git fetch origin gh-pages
-  git worktree add "$WORKTREE" gh-pages
-  rsync -a --delete --exclude='.git' public/ "$WORKTREE/"
-  git -C "$WORKTREE" add -A
-  git -C "$WORKTREE" diff --cached --quiet \
-    || git -C "$WORKTREE" commit -m "deploy: $(date -u '+%Y-%m-%d %H:%M:%S UTC')"
-  git -C "$WORKTREE" push origin gh-pages
-  echo "Deployed to gh-pages."
