@@ -1,4 +1,1 @@
-const items = document.querySelectorAll(".preStyle");
-items.forEach((item) => {
-  item.rel = "stylesheet";
-});
+const items=document.querySelectorAll(".preStyle");items.forEach(e=>{e.rel="stylesheet"})
