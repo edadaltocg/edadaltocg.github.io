@@ -6,10 +6,9 @@
 
 ## Tooling
 
-- **Formatter:** `just format` — runs prettier (CSS/JS/JSON/MD), taplo (TOML), markdownlint-cli2 (Markdown), bibtex-tidy (BibTeX)
-- **Spell checker:** typos — auto-fixes typos in Markdown files via pre-commit
-- **Pre-commit:** `just install` registers all hooks; runs on every commit and on PRs to `main`
-- **Deploy:** `just deploy` — builds, minifies HTML/CSS/JS, pushes to `gh-pages`
+- **Lint / format:** `just lint` — runs all pre-commit hooks (prettier, taplo, markdownlint-cli2, bibtex-tidy, typos)
+- **Pre-commit:** `just install` — installs Zola and pre-commit, registers hooks for every commit
+- **Deploy:** push to `main` — CI builds, minifies HTML/CSS/JS, and publishes to `gh-pages` automatically
 
 ## TODO
 
