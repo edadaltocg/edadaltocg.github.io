@@ -12,8 +12,8 @@
   /* Body font size. By default, effectively 18.4px, based on 16px as 'root em' */
   --base-fontsize: 1.21em;
 
-  /* Major third scale progression - see https://type-scale.com/ */
-  --header-scale: 1.25;
+  /* Minor third scale progression - see https://type-scale.com/ */
+  --header-scale: 1.2;
 
   /* Line height is set to the "Golden ratio" for optimal legibility */
   --line-height: 1.618;
@@ -38,17 +38,14 @@
   color: white;
 }
 
-/* Dark theme */
+/* Dark theme — system preference (when no manual override) */
 @media (prefers-color-scheme: dark) {
-  :root {
+  :root:not([data-theme="light"]) {
     --bg: "Canvas";
-    /* --bg: #000; */
     --accent-bg: #2b2b2b;
-    /* --text: "CanvasText"; */
     --text: #ffffff;
     --text-light: #ababab;
     --border: #666;
-    /* --accent: #ffb300; */
     --accent: #ffa86a;
     --accent-light: #ffecb3;
     --code: var(--text);
@@ -57,20 +54,36 @@
     --highlight-color: #fff;
   }
 
-  ::selection {
+  :root:not([data-theme="light"]) ::selection {
     background: var(--highlight-color);
     color: black;
   }
+}
 
-  img,
-  video {
-    opacity: 1;
-  }
+/* Dark theme — manual override */
+:root[data-theme="dark"] {
+  --bg: "Canvas";
+  --accent-bg: #2b2b2b;
+  --text: #ffffff;
+  --text-light: #ababab;
+  --border: #666;
+  --accent: #ffa86a;
+  --accent-light: #ffecb3;
+  --code: var(--text);
+  --preformatted: #ccc;
+  --disabled: #111;
+  --highlight-color: #fff;
+}
+
+:root[data-theme="dark"] ::selection {
+  background: var(--highlight-color);
+  color: black;
 }
 
 html {
   /* Set the font globally */
   /* font-family: var(--sans-font); */
+  overflow-x: hidden;
 }
 
 /* Make the body a nice central block */
@@ -92,7 +105,6 @@ body {
   margin: 0 auto;
   max-width: 50rem;
   padding: 0 1rem;
-  overflow-x: hidden;
   word-break: break-word;
   overflow-wrap: break-word;
 }

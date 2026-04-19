@@ -268,12 +268,16 @@ em.center {
   align-items: center;
 }
 
+.code-wrapper {
+  position: relative;
+}
+
 .copy-btn {
   position: absolute;
   top: 4px;
   right: 10px;
   background-color: transparent;
-  color: white;
+  color: var(--text-light);
   border: none;
   border-radius: 4px;
   cursor: pointer;
@@ -287,5 +291,236 @@ em.center {
 }
 
 .copy-btn:hover {
+  color: var(--accent);
+}
+
+.blog-post {
+  text-align: justify;
+}
+
+.blog-post img {
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.footer-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.footer-controls {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.icon-btn {
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  color: var(--text-light);
+  cursor: pointer;
+  padding: 0.3rem 0.5rem;
+  font-size: 0.9rem;
+  transition: 0.2s;
+}
+
+.icon-btn:hover {
+  color: var(--accent);
+  border-color: var(--accent);
+}
+
+.blog-post {
+  counter-reset: h2-counter sidenote-counter assumption-counter definition-counter theorem-counter
+    equation-counter;
+}
+.blog-post h2 {
+  counter-reset: h3-counter;
+  counter-increment: h2-counter;
+}
+.blog-post h3 {
+  counter-reset: h4-counter;
+  counter-increment: h3-counter;
+}
+.blog-post h4 {
+  counter-increment: h4-counter;
+}
+.blog-post h2::before {
+  content: counter(h2-counter) ". ";
+}
+.blog-post h3::before {
+  content: counter(h2-counter) "." counter(h3-counter) ". ";
+}
+.blog-post h4::before {
+  content: counter(h2-counter) "." counter(h3-counter) "." counter(h4-counter) ". ";
+}
+
+/* --- Tufte-style sidenotes --- */
+
+.sidenote-number {
+  counter-increment: sidenote-counter;
+}
+
+.sidenote-number::after,
+.sidenote::before {
+  content: counter(sidenote-counter);
+  font-size: 0.7em;
+  position: relative;
+  top: -0.5em;
+  font-weight: bold;
+  color: var(--accent);
+}
+
+input.sidenote-toggle {
+  display: none;
+}
+
+.sidenote {
+  float: right;
+  clear: right;
+  margin-right: -17rem;
+  width: 15rem;
+  font-size: 0.8rem;
+  line-height: 1.5;
+  color: var(--text-light);
+  margin-top: 0.3rem;
+  margin-bottom: 0.5rem;
+}
+
+.sidenote::before {
+  margin-right: 0.3em;
+}
+
+/* Wide screens: always visible in the margin */
+@media (min-width: 1101px) {
+  label.sidenote-number {
+    cursor: default;
+  }
+}
+
+/* Narrow screens: toggle inline */
+@media (max-width: 1100px) {
+  .sidenote {
+    display: none;
+    float: none;
+    width: auto;
+    margin: 0.5rem 1rem;
+    padding: 0.5rem 0.75rem;
+    font-size: 0.85rem;
+    border-left: 3px solid var(--accent);
+    background: var(--accent-bg);
+    border-radius: 0 4px 4px 0;
+  }
+
+  input.sidenote-toggle:checked + .sidenote {
+    display: block;
+  }
+
+  label.sidenote-number {
+    cursor: pointer;
+  }
+}
+
+/* --- Math blocks (Assumption, Definition, Theorem) --- */
+
+.mathblock {
+  border-left: 3px solid var(--mathblock-color, var(--accent));
+  background: var(--mathblock-bg, var(--accent-bg));
+  padding: 0.75rem 1rem;
+  margin: 1rem 0;
+  border-radius: 0 4px 4px 0;
+}
+
+.mathblock-label {
+  font-weight: bold;
+  text-decoration: none;
+  color: var(--mathblock-color, inherit);
+}
+
+.mathblock-label:hover {
+  opacity: 0.7;
+}
+
+.mathblock-dot {
+  font-weight: bold;
+}
+
+.mathblock-assumption {
+  --mathblock-color: #2e7d32;
+  --mathblock-bg: rgba(46, 125, 50, 0.08);
+  counter-increment: assumption-counter;
+}
+
+.mathblock-assumption .mathblock-label::after {
+  content: "Assumption " counter(assumption-counter);
+}
+
+.mathblock-definition {
+  --mathblock-color: #1565c0;
+  --mathblock-bg: rgba(21, 101, 192, 0.08);
+  counter-increment: definition-counter;
+}
+
+.mathblock-definition .mathblock-label::after {
+  content: "Definition " counter(definition-counter);
+}
+
+.mathblock-theorem {
+  --mathblock-color: #c62828;
+  --mathblock-bg: rgba(198, 40, 40, 0.08);
+  counter-increment: theorem-counter;
+}
+
+.mathblock-theorem .mathblock-label::after {
+  content: "Theorem " counter(theorem-counter);
+}
+
+.mathblock-proposition {
+  --mathblock-color: #6a1b9a;
+  --mathblock-bg: rgba(106, 27, 154, 0.08);
+  counter-increment: proposition-counter;
+}
+
+.mathblock-proposition .mathblock-label::after {
+  content: "Proposition " counter(proposition-counter);
+}
+
+.mathblock-proof {
+  --mathblock-color: #555;
+  --mathblock-bg: rgba(0, 0, 0, 0.03);
+  border-left-style: dashed;
+}
+
+.mathblock-proof .mathblock-label {
+  font-style: italic;
+}
+
+.mathblock-proof .mathblock-label::after {
+  content: "Proof";
+}
+
+/* --- Numbered equations --- */
+
+.equation {
+  counter-increment: equation-counter;
+  display: flex;
+  align-items: center;
+  position: relative;
+}
+
+.eq-number {
+  position: absolute;
+  right: 0;
+  text-decoration: none;
+  color: var(--text-light);
+}
+
+.eq-number::after {
+  content: "(" counter(equation-counter) ")";
+}
+
+.eq-number:hover {
   color: var(--accent);
 }

@@ -1,0 +1,23 @@
+<a class="mathblock-ref" href="#{{ kind }}-{{ id }}"></a><script>
+if (!window._mrefInit) {
+  window._mrefInit = true;
+  document.addEventListener('DOMContentLoaded', function() {
+    var kinds = ['assumption', 'definition', 'theorem'];
+    var counters = {};
+    var map = {};
+    kinds.forEach(function(k) { counters[k] = 0; });
+    document.querySelectorAll('.mathblock').forEach(function(el) {
+      var kind = kinds.find(function(k) { return el.classList.contains('mathblock-' + k); });
+      if (kind) {
+        counters[kind]++;
+        map[el.id] = { kind: kind, n: counters[kind] };
+      }
+    });
+    var labels = { assumption: 'Assumption', definition: 'Definition', theorem: 'Theorem' };
+    document.querySelectorAll('.mathblock-ref').forEach(function(a) {
+      var entry = map[a.getAttribute('href').substring(1)];
+      if (entry) a.textContent = labels[entry.kind] + ' ' + entry.n;
+    });
+  });
+}
+</script>

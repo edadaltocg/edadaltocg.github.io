@@ -1,45 +1,70 @@
 {% extends "page.html" %}
 
+{% block title %}Fz | {{ page.title }}{% endblock title %}
+
 {% block after_header %}
 <nav>
   <a href="{{ config.base_url }}blog">{{ trans(key="back_blog") }}</a>
 </nav>
 {% endblock after_header %}
 
-{% block begin_article %}
+{% block content %}
+<article class="container">
+  <h2><a href="{{ page.permalink }}">{{ page.title }}</a></h2>
+  {% if page.date or page.taxonomies %}
+  <p class="taxonomies">
+    {% if page.date %}{{ page.date | date(format="%-d %B, %Y") }}{% endif %}
+
+    {% set_global sorted_taxonomies = [] %}
+    {% for taxonomy_name, _ in page.taxonomies %}
+    {% set_global sorted_taxonomies = sorted_taxonomies | concat(with=taxonomy_name) %}
+    {% endfor %}
+    {% set_global sorted_taxonomies = sorted_taxonomies | sort %}
+
+    {% for taxonomy_name in sorted_taxonomies %}
+    {% set terms = page.taxonomies[taxonomy_name] %}
+    - {{ taxonomy_name | capitalize }}:
+    {% for term_name in terms %}
+    {% set term = get_taxonomy_term(kind=taxonomy_name, term=term_name) %}
+    <a href="{{ term.permalink }}">{{ term.name }}</a>{% if not loop.last %},{% endif %}
+    {% endfor %}
+    {% endfor %}
+  </p>
+  {% endif %}
 
 {% if page.toc %}
     <h3>{{ trans(key="toc") }}</h3>
-    <ul>
+    <ol>
     {% for h2 in page.toc %}
         <li>
             <a href="{{ h2.permalink | safe }}">{{ h2.title }}</a>
             {% if h2.children %}
-                <ul>
+                <ol>
                     {% for h3 in h2.children %}
                         <li>
                             <a href="{{ h3.permalink | safe }}">{{ h3.title }}</a>
                             {% if h3.children %}
-                                <ul>
+                                <ol>
                                     {% for h4 in h3.children %}
                                         <li>
                                             <a href="{{ h4.permalink | safe }}">{{ h4.title }}</a>
                                         </li>
                                     {% endfor %}
-                                </ul>
+                                </ol>
                             {% endif %}
                         </li>
                     {% endfor %}
-                </ul>
+                </ol>
             {% endif %}
         </li>
     {% endfor %}
-    </ul>
+    </ol>
 {% endif %}
 
-{% endblock begin_article %}
+  <div class="blog-post">
+  {{ page.content | safe }}
+  </div>
 
-{% block end_article %}
 {% if page.colocated_path %}
     {% set citations = load_data(path=page.colocated_path ~ "references.bib", format="bibtex", required=false) %}
 {% else %}
@@ -58,13 +83,14 @@
     {% endif %}
     </div>
 {% endif %}
-{% endblock end_article %}
 
-{% block after_article %}
+</article>
+
+
 <hr>
 <h2>{{ trans(key="comments") }}</h2>
 <div id="disqus_thread"></div>
-{% endblock after_article %}
+{% endblock content %}
 
 {% block after_content %}
 

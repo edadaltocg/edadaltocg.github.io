@@ -1,0 +1,9 @@
+{%- set code = load_data(path=path) -%}
+{%- if start is defined and end is defined -%}
+{%- set lines = code | split(pat="\n") -%}
+{%- set code = lines | slice(start=start, end=end) | join(sep="\n") -%}
+{%- endif -%}
+{%- set code = code | trim_end -%}
+{%- set lang = syntax | default(value="") -%}
+<pre data-lang="{{ lang }}" class="language-{{ lang }} z-code"><code class="language-{{ lang }}" data-lang="{{ lang }}">{{ code }}
+</code></pre>
