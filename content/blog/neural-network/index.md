@@ -17,6 +17,11 @@ The [linear regression](/blog/linear-regression/) and [logistic regression](/blo
 
 The textbook failure mode is the **XOR problem**: predict $y = x\_1 \oplus x\_2$ on $\\{0, 1\\}^{2}$. No straight line separates the positive class $\\{(0, 1), (1, 0)\\}$ from the negative class $\\{(0, 0), (1, 1)\\}$, so no logistic regressor can fit the dataset no matter how its parameters are tuned. The same limitation appears in regression whenever the target is a non-linear function of the inputs: the best line through a parabola is still a line.
 
+<figure>
+<img src="xor_failure.svg" alt="Two side-by-side panels: left shows the XOR points with no straight line able to separate them, right shows a small MLP carving out the correct curved region.">
+<figcaption>XOR is unsolvable with a single linear boundary; even a tiny MLP carves out the correct curved region.</figcaption>
+</figure>
+
 The classical fix is **feature engineering**. Apply a fixed non-linear map $\boldsymbol{\phi}: \mathbb{R}^{D} \to \mathbb{R}^{M}$ to the input before regressing, so the model becomes
 
 {% equation(id="feature-engineered") %}
@@ -81,6 +86,11 @@ $$\int\_K \phi^{(k)}(\mathbf{w}^{\top} \mathbf{x})\, d\mu(\mathbf{x}) = 0 \quad 
 Because $\phi$ is non-polynomial, no smoothed version is annihilated by any finite-order differential operator, so some derivative $\phi^{(k\_0)}$ is itself non-polynomial in its argument; expanding it in a Taylor series and matching coefficients with respect to $\mathbf{w}$ shows that every monomial moment $\int\_K (\mathbf{w}^{\top} \mathbf{x})^m\, d\mu = 0$, and varying $\mathbf{w}$ forces every multi-index moment $\int\_K \mathbf{x}^\alpha\, d\mu = 0$. Polynomials are dense in $C(K)$ by the Stone-Weierstrass theorem, so $\mu$ annihilates every continuous function on $K$, hence $\mu = 0$. This contradicts $L \neq 0$, so $\overline{\mathcal{S}} = C(K)$ and the network can approximate any continuous $f$ to within $\varepsilon$ in the supremum norm. $\square$
 {% end %}
 
+<figure>
+<img src="uat_fit.svg" alt="A wide single-hidden-layer ReLU MLP fitting a sine curve, with the per-unit ReLU bumps lightly drawn underneath.">
+<figcaption>A wide single-hidden-layer ReLU MLP is a basis: each unit contributes a piecewise-linear bump (grey) and the head sums them into the target curve.</figcaption>
+</figure>
+
 {% mathblock(kind="note", name="Expressivity is not learnability", id="uat-caveat") %}
 The theorem guarantees that some MLP fits $f$ to arbitrary accuracy. It does not say that gradient descent on a finite dataset will find that MLP, that the required width $d\_1$ is feasible, or that the parameter values needed are stable under noise. In practice, **depth** trades off against width exponentially for many functions: deep networks compute hierarchies of features that a single wide layer would need exponentially more units to match.{% sidenote(id="depth-width") %}Telgarsky{{ reference(key="telgarsky2016benefits") }} gives explicit functions that a depth-$L$ ReLU network of width $O(L)$ computes but that any depth-$O(L^{1/3})$ network needs width $\Omega(2^L)$ to approximate.{% end %} The combination of expressivity, optimisability, and statistical generalisation is what makes deep networks useful, and only the first of these is what universal approximation establishes.
 {% end %}
@@ -112,6 +122,11 @@ $\mathrm{GELU}(z) = z\, \Phi(z)$, where $\Phi$ is the standard normal CDF. A com
 {% end %}
 
 GELU is smooth everywhere, behaves like ReLU for large $|z|$, and gates small inputs with a probability proportional to how positive they are. It is the default activation in modern transformer architectures, replacing ReLU because the smooth gating empirically improves convergence on language and vision tasks.
+
+<figure>
+<img src="activations.svg" alt="Two-panel plot: left shows sigmoid, tanh, ReLU, and GELU activation curves; right shows their derivatives.">
+<figcaption>Sigmoid and tanh saturate (their derivatives die away from zero); ReLU and GELU keep their derivative away from zero on the active side.</figcaption>
+</figure>
 
 {% mathblock(kind="note", name="What to use when", id="activation-defaults") %}
 Use **ReLU** as the default for hidden layers in feedforward and convolutional architectures. Use **GELU** in transformer-style architectures, where the smoothness pays off. Reserve **sigmoid** and **tanh** for places where bounded output is structurally required, such as binary heads, gating mechanisms, and classical recurrent cells. Avoid sigmoid and tanh in deep hidden stacks, where their saturation will throttle backpropagation.
@@ -186,6 +201,10 @@ The first is the $(j, m)$ entry of the outer product $\boldsymbol{\delta}^{(\ell
 {% end %}
 
 The three propositions collapse into a single algorithm. Run a forward pass, caching every $\mathbf{z}^{(\ell)}$ and $\mathbf{a}^{(\ell)}$. Initialise $\boldsymbol{\delta}^{(L)} = \hat{\mathbf{y}} - \mathbf{y}$. Walk backward through layers, alternating two operations at each step: read $\partial \ell / \partial \mathbf{W}^{(\ell)}$ and $\partial \ell / \partial \mathbf{b}^{(\ell)}$ from {{ mref(kind="proposition", id="bp-params") }}, and update $\boldsymbol{\delta}^{(\ell-1)}$ via {{ mref(kind="proposition", id="bp-recurrence") }}. The minibatch version vectorises every step over the batch dimension, replacing the per-sample outer product by a matrix-matrix product.
+
+For a 2-layer ReLU regressor with MSE loss, the entire forward + backward pass fits in eleven lines of NumPy:
+
+{{ include_code(path="content/blog/neural-network/plots.py", syntax="python", start=12, end=23) }}
 
 {% mathblock(kind="note", name="Cost of one forward + backward pass", id="bp-cost") %}
 Time is $O\!\left(B \sum\_{\ell=1}^{L} d\_\ell\, d\_{\ell-1}\right)$ for a batch of size $B$, dominated by the $L$ matrix multiplications in each direction. Memory is $O\!\left(B \sum\_{\ell=0}^{L} d\_\ell\right)$ to cache activations for the backward pass, plus $O(P)$ to hold the parameter gradients. The backward pass costs roughly twice the forward pass, since each layer produces two products (one against $\mathbf{a}^{(\ell-1)}$ and one against $\boldsymbol{\delta}^{(\ell+1)}$) instead of one. Activation memory is the practical bottleneck for very deep or wide networks, and **gradient checkpointing** (recomputing a subset of activations on the backward pass instead of caching them) trades extra computation for lower memory.
@@ -333,6 +352,15 @@ with the small constant $\varepsilon \approx 10^{-8}$ guarding against division 
 
 The intuition for the second-moment term is that $\sqrt{\hat{\mathbf{v}}\_t}$ approximates the per-coordinate standard deviation of the gradient over recent history, so dividing by it standardises every coordinate to a comparable scale. Parameters whose gradient has been consistently large get a smaller effective learning rate, and parameters whose gradient has been small get a larger one. The compact way to remember Adam is that it gives every parameter its own learning rate, for free, and recalibrates it every step.
 
+In code the whole update is six lines, with the bias correction visible directly:
+
+{{ include_code(path="content/blog/neural-network/plots.py", syntax="python", start=25, end=32) }}
+
+<figure>
+<img src="optim_curves.svg" alt="Training-loss curves on a small regression for SGD, momentum, and Adam.">
+<figcaption>Adam typically reaches the optimum in fewer steps than SGD, and momentum sits between the two.</figcaption>
+</figure>
+
 {% mathblock(kind="note", name="Cost analysis (per Adam step)", id="adam-cost") %}
 Time is $O(B \cdot P)$ as for SGD, plus $O(P)$ for the elementwise updates of $\mathbf{m}$, $\mathbf{v}$, and the parameter update itself. The constant overhead is roughly $3\times$ that of SGD (three passes over the parameter buffer instead of one), which is invisible next to the matmul cost in any reasonably sized network. Memory is the real difference: Adam stores $\mathbf{m}$ and $\mathbf{v}$ at the same shape as $\boldsymbol{\theta}$, so optimiser state alone is $2P$ on top of the $P$-sized gradient buffer. For a model with $P = 10^9$ parameters in float32, this is 8 GB of optimiser state, often the bottleneck before activation memory becomes one. Mixed-precision training and 8-bit optimisers exist precisely to compress this footprint.
 {% end %}
@@ -344,6 +372,11 @@ The forward and backward passes both reduce to a chain of matrix multiplications
 For backpropagation specifically, the recurrence in {{ mref(kind="proposition", id="bp-recurrence") }} multiplies $\boldsymbol{\delta}^{(\ell+1)}$ by $\mathbf{W}^{(\ell+1)\top}$ and then by the diagonal matrix $\mathrm{diag}\big(\phi^{(\ell)\prime}(\mathbf{z}^{(\ell)})\big)$. With sigmoid or tanh hidden activations, the diagonal entries are bounded above by $1/4$ or $1$ respectively, so the gradient shrinks by at least that factor at every layer regardless of $\mathbf{W}^{(\ell+1)}$. With ReLU, the diagonal entries are exactly $1$ on active units and $0$ on inactive ones, so the only contraction or expansion comes from $\mathbf{W}^{(\ell+1)}$.
 
 The standard remedy is to initialise the weights so that the variance of pre-activations is preserved across layers under the linearised dynamics. Two recipes cover the common cases.
+
+<figure>
+<img src="vanish_explode.svg" alt="Log-scale plot of forward-pass signal norm vs depth in a 50-layer ReLU network for three initialisation schemes.">
+<figcaption>A small Gaussian init makes the signal vanish through 50 layers; Xavier (tuned for tanh) is too small for ReLU; He keeps the norm roughly constant.</figcaption>
+</figure>
 
 The two recipes below are named after their authors' first names: **Xavier** Glorot (with Bengio) for sigmoid/tanh networks, and Kaiming **He** for ReLU networks.
 
@@ -403,7 +436,12 @@ Dropout takes its name from the literal mechanism: at each forward pass a random
 
 The factor $1 / (1 - p)$ ensures that $\mathbb{E}\_{\mathbf{m}}[\tilde{\mathbf{a}}^{(\ell)}] = \mathbf{a}^{(\ell)}$, so the mean activation seen by the next layer is unchanged. At inference time the mask is removed entirely (equivalently, $p = 0$), and the network runs deterministically.
 
-The mechanism has two complementary interpretations. Statistically, dropout is an approximate ensemble: each minibatch trains a different subnetwork sampled from the $2^{d\_\ell}$ possible masks, and the test-time forward pass is a geometric-mean approximation over all of them. Optimisation-wise, dropout breaks the co-adaptation between hidden units, since no unit can rely on any specific other unit being present, which forces redundancy. The mental image worth keeping: no neuron should bet its career on a single coworker still being there tomorrow. Typical drop probabilities are $p = 0.1$ to $0.5$ in fully connected layers and lower in convolutional ones. Dropout is largely absent from the hidden states of modern transformers but remains standard inside attention as **attention dropout** on the softmax output.
+The mechanism has two complementary interpretations. Statistically, dropout is an approximate ensemble: each minibatch trains a different subnetwork sampled from the $2^{d\_\ell}$ possible masks, and the test-time forward pass is a geometric-mean approximation over all of them. Optimisation-wise, dropout breaks the co-adaptation between hidden units, since no unit can rely on any specific other unit being present, which forces redundancy. The mental image worth keeping: no neuron should bet its career on a single coworker still being there tomorrow.
+
+<figure>
+<img src="dropout_overfit.svg" alt="Train and validation loss curves for a small MLP with and without dropout, showing dropout closing the train/val gap.">
+<figcaption>Without dropout the train loss collapses to near zero while the validation loss climbs; dropout keeps the gap small.</figcaption>
+</figure> Typical drop probabilities are $p = 0.1$ to $0.5$ in fully connected layers and lower in convolutional ones. Dropout is largely absent from the hidden states of modern transformers but remains standard inside attention as **attention dropout** on the softmax output.
 
 ### Batch Normalisation
 
