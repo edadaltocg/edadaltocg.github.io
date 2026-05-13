@@ -4,6 +4,7 @@
 # dependencies = ["numpy", "matplotlib"]
 # ///
 """Generate plots for the softmax function blog post."""
+
 import numpy as np
 import matplotlib.pyplot as plt
 

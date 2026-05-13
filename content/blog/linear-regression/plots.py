@@ -4,6 +4,7 @@
 # dependencies = ["numpy", "matplotlib"]
 # ///
 """Generate plots for the linear regression blog post."""
+
 import numpy as np
 import matplotlib.pyplot as plt
 
@@ -25,7 +26,7 @@ def lasso_coord_descent(X, y, lam, n_iter=500):
     """Coordinate descent on the standardised LASSO."""
     n, d = X.shape
     theta = np.zeros(d)
-    col_norms = (X ** 2).sum(axis=0)
+    col_norms = (X**2).sum(axis=0)
     for _ in range(n_iter):
         for j in range(d):
             r = y - X @ theta + X[:, j] * theta[j]
@@ -92,7 +93,14 @@ fig, ax = plt.subplots(figsize=(6, 4))
 ax.scatter(x, y, s=25, color="C0", label="clean data")
 ax.scatter([x[5]], [y_out[5]], s=80, color="C1", zorder=4, label="outlier")
 ax.plot(xs, theta[0] + theta[1] * xs, color="C0", lw=2, label="fit (clean)")
-ax.plot(xs, theta_out[0] + theta_out[1] * xs, color="C1", lw=2, ls="--", label="fit (with outlier)")
+ax.plot(
+    xs,
+    theta_out[0] + theta_out[1] * xs,
+    color="C1",
+    lw=2,
+    ls="--",
+    label="fit (with outlier)",
+)
 ax.set_xlabel("x")
 ax.set_ylabel("y")
 ax.set_title("OLS is moved by a single outlier")
@@ -109,7 +117,7 @@ g = np.linspace(-2, 2, 400)
 G0, G1 = np.meshgrid(g, g)
 diff0 = G0 - center[0]
 diff1 = G1 - center[1]
-quad = A[0, 0] * diff0 ** 2 + 2 * A[0, 1] * diff0 * diff1 + A[1, 1] * diff1 ** 2
+quad = A[0, 0] * diff0**2 + 2 * A[0, 1] * diff0 * diff1 + A[1, 1] * diff1**2
 
 for ax, ball, title in zip(
     axes,
@@ -173,7 +181,7 @@ for nl in N_lam_values:
     if nl == 0:
         ax.plot(sig, 1 / sig, lw=2, label=r"OLS: $1/\sigma$")
     else:
-        ax.plot(sig, sig / (sig ** 2 + nl), lw=2, label=fr"Ridge ($N\lambda={nl}$)")
+        ax.plot(sig, sig / (sig**2 + nl), lw=2, label=rf"Ridge ($N\lambda={nl}$)")
 ax.set_ylim(0, 6)
 ax.set_xlabel(r"singular value $\sigma$")
 ax.set_ylabel("filter factor")

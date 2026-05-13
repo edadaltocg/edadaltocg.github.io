@@ -3,6 +3,7 @@
 # requires-python = ">=3.12"
 # ///
 """Find and run all plots.py scripts under content/blog/."""
+
 import subprocess
 import sys
 from pathlib import Path

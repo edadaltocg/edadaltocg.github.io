@@ -4,6 +4,7 @@
 # dependencies = ["numpy", "matplotlib"]
 # ///
 """Generate plots for the support vector machine blog post."""
+
 import numpy as np
 import matplotlib.pyplot as plt
 
@@ -52,7 +53,6 @@ def fit_smo(K, y, C, n_iter=200, tol=1e-3):
             j = int(rng.integers(n))
             while j == i:
                 j = int(rng.integers(n))
-            alpha_old_i, alpha_old_j = alpha[i], alpha[j]
             alpha, b = smo_pair_update(alpha, K, y, C, i, j, b)
             # bias update from KKT on a moved variable
             f_i = (alpha * y) @ K[:, i] + b
@@ -73,7 +73,7 @@ def linear_kernel(A, B):
 
 
 def rbf_kernel(A, B, gamma=1.0):
-    sq = (A ** 2).sum(1)[:, None] + (B ** 2).sum(1)[None, :] - 2 * A @ B.T
+    sq = (A**2).sum(1)[:, None] + (B**2).sum(1)[None, :] - 2 * A @ B.T
     return np.exp(-gamma * sq)
 
 
@@ -99,8 +99,15 @@ ax.plot(xs, y_line, color="k", lw=2, label="boundary")
 ax.plot(xs, y_marg_pos, color="k", ls="--", lw=1)
 ax.plot(xs, y_marg_neg, color="k", ls="--", lw=1)
 sv_mask = alpha_h > 1e-3
-ax.scatter(Xh[sv_mask, 0], Xh[sv_mask, 1], s=140, facecolor="none", edgecolor="C1", lw=2,
-           label="support vectors")
+ax.scatter(
+    Xh[sv_mask, 0],
+    Xh[sv_mask, 1],
+    s=140,
+    facecolor="none",
+    edgecolor="C1",
+    lw=2,
+    label="support vectors",
+)
 ax.set_xlim(-5, 5)
 ax.set_ylim(-4, 4)
 ax.set_xlabel(r"$x_1$")
@@ -155,6 +162,7 @@ fig.tight_layout()
 fig.savefig("soft_margin_C.svg", bbox_inches="tight")
 plt.close(fig)
 
+
 # 4. Linear vs RBF kernel on moons --------------------------------------------
 def make_moons(n=200, noise=0.18):
     n_a = n // 2
@@ -181,7 +189,9 @@ for ax, kname in zip(axes, ["linear", "rbf"]):
         K_grid = rbf_kernel(Xm, grid, gamma=1.5)
     alpha_m, b_m = fit_smo(K_train, ym, C=2.0, n_iter=200)
     f_grid = predict_kernel_svm(alpha_m, ym, K_grid, b_m).reshape(G0.shape)
-    ax.contourf(G0, G1, f_grid, levels=[-1e9, 0, 1e9], colors=["#cdd6f4", "#f5c2c7"], alpha=0.7)
+    ax.contourf(
+        G0, G1, f_grid, levels=[-1e9, 0, 1e9], colors=["#cdd6f4", "#f5c2c7"], alpha=0.7
+    )
     ax.contour(G0, G1, f_grid, levels=[0], colors="k", linewidths=2)
     ax.scatter(Xm[ym == -1, 0], Xm[ym == -1, 1], s=15, color="C0")
     ax.scatter(Xm[ym == 1, 0], Xm[ym == 1, 1], s=15, color="C3")
@@ -206,8 +216,8 @@ plt.close(fig)
 
 # 6. Kernel cache memory growth ------------------------------------------------
 Ns = np.logspace(2, 5, 50)
-gram = Ns ** 2 * 8 / 1e9          # bytes for float64 -> GB
-nystrom = Ns * 200 * 8 / 1e9       # R = 200 landmarks
+gram = Ns**2 * 8 / 1e9  # bytes for float64 -> GB
+nystrom = Ns * 200 * 8 / 1e9  # R = 200 landmarks
 
 fig, ax = plt.subplots(figsize=(6, 4))
 ax.plot(Ns, gram, lw=2, label=r"full Gram matrix: $O(N^2)$")

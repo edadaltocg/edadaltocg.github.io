@@ -11,6 +11,7 @@ Reports two kinds of problem:
 
 Usage: uv run check_refs.py
 """
+
 import re
 import sys
 from difflib import SequenceMatcher
@@ -20,19 +21,32 @@ import httpx
 
 ROOT = Path(__file__).parent
 ENTRY_RE = re.compile(r"@(\w+)\s*\{\s*([^,\s]+)\s*,(.*?)\n\}", re.DOTALL)
-FIELD_RE = re.compile(r"(\w+)\s*=\s*[\{\"]?(.+?)[\}\"]?\s*(?:,\s*\n|\n\s*\})", re.DOTALL)
-REQUIRED_VENUE = {"article": "journal", "inproceedings": "booktitle", "book": "publisher"}
+FIELD_RE = re.compile(
+    r"(\w+)\s*=\s*[\{\"]?(.+?)[\}\"]?\s*(?:,\s*\n|\n\s*\})", re.DOTALL
+)
+REQUIRED_VENUE = {
+    "article": "journal",
+    "inproceedings": "booktitle",
+    "book": "publisher",
+}
 
 
 def parse_bib(text: str):
     for etype, key, body in ENTRY_RE.findall(text):
-        fields = {k.lower(): re.sub(r"\s+", " ", v).strip() for k, v in FIELD_RE.findall(body + "\n}")}
+        fields = {
+            k.lower(): re.sub(r"\s+", " ", v).strip()
+            for k, v in FIELD_RE.findall(body + "\n}")
+        }
         yield etype.lower(), key, fields
 
 
 def dblp_match(title: str) -> tuple[float, str] | None:
     try:
-        r = httpx.get("https://dblp.org/search/publ/api", params={"q": title, "format": "json", "h": 5}, timeout=15)
+        r = httpx.get(
+            "https://dblp.org/search/publ/api",
+            params={"q": title, "format": "json", "h": 5},
+            timeout=15,
+        )
         r.raise_for_status()
         hits = r.json().get("result", {}).get("hits", {}).get("hit", [])
     except Exception as e:
@@ -60,7 +74,9 @@ def check(bib_path: Path) -> list[str]:
             if m is None:
                 problems.append(f"  [{key}] no dblp results for: {f['title']!r}")
             elif m[0] < 0.7:
-                problems.append(f"  [{key}] weak dblp match ({m[0]:.2f}): {f['title']!r} vs {m[1]!r}")
+                problems.append(
+                    f"  [{key}] weak dblp match ({m[0]:.2f}): {f['title']!r} vs {m[1]!r}"
+                )
     return problems
 
 

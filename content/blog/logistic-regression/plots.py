@@ -4,6 +4,7 @@
 # dependencies = ["numpy", "matplotlib"]
 # ///
 """Generate plots for the logistic regression blog post."""
+
 import numpy as np
 import matplotlib.pyplot as plt
 
@@ -85,8 +86,12 @@ P = sigmoid(grid @ theta).reshape(G0.shape)
 fig, ax = plt.subplots(figsize=(6, 4.5))
 cf = ax.contourf(G0, G1, P, levels=20, cmap="RdBu_r", alpha=0.6)
 ax.contour(G0, G1, P, levels=[0.5], colors="k", linewidths=2)
-ax.scatter(X1[:, 0], X1[:, 1], s=18, color="C0", edgecolor="k", linewidth=0.3, label=r"$y=0$")
-ax.scatter(X2[:, 0], X2[:, 1], s=18, color="C3", edgecolor="k", linewidth=0.3, label=r"$y=1$")
+ax.scatter(
+    X1[:, 0], X1[:, 1], s=18, color="C0", edgecolor="k", linewidth=0.3, label=r"$y=0$"
+)
+ax.scatter(
+    X2[:, 0], X2[:, 1], s=18, color="C3", edgecolor="k", linewidth=0.3, label=r"$y=1$"
+)
 ax.set_xlabel(r"$x_1$")
 ax.set_ylabel(r"$x_2$")
 ax.set_title("Logistic regression: linear boundary + smooth probability field")
@@ -95,6 +100,7 @@ fig.colorbar(cf, ax=ax, label=r"$\hat{p}$")
 fig.tight_layout()
 fig.savefig("decision_boundary.svg", bbox_inches="tight")
 plt.close(fig)
+
 
 # 4. Optimisation convergence: GD vs IRLS --------------------------------------
 def loss(theta):
@@ -119,7 +125,9 @@ for _ in range(15):
 
 fig, ax = plt.subplots(figsize=(6, 4))
 ax.plot(range(len(gd_curve)), gd_curve, lw=2, label="gradient descent")
-ax.plot(range(len(irls_curve)), irls_curve, lw=2, marker="o", ms=4, label="IRLS (Newton)")
+ax.plot(
+    range(len(irls_curve)), irls_curve, lw=2, marker="o", ms=4, label="IRLS (Newton)"
+)
 ax.set_xlabel("iteration")
 ax.set_ylabel("BCE loss")
 ax.set_title("IRLS converges in a handful of steps; GD takes many more")
@@ -179,7 +187,9 @@ plt.close(fig)
 
 # 6. Separable-data divergence -------------------------------------------------
 n_s = 80
-X_sep = np.vstack([rng.normal(loc=-2, size=(n_s // 2, 2)), rng.normal(loc=2, size=(n_s // 2, 2))])
+X_sep = np.vstack(
+    [rng.normal(loc=-2, size=(n_s // 2, 2)), rng.normal(loc=2, size=(n_s // 2, 2))]
+)
 y_sep = np.concatenate([np.zeros(n_s // 2), np.ones(n_s // 2)])
 X_sep_aug = np.column_stack([np.ones(n_s), X_sep])
 
@@ -191,7 +201,9 @@ for _ in range(150):
     theta_unreg = theta_unreg - 0.5 * X_sep_aug.T @ (p - y_sep) / n_s
     norm_unreg.append(np.linalg.norm(theta_unreg))
     p2 = sigmoid(X_sep_aug @ theta_ridge)
-    theta_ridge = theta_ridge - 0.5 * (X_sep_aug.T @ (p2 - y_sep) / n_s + 0.05 * theta_ridge)
+    theta_ridge = theta_ridge - 0.5 * (
+        X_sep_aug.T @ (p2 - y_sep) / n_s + 0.05 * theta_ridge
+    )
     norm_ridge.append(np.linalg.norm(theta_ridge))
 
 fig, ax = plt.subplots(figsize=(6, 4))
