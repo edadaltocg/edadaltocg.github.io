@@ -31,6 +31,11 @@ f_{\theta}(x) = \sigma(\theta_0 + \theta_1 x) = \frac{1}{1 + e^{-(\theta_0 + \th
 
 where, as before, $\theta\_0$ is the intercept and $\theta\_1$ is the slope, so $\boldsymbol{\theta} = (\theta\_0, \theta\_1)$.
 
+<figure>
+<img src="sigmoid.svg" alt="Several sigmoid curves under different bias and slope values, all squashing the linear score into the unit interval.">
+<figcaption>The sigmoid family: the slope $\theta_1$ controls how sharp the transition is, the bias $\theta_0$ controls where the midpoint $0.5$ falls.</figcaption>
+</figure>
+
 ### Maximum Likelihood Estimation
 
 For this task, we have collected a supervised dataset of input/label pairs denoted $\mathcal{D} = \\{(x\_i, y\_i)\\}\_{i=1}^N$ with $y\_i \in \\{0, 1\\}$.
@@ -74,6 +79,11 @@ The two cases collapse into a single expression: when $y\_i = 1$ the second fact
 &= \argmin_{\theta} \Bigg[-\sum_{i=1}^{N} \Big( y_i \log p_i + (1 - y_i) \log (1 - p_i) \Big)\Bigg]
 \end{aligned}
 {% end %}
+
+<figure>
+<img src="bce_loss.svg" alt="Binary cross-entropy loss curves: -log p for the y=1 case and -log(1-p) for the y=0 case, both diverging as the prediction grows confidently wrong.">
+<figcaption>BCE penalises confident wrong answers without bound and rewards correct confidence with a vanishing loss.</figcaption>
+</figure>
 
 This is the **binary cross-entropy** (BCE), or log-loss, criterion. The name comes from information theory: the cross-entropy $H(q, p) = -\sum\_y q(y) \log p(y)$ measures the average number of bits (or nats) needed to encode samples from a true distribution $q$ using a code optimised for an estimated distribution $p$. Minimising it pulls the model's $p$ towards the data's $q$, with the minimum reached when they coincide. The way to keep this in your head is that the loss measures _surprise_: the cost of each example is the number of bits the model needs to write down the true label given how confident it was in advance, and a perfect model is never surprised.
 
@@ -173,6 +183,11 @@ $Pr(y = 1 \mid p) = p$ and $Pr(y = 0 \mid p) = 1 - p$. The argmax picks $y = 1$ 
 {% end %}
 
 For the logistic model this means thresholding the predicted probability at $0.5$, or equivalently (since $\sigma(z) \geq 0.5 \iff z \geq 0$) thresholding the linear score $\theta\_0 + \theta\_1 x$ at zero. The decision boundary is therefore a hyperplane in input space, exactly as in linear classification.
+
+<figure>
+<img src="decision_boundary.svg" alt="Two-dimensional toy data with the learned linear boundary overlaid and the predicted probability rendered as a smooth heatmap.">
+<figcaption>Logistic regression draws a linear boundary, but the score it produces is a smooth probability field over the input space.</figcaption>
+</figure>
 
 ### No Closed-Form Solution
 
@@ -334,6 +349,10 @@ so the update collapses to:
 
 This is exactly the [normal equations](/blog/linear-regression/) of a **weighted least-squares** problem with design matrix $\mathbf{X}$, target $\mathbf{z}\_t$, and per-sample weights $\mathbf{S}\_t$ (i.e., the closed-form solution to $\min\_{\boldsymbol{\theta}} \lVert \mathbf{S}\_t^{1/2} (\mathbf{z}\_t - \mathbf{X} \boldsymbol{\theta}) \rVert\_2^2$). Each Newton step on the BCE cost is therefore one weighted least-squares solve, with both the weights and the target re-derived from the current $\boldsymbol{\theta}\_t$. This is the **iteratively reweighted least squares** (IRLS) algorithm: logistic regression is, in the end, linear regression run again and again until the weights agree with the predictions they produce.
 
+In code, the entire Newton step is a handful of lines, and "weighted least squares" is visible directly in the final `np.linalg.solve`:
+
+{{ include_code(path="content/blog/logistic-regression/plots.py", syntax="python", start=17, end=25) }}
+
 The working response has a nice interpretation. $\mathbf{X} \boldsymbol{\theta}\_t$ is the current vector of linear scores, and $\mathbf{S}\_t^{-1} (\mathbf{y} - \mathbf{p}\_t)$ is a Newton-style correction in score-space. We divide the residual $\mathbf{y} - \mathbf{p}\_t$ by the local sigmoid slope $p\_i (1 - p\_i)$ to convert "off by this much in probability" into "off by this much in score". IRLS then solves a regression problem against this corrected target.
 
 In practice one does not form $(\mathbf{X}^{\top} \mathbf{S}\, \mathbf{X})^{-1}$ explicitly. Each iteration is solved via a [QR factorisation](/blog/linear-regression/) of the rescaled design matrix $\mathbf{S}^{1/2} \mathbf{X}$, exactly as in the regression case (with the same $\kappa(\mathbf{X})^{2}$ argument against the Gram matrix), but applied per Newton step.
@@ -441,13 +460,28 @@ The Wolfe conditions ensure each curvature pair $(\mathbf{s}\_k, \mathbf{y}\_k)$
 
 L-BFGS without strong convexity (e.g., unregularised BCE on full-rank, non-separable data) still converges to the optimum, but only the global property holds. The superlinear rate requires strong convexity. This is one of the practical reasons to add even a tiny $\ell\_2$ penalty.
 
+<figure>
+<img src="optim_convergence.svg" alt="Loss-versus-iteration curves on a log scale, with IRLS converging in a handful of Newton steps and gradient descent taking many more.">
+<figcaption>IRLS reaches the optimum in a handful of Newton steps; first-order gradient descent crawls toward the same point over many iterations.</figcaption>
+</figure>
+
 {% mathblock(kind="warning", name="Numerical pitfalls", id="logreg-warning") %}
-Two issues bite in practice. **Sigmoid saturation:** when $|z|$ is large, $\sigma(z)$ is numerically indistinguishable from $0$ or $1$ and the naive BCE loss returns $\log 0 = -\infty$. The fix is to combine the sigmoid and the log into a single stable expression. For example, $\log \sigma(z) = -\log(1 + e^{-z})$ computed via `log1p` and a sign-aware branch, or the standard `binary_cross_entropy_with_logits` primitive that takes the linear score directly. **Linearly separable data:** when the two classes can be separated by a hyperplane, the MLE is unbounded. Pushing $\lVert \boldsymbol{\theta} \rVert \to \infty$ along the separating direction drives the loss to zero, the Hessian becomes singular at the limit, and IRLS diverges. The standard remedy is to add an $\ell\_{2}$ penalty $\frac{\lambda}{2} \lVert \boldsymbol{\theta} \rVert\_{2}^{2}$ to the cost (ridge, weight decay), which keeps the Hessian positive definite for any $\lambda > 0$.
+Two issues bite in practice. **Sigmoid saturation:** when $|z|$ is large, $\sigma(z)$ is numerically indistinguishable from $0$ or $1$ and the naive BCE loss returns $\log 0 = -\infty$. The fix is to combine the sigmoid and the log into a single stable expression. For example, $\log \sigma(z) = -\log(1 + e^{-z})$ computed via `log1p` and a sign-aware branch, or the standard `binary_cross_entropy_with_logits` primitive that takes the linear score directly. The single-line implementation that production frameworks use does not look anything like the BCE formula:
+
+```python
+def bce_with_logits(z, y):
+    return np.maximum(z, 0) - z * y + np.log1p(np.exp(-np.abs(z)))
+``` **Linearly separable data:** when the two classes can be separated by a hyperplane, the MLE is unbounded. Pushing $\lVert \boldsymbol{\theta} \rVert \to \infty$ along the separating direction drives the loss to zero, the Hessian becomes singular at the limit, and IRLS diverges. The standard remedy is to add an $\ell\_{2}$ penalty $\frac{\lambda}{2} \lVert \boldsymbol{\theta} \rVert\_{2}^{2}$ to the cost (ridge, weight decay), which keeps the Hessian positive definite for any $\lambda > 0$.
 {% end %}
 
 ## Regularisation
 
 Three issues motivate adding a penalty term to the BCE cost. On linearly separable data the MLE diverges along the separating direction. On high-dimensional data with many features but few samples, the unregularised model overfits its training set badly. And when features are correlated, the unregularised parameters have huge variance from one resampling of the data to the next, even though predictions barely change. All three are fixed by replacing the cost with a penalised version:
+
+<figure>
+<img src="separable_divergence.svg" alt="Two curves of the parameter norm vs iteration: the unregularised version grows without bound, the ridge-regularised version saturates.">
+<figcaption>On linearly separable data the unregularised MLE escapes to infinity; an $\ell_2$ penalty bounds the norm and keeps the optimum well-defined.</figcaption>
+</figure>
 
 {% equation(id="reg-cost") %}
 J_{\lambda}(\boldsymbol{\theta}) = J(\boldsymbol{\theta}) + \lambda\, R(\boldsymbol{\theta})
@@ -506,6 +540,11 @@ J_{\lambda}^{\mathrm{lasso}}(\boldsymbol{\theta}) = J(\boldsymbol{\theta}) + \la
 {% end %}
 
 Under MAP this is a zero-mean Laplace (double-exponential) prior on each coordinate of $\boldsymbol{\theta}$. Geometrically, the level sets of $\lVert \boldsymbol{\theta} \rVert_1$ are diamonds (cross-polytopes in higher dimensions) with sharp corners on every coordinate axis. When the BCE contours first meet such a diamond they almost always touch at a corner, where some coordinates of $\boldsymbol{\theta}$ are exactly zero. That is the geometric source of sparsity: corners attract the optimum, and the corners sit on the axes. Ridge has no corners, so it never produces exact zeros.
+
+<figure>
+<img src="reg_paths.svg" alt="Two side-by-side coefficient-path plots: ridge curves shrink smoothly toward zero, LASSO curves snap to exact zero one by one.">
+<figcaption>Ridge and LASSO paths on a logistic problem: ridge shrinks every coefficient smoothly, LASSO drives them to zero one at a time.</figcaption>
+</figure>
 
 The cost is non-differentiable at those kinks, so smooth solvers like IRLS and L-BFGS no longer apply directly. The standard alternatives are **proximal gradient methods** (ISTA and its accelerated variant FISTA), which take a gradient step on the smooth BCE part and then apply a soft-thresholding operator that shrinks each coordinate of $\boldsymbol{\theta}$ toward zero by $\eta \lambda$, zeroing out anything below that threshold. **Coordinate descent** is the other standard choice and is what `glmnet` uses: cycle through coordinates one at a time, updating each via the closed-form solution to the one-dimensional sub-problem. A patched L-BFGS variant called **OWL-QN** also handles $\ell_1$ by tracking the sub-gradient along each axis.
 

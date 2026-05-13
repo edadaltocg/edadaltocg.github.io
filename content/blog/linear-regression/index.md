@@ -26,6 +26,11 @@ f_\theta(x) = \theta_0 + \theta_1 x
 
 where $\theta_0$ is the intercept (or bias) and $\theta_1$ is the slope, so $\boldsymbol{\theta} = (\theta_0, \theta_1)$.
 
+<figure>
+<img src="ols_fit.svg" alt="Scatter of synthetic data with the best-fit line and residual segments drawn vertically.">
+<figcaption>The best-fit line minimises the sum of squared vertical residuals (grey segments).</figcaption>
+</figure>
+
 ### Maximum Likelihood Estimation
 
 For this task, we have collected a supervised dataset of input/output pairs denoted $\mathcal{D}\=\\{(x\_i, y\_i)\\}\_{i=1}^N$.
@@ -193,6 +198,11 @@ J(\theta_0, \theta_1) = \frac{1}{N} \overset{N}{\underset{i=1}{\sum}} (y_i - \th
 
 Since $J$ is a convex quadratic in $(\theta_0, \theta_1)$, it has a unique global minimum that we can find by setting the partial derivatives to zero.
 
+<figure>
+<img src="cost_landscape.svg" alt="Contour plot of the cost surface in the parameter plane with the optimum marked.">
+<figcaption>The MSE cost surface is a convex bowl in $(\theta_0, \theta_1)$ with a single minimum.</figcaption>
+</figure>
+
 **Partial derivative with respect to $\theta_0$:**
 
 {% equation(id="dJ-dtheta0") %}
@@ -300,7 +310,11 @@ Any matrix $\mathbf{X} \in \mathbb{R}^{N \times (D+1)}$ with full column rank ad
 \mathbf{X} = \mathbf{Q} \mathbf{R}
 {% end %}
 
-where $\mathbf{Q} \in \mathbb{R}^{N \times (D+1)}$ has orthonormal columns ($\mathbf{Q}^{\top} \mathbf{Q} = \mathbf{I}_{D+1}$) and $\mathbf{R} \in \mathbb{R}^{(D+1) \times (D+1)}$ is upper triangular and invertible. Substituting into the normal equations {{ eqref(id="normal-equations") }}:
+where $\mathbf{Q} \in \mathbb{R}^{N \times (D+1)}$ has orthonormal columns ($\mathbf{Q}^{\top} \mathbf{Q} = \mathbf{I}_{D+1}$) and $\mathbf{R} \in \mathbb{R}^{(D+1) \times (D+1)}$ is upper triangular and invertible.
+
+In code, the entire QR-based solver fits in three lines, and the design matrix $\mathbf{X}$ never has to be squared:
+
+{{ include_code(path="content/blog/linear-regression/plots.py", syntax="python", start=12, end=16) }} Substituting into the normal equations {{ eqref(id="normal-equations") }}:
 
 {% equation(id="qr-normal") %}
 \begin{aligned}
@@ -443,6 +457,11 @@ This is more than QR (the same $O(N D^2)$ leading term plus an extra $O(D^3)$ fo
 
 The closed-form solution {{ eqref(id="normal-solution") }} is unbiased and minimises the training MSE exactly, but it has two failure modes that show up the moment we leave the textbook setting.
 
+<figure>
+<img src="outlier_sensitivity.svg" alt="Two OLS fits, one on clean data and one with a single outlier added, showing the line tilting noticeably toward the outlier.">
+<figcaption>A single outlier can drag the OLS line by a substantial amount: the squared loss penalises it heavily.</figcaption>
+</figure>
+
 The first is multicollinearity. When two or more features are nearly linear combinations of one another, $\mathbf{X}^{\top} \mathbf{X}$ becomes nearly singular. The condition number explodes, the entries of $(\mathbf{X}^{\top} \mathbf{X})^{-1}$ blow up, and the optimal coefficients $\hat{\boldsymbol{\theta}}^{\ast}$ swing wildly in response to tiny changes in $\mathbf{y}$. Two features that are individually informative might receive a huge positive weight and a huge negative weight that nearly cancel: the model fits the training data, but generalises poorly and is impossible to interpret.
 
 The second is overfitting in high dimensions. When $D$ is comparable to or larger than $N$, the design matrix has full row rank but not full column rank, so infinitely many parameter vectors achieve zero training error. Without further information the optimiser picks one of them, and that choice is dictated by noise rather than signal. The model memorises the training set and fails on new inputs.
@@ -497,6 +516,11 @@ To see what ridge does geometrically, substitute the SVD $\mathbf{X} = \mathbf{U
 
 Compare this to the unregularised pseudoinverse solution {{ eqref(id="svd-solution") }}, which uses the diagonal entries $1/\sigma\_i$. Ridge replaces $1/\sigma\_i$ with $\sigma\_i / (\sigma\_i^2 + N\lambda)$. For large singular values $\sigma\_i \gg \sqrt{N\lambda}$ the two factors are nearly identical, ie, well-determined directions are barely touched. For small singular values $\sigma\_i \ll \sqrt{N\lambda}$, ridge replaces a numerically explosive $1/\sigma\_i$ with the gentle factor $\sigma\_i / (N\lambda)$, ie, poorly-determined directions are smoothly damped towards zero. Ridge is, in this sense, a continuous version of the truncated SVD discussed earlier.
 
+<figure>
+<img src="ridge_filter.svg" alt="Filter factor curves showing the explosive 1/sigma of OLS versus the bounded sigma/(sigma^2 + N lambda) of ridge for several penalty strengths.">
+<figcaption>Ridge replaces the explosive $1/\sigma$ of OLS with a bounded curve, gently damping the noisy small-singular-value directions.</figcaption>
+</figure>
+
 {% mathblock(kind="proposition", name="Ridge shrinks but never zeroes", id="ridge-shrinks") %}
 For any finite $\lambda > 0$ and any index $i$ with $\sigma\_i > 0$, the corresponding ridge coefficient in the rotated basis $\mathbf{V}^{\top} \boldsymbol{\theta}$ is strictly between zero and the unregularised value. No coefficient is exactly zero unless the data forces it.
 {% end %}
@@ -529,10 +553,24 @@ When the columns of $\mathbf{X}$ are orthonormal, the LASSO decouples coordinate
 
 where $(z)\_+ = \max(z, 0)$ and $\hat{\theta}\_j^{\,\text{ols}}$ is the unregularised coefficient. Each coefficient is shrunk towards zero by exactly $\lambda$, and any coefficient whose unregularised magnitude is smaller than $\lambda$ is set to zero exactly. Compare this with ridge in the same orthonormal setting, which scales every coefficient by $1/(1+\lambda)$ and never zeroes anything.
 
+In code, the soft-thresholding operator is a one-liner that the formula above only hints at:
+
+{{ include_code(path="content/blog/linear-regression/plots.py", syntax="python", start=18, end=21) }}
+
 The general (non-orthonormal) case is solved iteratively. The two dominant approaches are _coordinate descent_, which cycles through the parameters and applies soft-thresholding to one at a time while holding the others fixed, and _proximal gradient methods_ such as ISTA and FISTA, which alternate a gradient step on the smooth quadratic part with a soft-thresholding step on the $\ell\_1$ part. Both converge to the global minimum because the cost is convex.
+
+<figure>
+<img src="regularisation_balls.svg" alt="Side-by-side: a circular ridge ball with the optimum touching off-axis, and a diamond-shaped LASSO ball with the optimum touching at a corner where one coordinate is zero.">
+<figcaption>The L1 ball has corners on the axes; the L2 ball does not. Generically the loss ellipses first touch a corner, so LASSO produces sparse solutions.</figcaption>
+</figure>
 
 {% mathblock(kind="note", name="Why the L1 penalty produces sparsity", id="lasso-geometry") %}
 The geometric explanation is the shape of the unit ball. The constraint region $\\{\boldsymbol{\theta} : \lVert \boldsymbol{\theta} \rVert\_1 \leq t\\}$ is a hyper-octahedron with corners on the coordinate axes, where multiple coefficients vanish simultaneously. The level sets of the residual sum of squares are ellipsoids, and the optimum sits where the smallest such ellipsoid first touches the constraint region. Generically that contact happens at a corner, so the solution has many zero coefficients. The ridge ball $\\{\boldsymbol{\theta} : \lVert \boldsymbol{\theta} \rVert\_2 \leq t\\}$ is a smooth sphere with no corners, so the contact point almost never lies on a coordinate axis.
 {% end %}
+
+<figure>
+<img src="coef_paths.svg" alt="Coefficient paths against log lambda: ridge curves shrink smoothly and never reach zero, LASSO curves drop to exact zero at finite lambda.">
+<figcaption>Ridge shrinks every coefficient smoothly toward zero; LASSO snaps individual coefficients to exact zero as $\lambda$ grows.</figcaption>
+</figure>
 
 This sparsity makes the LASSO double as a feature-selection procedure: fitting a single model produces both the coefficients and an automatic shortlist of relevant variables. The cost is that the resulting estimator is biased in a way ridge is not (large coefficients are still shrunk by $\lambda$ even when the data strongly supports them), and that the selected support can be unstable when features are highly correlated. A common remedy is the _elastic net_, named after a fishing net that stretches between two extremes: it uses the convex combination $\alpha\, \lVert \boldsymbol{\theta} \rVert\_1 + (1-\alpha)\, \lVert \boldsymbol{\theta} \rVert\_2^2$ to inherit the sparsity of LASSO while retaining the grouping behaviour of ridge.
