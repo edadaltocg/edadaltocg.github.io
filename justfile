@@ -41,3 +41,6 @@ optimize_media:
 
 lint:
   pre-commit run --all-files --verbose
+
+check-refs:
+  uv run check_refs.py
