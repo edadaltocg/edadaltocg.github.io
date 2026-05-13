@@ -524,3 +524,46 @@ input.sidenote-toggle {
 .eq-number:hover {
   color: var(--accent);
 }
+
+/* Numbered table of contents: 1, 1.1, 1.1.1 */
+.toc {
+  counter-reset: toc-section;
+  list-style: none;
+  padding-left: 0;
+}
+
+.toc ol {
+  list-style: none;
+  padding-left: 1.5em;
+}
+
+.toc li {
+  list-style: none;
+}
+
+.toc > li {
+  counter-increment: toc-section;
+  counter-reset: toc-subsection;
+}
+
+.toc > li::before {
+  content: counter(toc-section) ". ";
+  font-weight: bold;
+}
+
+.toc > li > ol > li {
+  counter-increment: toc-subsection;
+  counter-reset: toc-subsubsection;
+}
+
+.toc > li > ol > li::before {
+  content: counter(toc-section) "." counter(toc-subsection) " ";
+}
+
+.toc > li > ol > li > ol > li {
+  counter-increment: toc-subsubsection;
+}
+
+.toc > li > ol > li > ol > li::before {
+  content: counter(toc-section) "." counter(toc-subsection) "." counter(toc-subsubsection) " ";
+}

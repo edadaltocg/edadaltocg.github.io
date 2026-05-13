@@ -34,7 +34,7 @@
 
 {% if page.toc %}
     <h3>{{ trans(key="toc") }}</h3>
-    <ol>
+    <ol class="toc">
     {% for h2 in page.toc %}
         <li>
             <a href="{{ h2.permalink | safe }}">{{ h2.title }}</a>
