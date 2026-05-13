@@ -530,6 +530,19 @@ input.sidenote-toggle {
   display: flex;
   align-items: center;
   position: relative;
+  /* Cap to viewport. Flex children default to min-width: auto, which
+     refuses to shrink below their content's natural width. Without these
+     two declarations, a wide KaTeX display equation drags the .equation
+     container past the right margin on mobile and the inner
+     overflow-x: auto on .katex-display never triggers. */
+  max-width: 100%;
+  min-width: 0;
+}
+
+.equation > .katex-display {
+  min-width: 0;
+  max-width: 100%;
+  flex: 1 1 auto;
 }
 
 .eq-number {
