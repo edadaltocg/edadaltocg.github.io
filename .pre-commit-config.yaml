@@ -22,7 +22,7 @@ repos:
       - id: taplo
         name: taplo fmt
         language: system
-        entry: taplo fmt
+        entry: bash -c 'command -v taplo >/dev/null 2>&1 && taplo fmt "$@" || echo "taplo not installed; skipping"' --
         types: [toml]
 
       - id: bibtex-tidy

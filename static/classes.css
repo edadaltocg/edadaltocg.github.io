@@ -393,6 +393,10 @@ input.sidenote-toggle {
   margin-right: 0.3em;
 }
 
+.sidenote code {
+  font-size: 0.85em;
+}
+
 /* Wide screens: always visible in the margin */
 @media (min-width: 1101px) {
   label.sidenote-number {
@@ -499,6 +503,24 @@ input.sidenote-toggle {
 
 .mathblock-proof .mathblock-label::after {
   content: "Proof";
+}
+
+.mathblock-note {
+  --mathblock-color: #ef6c00;
+  --mathblock-bg: rgba(239, 108, 0, 0.08);
+}
+
+.mathblock-note .mathblock-label::after {
+  content: "Note";
+}
+
+.mathblock-warning {
+  --mathblock-color: #c62828;
+  --mathblock-bg: rgba(198, 40, 40, 0.08);
+}
+
+.mathblock-warning .mathblock-label::after {
+  content: "Warning";
 }
 
 /* --- Numbered equations --- */

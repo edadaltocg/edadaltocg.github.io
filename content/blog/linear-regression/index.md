@@ -21,7 +21,7 @@ Our goal is then finding the parameters of the best possible linear model that r
 A linear model in $x$ takes the form:
 
 {% equation(id="linear-model") %}
-f\_\theta(x) = \theta_0 + \theta_1 x
+f_\theta(x) = \theta_0 + \theta_1 x
 {% end %}
 
 where $\theta_0$ is the intercept (or bias) and $\theta_1$ is the slope, so $\boldsymbol{\theta} = (\theta_0, \theta_1)$.
@@ -37,7 +37,7 @@ Hence, let's pick the model parameters $\theta$ so that they maximise the joint 
 This is the maximum likelihood{% sidenote(id="likelihood") %}The expression $Pr(y \mid x)$ can represent either a probability or a likelihood depending on which argument is considered free: it is a probability when viewed as a function of $y$ with $x$ fixed, and a likelihood when viewed as a function of the model parameters with $y$ fixed.{% end %} principle:
 
 {% equation(id="mle-joint") %}
-\hat{\theta}^{\ast} = \argmax\_\theta \Big[ Pr\big(y_1, y_2, \ldots, y_N \mid x_1, x_2, \ldots, x_N, \theta\big)\Big]
+\hat{\theta}^{\ast} = \argmax_\theta \Big[ Pr\big(y_1, y_2, \ldots, y_N \mid x_1, x_2, \ldots, x_N, \theta\big)\Big]
 {% end %}
 
 You might look into this equation and have no clue how to solve it. And you are right, without further assumptions this joint distribution is intractable. Luckily, we can make one assumption that will simplify our lives a lot.
@@ -56,7 +56,7 @@ Pr\big(y_1, \ldots, y_N \mid x_1, \ldots, x_N, \theta\big) = \overset{N}{\unders
 Substituting back into our objective, we arrive at
 
 {% equation(id="mle") %}
-\hat{\theta}^{\ast} = \argmax*{\theta} \Bigg[\overset{N}{\underset{i=1}{\Pi}} Pr\big(y_i | f*{\theta}(x_i)\big)\Bigg]
+\hat{\theta}^{\ast} = \argmax_{\theta} \Bigg[\overset{N}{\underset{i=1}{\Pi}} Pr\big(y_i | f_{\theta}(x_i)\big)\Bigg]
 {% end %}
 
 ### The Log-Likelihood
@@ -69,8 +69,8 @@ By applying it to {{ eqref(id="mle") }}, we obtain:{% sidenote(id="log-product")
 
 {% equation(id="mll") %}
 \begin{aligned}
-\hat{\theta}^{\ast} &= \argmax*{\theta} \log \Bigg[\overset{N}{\underset{i=1}{\Pi}} Pr\big(y_i | f*{\theta}(x*i)\big)\Bigg] \\
-&= \argmax*{\theta} \Bigg[\overset{N}{\underset{i=1}{\sum}} \log Pr\big(y_i | f_{\theta}(x_i)\big)\Bigg]
+\hat{\theta}^{\ast} &= \argmax_{\theta} \log \Bigg[\overset{N}{\underset{i=1}{\Pi}} Pr\big(y_i | f_{\theta}(x_i)\big)\Bigg] \\
+&= \argmax_{\theta} \Bigg[\overset{N}{\underset{i=1}{\sum}} \log Pr\big(y_i | f_{\theta}(x_i)\big)\Bigg]
 \end{aligned}
 {% end %}
 
@@ -79,7 +79,7 @@ This is called the maximum log-likelihood criterion. Unlike the product of proba
 In machine learning, by convention, learning problems are formulated as a minimisation of a loss function. To convert our maximisation into a minimisation, it suffices to multiply the objective by $-1$ and change $\argmax$ to $\argmin$:
 
 {% equation(id="nll") %}
-\hat{\theta}^{\ast} = \argmin*{\theta} \Bigg[-\overset{N}{\underset{i=1}{\sum}} \log Pr\big(y_i | f*{\theta}(x_i)\big)\Bigg]
+\hat{\theta}^{\ast} = \argmin_{\theta} \Bigg[-\overset{N}{\underset{i=1}{\sum}} \log Pr\big(y_i | f_{\theta}(x_i)\big)\Bigg]
 {% end %}
 
 This is known as the negative log-likelihood (NLL) loss.
@@ -91,23 +91,23 @@ Consider the univariate normal distribution. It has support $y \in \mathbb{R}$ a
 We can rewrite $Pr(y_i \mid x_i, \phi)$ as:
 
 {% equation(id="gaussian-pdf") %}
-Pr(y*i \mid x_i, \phi) = \mathcal{N}(y_i \mid f*{\theta}(x*i), \sigma^2) = \frac{1}{\sqrt{2\pi\sigma^2}} \exp\left(-\frac{(y_i - f*{\theta}(x_i))^2}{2\sigma^2}\right)
+Pr(y_i \mid x_i, \phi) = \mathcal{N}(y_i \mid f_{\theta}(x_i), \sigma^2) = \frac{1}{\sqrt{2\pi\sigma^2}} \exp\left(-\frac{(y_i - f_{\theta}(x_i))^2}{2\sigma^2}\right)
 {% end %}
 
 In this simplified version, we let the model predict the mean $\mu_i = f_{\theta}(x_i)$ and treat $\sigma^2$ as a fixed constant. Substituting {{ eqref(id="gaussian-pdf") }} into the NLL objective {{ eqref(id="nll") }}:
 
 {% equation(id="nll-gaussian") %}
 \begin{aligned}
-\hat{\theta}^{\ast} &= \argmin*{\theta} \Bigg[-\overset{N}{\underset{i=1}{\sum}} \log \frac{1}{\sqrt{2\pi\sigma^2}} \exp\left(-\frac{(y_i - f*{\theta}(x*i))^2}{2\sigma^2}\right)\Bigg] \\
-&= \argmin*{\theta} \Bigg[-\overset{N}{\underset{i=1}{\sum}} \left(-\frac{1}{2}\log(2\pi\sigma^2) - \frac{(y_i - f_{\theta}(x_i))^2}{2\sigma^2}\right)\Bigg] \\
-&= \argmin*{\theta} \Bigg[\overset{N}{\underset{i=1}{\sum}} \frac{(y_i - f*{\theta}(x_i))^2}{2\sigma^2} + \frac{N}{2}\log(2\pi\sigma^2)\Bigg]
+\hat{\theta}^{\ast} &= \argmin_{\theta} \Bigg[-\overset{N}{\underset{i=1}{\sum}} \log \frac{1}{\sqrt{2\pi\sigma^2}} \exp\left(-\frac{(y_i - f_{\theta}(x_i))^2}{2\sigma^2}\right)\Bigg] \\
+&= \argmin_{\theta} \Bigg[-\overset{N}{\underset{i=1}{\sum}} \left(-\frac{1}{2}\log(2\pi\sigma^2) - \frac{(y_i - f_{\theta}(x_i))^2}{2\sigma^2}\right)\Bigg] \\
+&= \argmin_{\theta} \Bigg[\overset{N}{\underset{i=1}{\sum}} \frac{(y_i - f_{\theta}(x_i))^2}{2\sigma^2} + \frac{N}{2}\log(2\pi\sigma^2)\Bigg]
 \end{aligned}
 {% end %}
 
 Since $\sigma^2$ is constant with respect to $\theta$, both $\frac{1}{2\sigma^2}$ and $\frac{N}{2}\log(2\pi\sigma^2)$ are constants that do not affect the $\argmin$. We can drop them:
 
 {% equation(id="mse") %}
-\hat{\theta}^{\ast} = \argmin*{\theta} \Bigg[\overset{N}{\underset{i=1}{\sum}} (y_i - f*{\theta}(x_i))^2\Bigg]
+\hat{\theta}^{\ast} = \argmin_{\theta} \Bigg[\overset{N}{\underset{i=1}{\sum}} (y_i - f_{\theta}(x_i))^2\Bigg]
 {% end %}
 
 This is the mean squared error (MSE) criterion.{% sidenote(id="mse-note") %}Strictly speaking, the MSE divides by $N$: $\frac{1}{N}\sum_i (y_i - f_{\theta}(x_i))^2$. Since $N$ is a constant, it does not change the $\argmin$.{% end %}
@@ -156,7 +156,7 @@ A cost function $J(\theta)$ is the average loss over the training data: $J(\thet
 We can now dissect {{ eqref(id="mse") }} into these two components. The individual loss is the squared error $\ell(y_i, \hat{y}_i) = (y_i - \hat{y}_i)^2$, and the cost function is its average over the training set:
 
 {% equation(id="mse-cost") %}
-\hat{\theta}^{\ast} = \argmin*{\theta} J(\theta) = \argmin*{\theta} \frac{1}{N} \overset{N}{\underset{i=1}{\sum}} (y*i - f*{\theta}(x_i))^2
+\hat{\theta}^{\ast} = \argmin_{\theta} J(\theta) = \argmin_{\theta} \frac{1}{N} \overset{N}{\underset{i=1}{\sum}} (y_i - f_{\theta}(x_i))^2
 {% end %}
 
 ### Point Estimation
@@ -166,7 +166,7 @@ At inference time, however, we want a single best prediction given the inputs. T
 A natural choice is the mode of the predicted distribution, i.e., the value of $y$ that maximizes the likelihood:
 
 {% equation(id="point-estimate") %}
-\hat{y} = \argmax*{y} Pr\!\left(y \mid f*{\hat{\theta}^{\ast}}(x), \sigma^2\right)
+\hat{y} = \argmax_{y} Pr\!\left(y \mid f_{\hat{\theta}^{\ast}}(x), \sigma^2\right)
 {% end %}
 
 For the normal distribution, the mode coincides with the mean $\mu$. Therefore $\hat{y} = f_{\hat{\theta}^*}(x)$, and the model's output can be used directly as the point estimate.
@@ -235,7 +235,7 @@ The numerator is the sample covariance between $x$ and $y$ (up to a factor of $N
 We now generalise to a vector input $\mathbf{x} \in \mathbb{R}^D$, while keeping the output $y \in \mathbb{R}$ scalar. To keep the algebra clean, we absorb the bias term by augmenting each input with a leading $1$, so that $\tilde{\mathbf{x}} = (1, x_{1}, \ldots, x_{D})^{\top} \in \mathbb{R}^{D+1}$ and $\boldsymbol{\theta} = (\theta_{0}, \theta_{1}, \ldots, \theta_{D})^{\top} \in \mathbb{R}^{D+1}$. The model is then a single inner product:
 
 {% equation(id="linear-model-multi") %}
-f*{\boldsymbol{\theta}}(\mathbf{x}) = \theta*{0} + \theta*{1} x*{1} + \cdots + \theta*{D} x*{D} = \boldsymbol{\theta}^{\top} \tilde{\mathbf{x}}
+f_{\boldsymbol{\theta}}(\mathbf{x}) = \theta_{0} + \theta_{1} x_{1} + \cdots + \theta_{D} x_{D} = \boldsymbol{\theta}^{\top} \tilde{\mathbf{x}}
 {% end %}
 
 ### Matrix Form of the Cost Function
@@ -243,13 +243,13 @@ f*{\boldsymbol{\theta}}(\mathbf{x}) = \theta*{0} + \theta*{1} x*{1} + \cdots + \
 The probabilistic story from the univariate case carries over unchanged: under the i.i.d. Gaussian assumption with the model predicting the mean, the NLL again reduces to a sum of squared errors. What changes is only the form of $f_{\boldsymbol{\theta}}$. Stacking the $N$ augmented training inputs row-wise into the _design matrix_ $\mathbf{X} \in \mathbb{R}^{N \times (D+1)}$ and the outputs into $\mathbf{y} \in \mathbb{R}^{N}$:
 
 {% equation(id="design-matrix") %}
-\mathbf{X} = \begin{bmatrix} 1 & x*{1,1} & \cdots & x*{1,D} \\ 1 & x*{2,1} & \cdots & x*{2,D} \\ \vdots & \vdots & \ddots & \vdots \\ 1 & x*{N,1} & \cdots & x*{N,D} \end{bmatrix}, \qquad \mathbf{y} = \begin{bmatrix} y*{1} \\ y*{2} \\ \vdots \\ y\_{N} \end{bmatrix}
+\mathbf{X} = \begin{bmatrix} 1 & x_{1,1} & \cdots & x_{1,D} \\ 1 & x_{2,1} & \cdots & x_{2,D} \\ \vdots & \vdots & \ddots & \vdots \\ 1 & x_{N,1} & \cdots & x_{N,D} \end{bmatrix}, \qquad \mathbf{y} = \begin{bmatrix} y_{1} \\ y_{2} \\ \vdots \\ y_{N} \end{bmatrix}
 {% end %}
 
 the vector of predictions is $\mathbf{X}\boldsymbol{\theta}$ and the vector of residuals is $\mathbf{y} - \mathbf{X}\boldsymbol{\theta}$. The cost function is the squared $\ell_{2}$ norm of the residual:
 
 {% equation(id="cost-multi") %}
-J(\boldsymbol{\theta}) = \frac{1}{N} \lVert \mathbf{y} - \mathbf{X}\boldsymbol{\theta} \rVert\_{2}^{2} = \frac{1}{N} (\mathbf{y} - \mathbf{X}\boldsymbol{\theta})^{\top} (\mathbf{y} - \mathbf{X}\boldsymbol{\theta})
+J(\boldsymbol{\theta}) = \frac{1}{N} \lVert \mathbf{y} - \mathbf{X}\boldsymbol{\theta} \rVert_{2}^{2} = \frac{1}{N} (\mathbf{y} - \mathbf{X}\boldsymbol{\theta})^{\top} (\mathbf{y} - \mathbf{X}\boldsymbol{\theta})
 {% end %}
 
 ### The Normal Equations
@@ -263,7 +263,7 @@ N \cdot J(\boldsymbol{\theta}) = \mathbf{y}^{\top} \mathbf{y} - 2\, \boldsymbol{
 Taking the gradient with respect to $\boldsymbol{\theta}$ and setting it to zero:{% sidenote(id="matrix-calc") %}We use the identities $\nabla_{\boldsymbol{\theta}} (\boldsymbol{\theta}^{\top} \mathbf{a}) = \mathbf{a}$ and $\nabla_{\boldsymbol{\theta}} (\boldsymbol{\theta}^{\top} \mathbf{A} \boldsymbol{\theta}) = (\mathbf{A} + \mathbf{A}^{\top}) \boldsymbol{\theta}$, which equals $2 \mathbf{A} \boldsymbol{\theta}$ when $\mathbf{A}$ is symmetric.{% end %}
 
 {% equation(id="gradient-zero") %}
-\nabla\_{\boldsymbol{\theta}} J = \frac{2}{N} \left( \mathbf{X}^{\top} \mathbf{X}\, \boldsymbol{\theta} - \mathbf{X}^{\top} \mathbf{y} \right) = \mathbf{0}
+\nabla_{\boldsymbol{\theta}} J = \frac{2}{N} \left( \mathbf{X}^{\top} \mathbf{X}\, \boldsymbol{\theta} - \mathbf{X}^{\top} \mathbf{y} \right) = \mathbf{0}
 {% end %}
 
 Rearranging gives the _normal equations_:
@@ -272,7 +272,7 @@ Rearranging gives the _normal equations_:
 \mathbf{X}^{\top} \mathbf{X}\, \boldsymbol{\theta} = \mathbf{X}^{\top} \mathbf{y}
 {% end %}
 
-When $\mathbf{X}^{\top} \mathbf{X} \in \mathbb{R}^{(D+1) \times (D+1)}$ is invertible (which requires $\mathbf{X}$ to have full column rank,{% sidenote(id="rank") %}The _rank_ of a matrix $\mathbf{A} \in \mathbb{R}^{m \times n}$ is the dimension of the vector space spanned by its columns — equivalently, the maximum number of linearly independent columns (or rows; the row rank and column rank always agree). It satisfies $\mathrm{rank}(\mathbf{A}) \leq \min(m, n)$. We say $\mathbf{A}$ has _full column rank_ when $\mathrm{rank}(\mathbf{A}) = n$, meaning no column can be written as a linear combination of the others. For the design matrix $\mathbf{X}$, full column rank requires $N \geq D+1$ (more samples than parameters) _and_ that no feature is a linear combination of the others. Perfectly collinear features — e.g., including both temperature in Celsius and Fahrenheit — drop the rank and make $\mathbf{X}^{\top} \mathbf{X}$ singular.{% end %} i.e., $N \geq D+1$ and the features to be linearly independent), we can solve in closed form:
+When $\mathbf{X}^{\top} \mathbf{X} \in \mathbb{R}^{(D+1) \times (D+1)}$ is invertible (which requires $\mathbf{X}$ to have full column rank,{% sidenote(id="rank") %}The _rank_ of a matrix $\mathbf{A} \in \mathbb{R}^{m \times n}$ is the dimension of the vector space spanned by its columns. Equivalently, the maximum number of linearly independent columns (or rows; the row rank and column rank always agree). It satisfies $\mathrm{rank}(\mathbf{A}) \leq \min(m, n)$. We say $\mathbf{A}$ has _full column rank_ when $\mathrm{rank}(\mathbf{A}) = n$, meaning no column can be written as a linear combination of the others. For the design matrix $\mathbf{X}$, full column rank requires $N \geq D+1$ (more samples than parameters) _and_ that no feature is a linear combination of the others. Perfectly collinear features (e.g., including both temperature in Celsius and Fahrenheit) drop the rank and make $\mathbf{X}^{\top} \mathbf{X}$ singular.{% end %} i.e., $N \geq D+1$ and the features to be linearly independent), we can solve in closed form:
 
 {% equation(id="normal-solution") %}
 \hat{\boldsymbol{\theta}}^{\ast} = (\mathbf{X}^{\top} \mathbf{X})^{-1} \mathbf{X}^{\top} \mathbf{y}
@@ -316,7 +316,7 @@ Since $\mathbf{R}^{\top}$ is invertible, we can left-multiply by $(\mathbf{R}^{\
 \mathbf{R}\, \boldsymbol{\theta} = \mathbf{Q}^{\top} \mathbf{y}
 {% end %}
 
-This avoids forming $\mathbf{X}^{\top} \mathbf{X}$ entirely. The condition number{% sidenote(id="condition-number") %}The _condition number_ of a matrix $\mathbf{A}$ measures how much the solution of $\mathbf{A}\mathbf{z} = \mathbf{b}$ can change in response to small perturbations in $\mathbf{b}$. For an invertible square matrix, $\kappa(\mathbf{A}) = \lVert \mathbf{A} \rVert\, \lVert \mathbf{A}^{-1} \rVert$, and using the spectral ($\ell_{2}$) norm this equals $\sigma_{\max}(\mathbf{A}) / \sigma_{\min}(\mathbf{A})$, the ratio of largest to smallest singular value. A value near $1$ is _well-conditioned_; values $\gg 1$ are _ill-conditioned_ and amplify numerical error: roughly $\log_{10} \kappa$ digits of accuracy are lost in floating-point arithmetic. Forming the Gram matrix $\mathbf{X}^{\top} \mathbf{X}$ squares the singular values, hence squares the condition number — which is why factorising $\mathbf{X}$ directly is preferred.{% end %} of the system is $\kappa(\mathbf{R}) = \kappa(\mathbf{X})$, not $\kappa(\mathbf{X})^{2}$.
+This avoids forming $\mathbf{X}^{\top} \mathbf{X}$ entirely. The condition number{% sidenote(id="condition-number") %}The _condition number_ of a matrix $\mathbf{A}$ measures how much the solution of $\mathbf{A}\mathbf{z} = \mathbf{b}$ can change in response to small perturbations in $\mathbf{b}$. For an invertible square matrix, $\kappa(\mathbf{A}) = \lVert \mathbf{A} \rVert\, \lVert \mathbf{A}^{-1} \rVert$, and using the spectral ($\ell_{2}$) norm this equals $\sigma_{\max}(\mathbf{A}) / \sigma_{\min}(\mathbf{A})$, the ratio of largest to smallest singular value. A value near $1$ is _well-conditioned_; values $\gg 1$ are _ill-conditioned_ and amplify numerical error: roughly $\log_{10} \kappa$ digits of accuracy are lost in floating-point arithmetic. Forming the Gram matrix $\mathbf{X}^{\top} \mathbf{X}$ squares the singular values, hence squares the condition number, which is why factorising $\mathbf{X}$ directly is preferred.{% end %} of the system is $\kappa(\mathbf{R}) = \kappa(\mathbf{X})$, not $\kappa(\mathbf{X})^{2}$.
 
 #### Computing Q and R: Gram-Schmidt
 
@@ -326,7 +326,7 @@ Let $\langle \mathbf{a}, \mathbf{b} \rangle = \mathbf{a}^{\top} \mathbf{b}$ deno
 
 {% equation(id="gram-schmidt") %}
 \begin{aligned}
-\mathbf{u}_{j} &= \mathbf{x}_{j} - \sum*{k=1}^{j-1} \langle \mathbf{q}*{k}, \mathbf{x}_{j} \rangle\, \mathbf{q}_{k}, \\
+\mathbf{u}_{j} &= \mathbf{x}_{j} - \sum_{k=1}^{j-1} \langle \mathbf{q}_{k}, \mathbf{x}_{j} \rangle\, \mathbf{q}_{k}, \\
 \mathbf{q}_{j} &= \frac{\mathbf{u}_{j}}{\lVert \mathbf{u}_{j} \rVert_{2}}.
 \end{aligned}
 {% end %}
@@ -336,16 +336,22 @@ The vector $\mathbf{u}\_{j}$ is the residual of $\mathbf{x}\_{j}$ after subtract
 The entries of $\mathbf{R}$ fall out as a side effect. Reading {{ eqref(id="gram-schmidt") }} backwards:
 
 {% equation(id="x-decomposition") %}
-\mathbf{x}_{j} = \mathbf{u}_{j} + \sum*{k=1}^{j-1} \langle \mathbf{q}*{k}, \mathbf{x}_{j} \rangle\, \mathbf{q}_{k} = \lVert \mathbf{u}_{j} \rVert_{2}\, \mathbf{q}_{j} + \sum_{k=1}^{j-1} \langle \mathbf{q}_{k}, \mathbf{x}_{j} \rangle\, \mathbf{q}\_{k}
+\mathbf{x}_{j} = \mathbf{u}_{j} + \sum_{k=1}^{j-1} \langle \mathbf{q}_{k}, \mathbf{x}_{j} \rangle\, \mathbf{q}_{k} = \lVert \mathbf{u}_{j} \rVert_{2}\, \mathbf{q}_{j} + \sum_{k=1}^{j-1} \langle \mathbf{q}_{k}, \mathbf{x}_{j} \rangle\, \mathbf{q}_{k}
 {% end %}
 
 which gives:
 
 {% equation(id="r-entries") %}
-R*{k,j} = \begin{cases} \langle \mathbf{q}*{k}, \mathbf{x}_{j} \rangle & \text{if } k < j \\ \lVert \mathbf{u}_{j} \rVert\_{2} & \text{if } k = j \\ 0 & \text{if } k > j \end{cases}
+R_{k,j} = \begin{cases} \langle \mathbf{q}_{k}, \mathbf{x}_{j} \rangle & \text{if } k < j \\ \lVert \mathbf{u}_{j} \rVert_{2} & \text{if } k = j \\ 0 & \text{if } k > j \end{cases}
 {% end %}
 
-The zeros below the diagonal are exactly what makes $\mathbf{R}$ upper triangular: $\mathbf{q}_{k}$ for $k > j$ does not yet exist when we process column $j$, so it cannot contribute. The full algorithm costs $O(N D^{2})$.
+The zeros below the diagonal are exactly what makes $\mathbf{R}$ upper triangular: $\mathbf{q}_{k}$ for $k > j$ does not yet exist when we process column $j$, so it cannot contribute.
+
+{% mathblock(kind="note", name="Cost of Gram-Schmidt QR", id="qr-cost") %}
+Total time is $O(N D^{2})$ and memory is $O(N D)$. For time: each of the $D+1$ columns is orthogonalised against the previously processed columns. Each orthogonalisation step is one inner product $\langle \mathbf{q}\_k, \mathbf{x}\_j \rangle$ at $O(N)$ flops plus one vector subtraction $\mathbf{u} \mathrel{-}= \langle \mathbf{q}\_k, \mathbf{x}\_j \rangle\, \mathbf{q}\_k$ at another $O(N)$, giving $O(N j)$ work for column $j$. Summing across columns yields $\sum\_{j=0}^{D} O(N j) = O(N D^{2})$. Normalisation contributes a further $O(N)$ per column, absorbed into the lower-order terms.
+
+For memory, we hold $\mathbf{X}$ ($N(D+1)$ entries), $\mathbf{Q}$ (same shape), and $\mathbf{R}$ ($(D+1)^2$ entries, half of which are zero by the upper-triangular structure). The $N(D+1)$ term dominates whenever $N > D$, giving $O(N D)$. Each individual orthogonalisation step needs only $O(N)$ scratch space.
+{% end %}
 
 {% mathblock(kind="warning", name="Numerical instability", id="gram-schmidt-warning") %}
 Classical Gram-Schmidt as written above loses orthogonality catastrophically in finite precision when the columns of $\mathbf{X}$ are nearly linearly dependent. The _modified Gram-Schmidt_ variant, which subtracts each projection one at a time and updates the working vector in place, is markedly more stable. Production solvers (LAPACK's `geqrf`, NumPy's `np.linalg.qr`) use _Householder reflections_ instead: a sequence of orthogonal transformations $\mathbf{H}\_{j} = \mathbf{I} - 2 \mathbf{v}\_{j} \mathbf{v}\_{j}^{\top}$ chosen to zero out everything below the diagonal of column $j$. Householder QR is backward-stable and is the default for any serious least-squares computation.
@@ -356,16 +362,22 @@ Classical Gram-Schmidt as written above loses orthogonality catastrophically in 
 Let $\mathbf{c} = \mathbf{Q}^{\top} \mathbf{y} \in \mathbb{R}^{D+1}$. Because $\mathbf{R}$ is upper triangular, the system $\mathbf{R}\, \boldsymbol{\theta} = \mathbf{c}$ written out is:
 
 {% equation(id="back-sub-system") %}
-\begin{bmatrix} R*{0,0} & R*{0,1} & \cdots & R*{0,D} \\ 0 & R*{1,1} & \cdots & R*{1,D} \\ \vdots & & \ddots & \vdots \\ 0 & 0 & \cdots & R*{D,D} \end{bmatrix} \begin{bmatrix} \theta*{0} \\ \theta*{1} \\ \vdots \\ \theta*{D} \end{bmatrix} = \begin{bmatrix} c*{0} \\ c*{1} \\ \vdots \\ c*{D} \end{bmatrix}
+\begin{bmatrix} R_{0,0} & R_{0,1} & \cdots & R_{0,D} \\ 0 & R_{1,1} & \cdots & R_{1,D} \\ \vdots & & \ddots & \vdots \\ 0 & 0 & \cdots & R_{D,D} \end{bmatrix} \begin{bmatrix} \theta_{0} \\ \theta_{1} \\ \vdots \\ \theta_{D} \end{bmatrix} = \begin{bmatrix} c_{0} \\ c_{1} \\ \vdots \\ c_{D} \end{bmatrix}
 {% end %}
 
 The last row reads $R_{D,D}\, \theta_{D} = c_{D}$, which gives $\theta_{D}$ directly. Substituting into the second-to-last row gives $\theta_{D-1}$, and so on upward. The recursion is:
 
 {% equation(id="back-sub") %}
-\theta*{i} = \frac{1}{R*{i,i}} \left( c*{i} - \overset{D}{\underset{j=i+1}{\sum}} R*{i,j}\, \theta\_{j} \right), \qquad i = D, D-1, \ldots, 0
+\theta_{i} = \frac{1}{R_{i,i}} \left( c_{i} - \overset{D}{\underset{j=i+1}{\sum}} R_{i,j}\, \theta_{j} \right), \qquad i = D, D-1, \ldots, 0
 {% end %}
 
-The total cost is $O(D^{2})$ once $\mathbf{Q}^{\top} \mathbf{y}$ is computed; the QR factorisation itself costs $O(N D^{2})$.
+{% mathblock(kind="note", name="Cost of back-substitution", id="back-sub-cost") %}
+Back-substitution itself runs in $O(D^{2})$ time and $O(D^{2})$ memory. Computing $\mathbf{c} = \mathbf{Q}^{\top} \mathbf{y}$ adds another $O(N D)$ time on top. For row $i$ the recursion sums $D - i$ terms (one multiply-add each) and divides by $R\_{i,i}$, totalling $\sum\_{i=0}^{D} (D - i) = D(D+1)/2 = O(D^2)$ work. The matrix-vector product $\mathbf{Q}^{\top} \mathbf{y}$ multiplies a $(D+1) \times N$ matrix by an $N$-vector at $O(N D)$ flops.
+
+Memory holds only the $(D+1) \times (D+1)$ matrix $\mathbf{R}$ and the two length-$(D+1)$ vectors $\mathbf{c}$ and $\boldsymbol{\theta}$. Since $\mathbf{R}$ is upper triangular, $D(D+1)/2$ entries suffice, giving $O(D^{2})$ memory dominated by $\mathbf{R}$.
+{% end %}
+
+The QR factorisation that produces $\mathbf{R}$ in the first place dominates the end-to-end cost at $O(N D^{2})$ time.
 
 #### Singular Value Decomposition
 
@@ -378,7 +390,7 @@ When $\mathbf{X}$ is rank-deficient (collinear features, or $N < D+1$), $\mathbf
 where $\mathbf{U} \in \mathbb{R}^{N \times N}$ and $\mathbf{V} \in \mathbb{R}^{(D+1) \times (D+1)}$ are orthogonal and $\boldsymbol{\Sigma} \in \mathbb{R}^{N \times (D+1)}$ is diagonal with non-negative singular values $\sigma_{1} \geq \sigma_{2} \geq \cdots \geq \sigma_{r} > 0$ (with $r = \mathrm{rank}(\mathbf{X})$) and zeros elsewhere. The Moore-Penrose pseudoinverse is:
 
 {% equation(id="pseudoinverse-svd") %}
-\mathbf{X}^{+} = \mathbf{V} \boldsymbol{\Sigma}^{+} \mathbf{U}^{\top}, \qquad \boldsymbol{\Sigma}^{+}_{i,i} = \begin{cases} 1 / \sigma_{i} & \text{if } \sigma\_{i} > 0 \\ 0 & \text{otherwise} \end{cases}
+\mathbf{X}^{+} = \mathbf{V} \boldsymbol{\Sigma}^{+} \mathbf{U}^{\top}, \qquad \boldsymbol{\Sigma}^{+}_{i,i} = \begin{cases} 1 / \sigma_{i} & \text{if } \sigma_{i} > 0 \\ 0 & \text{otherwise} \end{cases}
 {% end %}
 
 so the SVD-based solution is:
@@ -394,7 +406,7 @@ When $\mathbf{X}$ has full column rank, this coincides with the QR solution and 
 A clean way to see where the SVD comes from is via the eigendecompositions of $\mathbf{X}^{\top} \mathbf{X}$ and $\mathbf{X} \mathbf{X}^{\top}$. Both are symmetric positive semidefinite, so they admit real orthonormal eigendecompositions:
 
 {% equation(id="svd-eig-v") %}
-\mathbf{X}^{\top} \mathbf{X} = \mathbf{V} \boldsymbol{\Lambda} \mathbf{V}^{\top}, \qquad \boldsymbol{\Lambda} = \mathrm{diag}(\lambda\_{1}, \ldots, \lambda\_{D+1}), \quad \lambda\_{i} \geq 0
+\mathbf{X}^{\top} \mathbf{X} = \mathbf{V} \boldsymbol{\Lambda} \mathbf{V}^{\top}, \qquad \boldsymbol{\Lambda} = \mathrm{diag}(\lambda_{1}, \ldots, \lambda_{D+1}), \quad \lambda_{i} \geq 0
 {% end %}
 
 {% equation(id="svd-eig-u") %}
@@ -404,13 +416,13 @@ A clean way to see where the SVD comes from is via the eigendecompositions of $\
 The columns of $\mathbf{V}$ are the right-singular vectors and the columns of $\mathbf{U}$ are the left-singular vectors. The singular values are the square roots of the shared non-zero eigenvalues:
 
 {% equation(id="sigma-from-eig") %}
-\sigma\_{i} = \sqrt{\lambda\_{i}}, \qquad i = 1, \ldots, r
+\sigma_{i} = \sqrt{\lambda_{i}}, \qquad i = 1, \ldots, r
 {% end %}
 
 with $r = \mathrm{rank}(\mathbf{X})$. The two sets of eigenvectors are linked through $\mathbf{X}$ itself: once you have $\mathbf{V}$ and the singular values, the corresponding left vectors are recovered by:
 
 {% equation(id="u-from-v") %}
-\mathbf{u}\_{i} = \frac{1}{\sigma\_{i}} \mathbf{X} \mathbf{v}\_{i}, \qquad i = 1, \ldots, r
+\mathbf{u}_{i} = \frac{1}{\sigma_{i}} \mathbf{X} \mathbf{v}_{i}, \qquad i = 1, \ldots, r
 {% end %}
 
 (and remaining columns of $\mathbf{U}$ are filled in by extending to an orthonormal basis of $\mathbb{R}^{N}$). This _eigendecomposition_ recipe is conceptually simple but suffers the same "squared condition number" problem as the normal equations: forming $\mathbf{X}^{\top} \mathbf{X}$ loses precision.
@@ -419,4 +431,10 @@ with $r = \mathrm{rank}(\mathbf{X})$. The two sets of eigenvectors are linked th
 Production SVD (LAPACK's `gesdd`/`gesvd`, NumPy's `np.linalg.svd`) avoids forming $\mathbf{X}^{\top} \mathbf{X}$ entirely. The standard _Golub-Reinsch_ algorithm runs in two phases: (1) reduce $\mathbf{X}$ to a bidiagonal matrix $\mathbf{B}$ via Householder reflections applied alternately on the left and right, $\mathbf{X} = \mathbf{U}\_{1} \mathbf{B} \mathbf{V}\_{1}^{\top}$; then (2) iteratively diagonalise $\mathbf{B}$ using a variant of the QR algorithm with implicit shifts, accumulating the orthogonal updates into $\mathbf{U}$ and $\mathbf{V}$. For very large or low-rank-structured matrices, _randomised SVD_ (Halko-Martinsson-Tropp) sketches $\mathbf{X}$ down to a small matrix via random projections and computes its SVD in $O(N D \log k + (N + D) k^{2})$ time when only the top $k$ singular triples are needed.
 {% end %}
 
-The SVD costs $O(N D^{2} + D^{3})$, more than QR, but it is the most numerically robust option and the only one that handles rank deficiency cleanly. As a rule of thumb: use QR when $\mathbf{X}$ is known to have full column rank, and SVD otherwise.
+{% mathblock(kind="note", name="Cost of SVD", id="svd-cost") %}
+SVD costs $O(N D^{2} + D^{3})$ time and $O(N D)$ memory. The first phase reduces $\mathbf{X}$ to bidiagonal form via Householder reflections, at $O(N D^2)$ flops. Each of the $D$ left-Householder steps zeroes out a column below the diagonal at $O(N D)$ flops by applying the reflection to the trailing submatrix, and the analogous right-Householder steps that zero a row beyond the superdiagonal contribute the same order. The second phase iteratively diagonalises the bidiagonal matrix $\mathbf{B}$. Each iteration takes $O(D^2)$ flops on $\mathbf{B}$ itself, with $O(D)$ iterations to converge, but accumulating the orthogonal updates into $\mathbf{U}$ ($N \times D$) and $\mathbf{V}$ ($D \times D$) costs $O(N D + D^2)$ per iteration, totalling $O(N D^2 + D^3)$.
+
+For memory, the dominant terms are $\mathbf{X}$ and $\mathbf{U}$, each of size $N \times D$, giving $O(N D)$. The Householder reflectors can be stored in-place in the zeroed-out portions of $\mathbf{X}$, with no extra allocation needed for them.
+{% end %}
+
+This is more than QR (the same $O(N D^2)$ leading term plus an extra $O(D^3)$ for the diagonalisation). But SVD is the most numerically robust option and the only one that handles rank deficiency cleanly. As a rule of thumb, use QR when $\mathbf{X}$ is known to have full column rank, and SVD otherwise.

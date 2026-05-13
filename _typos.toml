@@ -1,8 +1,19 @@
 [files]
 extend-exclude = ["*.bib", "*.css", "*.js", "public/"]
 
+[default]
+# Skip math expressions (inline $..$, display $$..$$, and Zola equation/mathblock shortcodes).
+# Without this, identifiers inside formulas (like "ND" in "O(N D)") get auto-corrected.
+extend-ignore-re = [
+  "(?s)\\$\\$.+?\\$\\$",
+  "\\$[^$\n]+\\$",
+  "(?s)\\{%\\s*equation.*?%\\}.*?\\{%\\s*end\\s*%\\}",
+  "(?s)\\{%\\s*mathblock.*?%\\}.*?\\{%\\s*end\\s*%\\}",
+  "(?s)\\{%\\s*math.*?%\\}.*?\\{%\\s*end\\s*%\\}",
+]
+
 [default.extend-words]
-# Proper nouns and foreign words — not typos
+# Proper nouns and foreign words, not typos.
 "Aeronáutica" = "Aeronáutica"
 "Tecnológico" = "Tecnológico"
 "Instituto" = "Instituto"

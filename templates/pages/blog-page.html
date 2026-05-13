@@ -13,7 +13,9 @@
   <h2><a href="{{ page.permalink }}">{{ page.title }}</a></h2>
   {% if page.date or page.taxonomies %}
   <p class="taxonomies">
-    {% if page.date %}{{ page.date | date(format="%-d %B, %Y") }}{% endif %}
+    {% if page.date %}Written {{ page.date | date(format="%-d %B, %Y") }}{% endif %}
+    {% if page.updated %} - updated {{ page.updated | date(format="%-d %B, %Y") }}{% endif %}
+    {% if page.reading_time %} - {{ page.reading_time }} min read{% endif %}
 
     {% set_global sorted_taxonomies = [] %}
     {% for taxonomy_name, _ in page.taxonomies %}
