@@ -24,7 +24,10 @@ The Transformer of Vaswani et al.{{ reference(key="vaswani2017attention") }} too
 The atomic operation of the Transformer takes three sets of vectors as input. A set of $N$ **queries** $\mathbf{Q} \in \mathbb{R}^{N \times d\_k}$, a set of $M$ **keys** $\mathbf{K} \in \mathbb{R}^{M \times d\_k}$, and a set of $M$ **values** $\mathbf{V} \in \mathbb{R}^{M \times d\_v}$. The interpretation is borrowed from information retrieval: each query is matched against every key to produce a similarity score, the scores are turned into a probability distribution over the keys, and the output for that query is the corresponding probability-weighted average of the values. In the symmetric case $N = M$ used in self-attention, the same set of vectors plays all three roles after three different learned projections.
 
 {% mathblock(kind="definition", name="Scaled dot-product attention", id="sdpa") %}
-$$\mathrm{Attention}(\mathbf{Q}, \mathbf{K}, \mathbf{V}) = \mathrm{softmax}\!\left(\frac{\mathbf{Q}\mathbf{K}^\top}{\sqrt{d\_k}}\right) \mathbf{V},$$
+$$\begin{aligned}
+\mathrm{Attention}(\mathbf{Q}, \mathbf{K}, \mathbf{V})
+&= \mathrm{softmax}\!\left(\frac{\mathbf{Q}\mathbf{K}^\top}{\sqrt{d\_k}}\right) \mathbf{V},
+\end{aligned}$$
 with the softmax applied row-wise over the $M$ keys. The output has shape $\mathbb{R}^{N \times d\_v}$.
 {% end %}
 
@@ -42,7 +45,10 @@ This is the "scaled" half of the name and is the most easily missed design choic
 
 {% mathblock(kind="proposition", name="Variance of the unscaled dot product", id="dot-variance") %}
 Let $\mathbf{q}, \mathbf{k} \in \mathbb{R}^{d\_k}$ have independent entries with mean zero and variance one. Then
-$$\mathbb{E}\!\left[\mathbf{q}^\top \mathbf{k}\right] = 0, \qquad \mathrm{Var}\!\left(\mathbf{q}^\top \mathbf{k}\right) = d\_k.$$
+$$\begin{aligned}
+\mathbb{E}\!\left[\mathbf{q}^\top \mathbf{k}\right] &= 0, \\\\
+\mathrm{Var}\!\left(\mathbf{q}^\top \mathbf{k}\right) &= d\_k.
+\end{aligned}$$
 {% end %}
 
 {% mathblock(kind="proof", name="", id="dot-variance-proof") %}
@@ -67,8 +73,10 @@ The fix is **multi-head attention**: project the inputs into $h$ different subsp
 
 {% mathblock(kind="definition", name="Multi-head attention", id="mha") %}
 For $h$ heads with per-head dimensions $d\_k$ and $d\_v$, define learned projections $\mathbf{W}\_i^Q \in \mathbb{R}^{d\_{\text{model}} \times d\_k}$, $\mathbf{W}\_i^K \in \mathbb{R}^{d\_{\text{model}} \times d\_k}$, $\mathbf{W}\_i^V \in \mathbb{R}^{d\_{\text{model}} \times d\_v}$ for $i = 1, \ldots, h$, and an output projection $\mathbf{W}^O \in \mathbb{R}^{h d\_v \times d\_{\text{model}}}$. Then
-$$\mathrm{head}\_i = \mathrm{Attention}(\mathbf{X}\mathbf{W}\_i^Q,\, \mathbf{X}\mathbf{W}\_i^K,\, \mathbf{X}\mathbf{W}\_i^V),$$
-$$\mathrm{MultiHead}(\mathbf{X}) = \mathrm{Concat}(\mathrm{head}\_1, \ldots, \mathrm{head}\_h)\, \mathbf{W}^O.$$
+$$\begin{aligned}
+\mathrm{head}\_i &= \mathrm{Attention}(\mathbf{X}\mathbf{W}\_i^Q,\, \mathbf{X}\mathbf{W}\_i^K,\, \mathbf{X}\mathbf{W}\_i^V), \\\\
+\mathrm{MultiHead}(\mathbf{X}) &= \mathrm{Concat}(\mathrm{head}\_1, \ldots, \mathrm{head}\_h)\, \mathbf{W}^O.
+\end{aligned}$$
 The standard choice in the original paper is $d\_{\text{model}} = 512$, $h = 8$, $d\_k = d\_v = d\_{\text{model}} / h = 64$.
 {% end %}
 
@@ -86,7 +94,10 @@ There is one important property of attention that the discussion so far has care
 
 {% mathblock(kind="proposition", name="Permutation equivariance of attention", id="perm-eq") %}
 Let $\mathbf{P} \in \\{0, 1\\}^{N \times N}$ be a permutation matrix acting on the rows of the inputs. Then
-$$\mathrm{Attention}(\mathbf{P}\mathbf{Q}, \mathbf{P}\mathbf{K}, \mathbf{P}\mathbf{V}) = \mathbf{P}\, \mathrm{Attention}(\mathbf{Q}, \mathbf{K}, \mathbf{V}).$$
+$$\begin{aligned}
+\mathrm{Attention}(\mathbf{P}\mathbf{Q}, \mathbf{P}\mathbf{K}, \mathbf{P}\mathbf{V})
+&= \mathbf{P}\, \mathrm{Attention}(\mathbf{Q}, \mathbf{K}, \mathbf{V}).
+\end{aligned}$$
 {% end %}
 
 {% mathblock(kind="proof", name="", id="perm-eq-proof") %}
@@ -98,7 +109,10 @@ This is a problem for sequence modelling. If we shuffle the words in a sentence,
 The Transformer adds a fixed **positional encoding** vector to each token embedding before any attention layer. The chosen function is sinusoidal: for position $\mathrm{pos} \in \\{0, 1, \ldots, N-1\\}$ and dimension $i \in \\{0, 1, \ldots, d\_{\text{model}}-1\\}$,
 
 {% equation(id="sinusoidal-pe") %}
-\mathrm{PE}_{\mathrm{pos},\, 2i} = \sin\!\left(\frac{\mathrm{pos}}{10000^{2i/d_{\text{model}}}}\right), \qquad \mathrm{PE}_{\mathrm{pos},\, 2i+1} = \cos\!\left(\frac{\mathrm{pos}}{10000^{2i/d_{\text{model}}}}\right).
+\begin{aligned}
+\mathrm{PE}_{\mathrm{pos},\, 2i} &= \sin\!\left(\frac{\mathrm{pos}}{10000^{2i/d_{\text{model}}}}\right), \\
+\mathrm{PE}_{\mathrm{pos},\, 2i+1} &= \cos\!\left(\frac{\mathrm{pos}}{10000^{2i/d_{\text{model}}}}\right).
+\end{aligned}
 {% end %}
 
 Even-indexed dimensions get a sine, odd-indexed dimensions get the matching cosine, and the wavelength varies geometrically from $2\pi$ (the highest-frequency dimension) to $10000 \cdot 2\pi$ (the lowest-frequency dimension). The choice of $10000$ as the base is arbitrary and was selected as a value large enough that the longest expected sequence still occupies less than one period of the lowest-frequency dimension.
@@ -133,7 +147,10 @@ A single encoder block contains two sublayers: multi-head self-attention and a p
 In **self-attention**, the queries, keys, and values are all projections of the same input sequence. For an encoder input $\mathbf{X} \in \mathbb{R}^{N \times d\_{\text{model}}}$,
 
 {% equation(id="self-attention") %}
-\mathrm{SelfAttn}(\mathbf{X}) = \mathrm{MultiHead}(\mathbf{X}\mathbf{W}^Q,\, \mathbf{X}\mathbf{W}^K,\, \mathbf{X}\mathbf{W}^V),
+\begin{aligned}
+\mathrm{SelfAttn}(\mathbf{X})
+&= \mathrm{MultiHead}(\mathbf{X}\mathbf{W}^Q,\, \mathbf{X}\mathbf{W}^K,\, \mathbf{X}\mathbf{W}^V),
+\end{aligned}
 {% end %}
 
 with the same $\mathbf{X}$ on the left of all three projections. The interpretation is that every token attends to every other token in the same sequence to form its contextual representation, and the model has $h$ different learned views of how to do that mixing.
@@ -143,7 +160,10 @@ with the same $\mathbf{X}$ on the left of all three projections. The interpretat
 After self-attention, every token passes independently through a small two-layer MLP, the same MLP applied at every position.
 
 {% equation(id="ffn") %}
-\mathrm{FFN}(\mathbf{x}) = \mathbf{W}_2\, \phi\!\left(\mathbf{W}_1 \mathbf{x} + \mathbf{b}_1\right) + \mathbf{b}_2,
+\begin{aligned}
+\mathrm{FFN}(\mathbf{x})
+&= \mathbf{W}_2\, \phi\!\left(\mathbf{W}_1 \mathbf{x} + \mathbf{b}_1\right) + \mathbf{b}_2,
+\end{aligned}
 {% end %}
 
 with $\mathbf{W}\_1 \in \mathbb{R}^{d\_{\text{ff}} \times d\_{\text{model}}}$, $\mathbf{W}\_2 \in \mathbb{R}^{d\_{\text{model}} \times d\_{\text{ff}}}$, $\phi$ a non-linearity (originally ReLU, GELU in BERT and beyond), and the standard expansion ratio $d\_{\text{ff}} = 4\, d\_{\text{model}}$. The "position-wise" qualifier emphasises that the same MLP is applied independently to each token, so this sublayer adds no cross-token interaction.
@@ -178,7 +198,10 @@ The decoder mirrors the encoder but adds two complications. It must generate its
 At training time the decoder is fed the entire target sequence in parallel for efficiency, but it must not be allowed to peek at future tokens when predicting the next one. The fix is **causal masking**: in the self-attention of the decoder, every query at position $i$ can only attend to keys at positions $j \leq i$. Operationally, the score matrix gets an additive mask before the softmax,
 
 {% equation(id="causal-mask") %}
-\mathrm{MaskedAttn}(\mathbf{Q}, \mathbf{K}, \mathbf{V}) = \mathrm{softmax}\!\left(\frac{\mathbf{Q}\mathbf{K}^\top}{\sqrt{d_k}} + \mathbf{M}\right) \mathbf{V},
+\begin{aligned}
+\mathrm{MaskedAttn}(\mathbf{Q}, \mathbf{K}, \mathbf{V})
+&= \mathrm{softmax}\!\left(\frac{\mathbf{Q}\mathbf{K}^\top}{\sqrt{d_k}} + \mathbf{M}\right) \mathbf{V},
+\end{aligned}
 {% end %}
 
 with $\mathbf{M}\_{i,j} = 0$ if $j \leq i$ and $\mathbf{M}\_{i,j} = -\infty$ otherwise. The infinities push the softmax of forbidden positions to exactly zero, removing them from the weighted average. This single trick is what lets us train a causal Transformer in $O(N^2)$ parallel time instead of $O(N)$ sequential time, while still producing output that is causally consistent with autoregressive decoding at inference.
@@ -188,7 +211,11 @@ with $\mathbf{M}\_{i,j} = 0$ if $j \leq i$ and $\mathbf{M}\_{i,j} = -\infty$ oth
 After masked self-attention, the decoder block inserts a third sublayer that performs **cross-attention** to the encoder's output: queries come from the decoder, keys and values come from the encoder.
 
 {% equation(id="cross-attention") %}
-\mathrm{CrossAttn}(\mathbf{X}_{\text{dec}}, \mathbf{X}_{\text{enc}}) = \mathrm{MultiHead}\big(\mathbf{X}_{\text{dec}} \mathbf{W}^Q,\, \mathbf{X}_{\text{enc}} \mathbf{W}^K,\, \mathbf{X}_{\text{enc}} \mathbf{W}^V\big).
+\begin{aligned}
+\mathrm{CrossAttn}(\mathbf{X}_{\text{dec}}, \mathbf{X}_{\text{enc}})
+&= \mathrm{MultiHead}\big(\mathbf{X}_{\text{dec}} \mathbf{W}^Q, \\
+&\qquad\quad \mathbf{X}_{\text{enc}} \mathbf{W}^K,\, \mathbf{X}_{\text{enc}} \mathbf{W}^V\big).
+\end{aligned}
 {% end %}
 
 This is the only point at which the decoder sees the encoder. The interpretation is that each output token, while being generated, looks back at the entire input sequence and pulls relevant information from it. In machine translation, this is where the alignment between source and target words is implicitly learned. In modern decoder-only language models there is no encoder, and cross-attention is dropped entirely; in encoder-decoder models like the original Transformer, T5, and BART, cross-attention is retained and is essential.
@@ -250,7 +277,10 @@ The bottleneck during autoregressive generation is not training but **inference*
 **Multi-Query Attention** (MQA){{ reference(key="shazeer2019fast") }} responds by sharing a single key and value across all heads, while keeping per-head queries:
 
 {% equation(id="mqa") %}
-\mathrm{head}_i = \mathrm{Attention}(\mathbf{X}\mathbf{W}_i^Q,\, \mathbf{X}\mathbf{W}^K,\, \mathbf{X}\mathbf{W}^V).
+\begin{aligned}
+\mathrm{head}_i
+&= \mathrm{Attention}(\mathbf{X}\mathbf{W}_i^Q,\, \mathbf{X}\mathbf{W}^K,\, \mathbf{X}\mathbf{W}^V).
+\end{aligned}
 {% end %}
 
 The KV cache shrinks by a factor of $h$ (so $8\times$ smaller for the standard 8-head model), at the cost of reducing the per-head expressivity of the keys and values. Empirically MQA hurts model quality slightly. **Grouped-Query Attention** (GQA){{ reference(key="ainslie2023gqa") }} interpolates: the $h$ query heads are partitioned into $g$ groups, each of which shares one key/value pair. Setting $g = h$ recovers vanilla multi-head attention, $g = 1$ recovers MQA, and intermediate values (LLaMA-2 70B uses $g = 8$ with $h = 64$) capture most of the inference speedup with negligible quality loss.
@@ -266,7 +296,11 @@ The Longformer{{ reference(key="beltagy2020longformer") }} combines a sliding wi
 A different angle on the $O(N^2)$ problem is to approximate the softmax kernel by a feature map that lets us reorder the computation. Write attention as $\mathrm{softmax}(\mathbf{Q}\mathbf{K}^\top) \mathbf{V}$ and observe that, for any feature map $\phi$ such that $\mathrm{softmax}(\mathbf{q}\_i^\top \mathbf{k}\_j) \approx \phi(\mathbf{q}\_i)^\top \phi(\mathbf{k}\_j) / Z(\mathbf{q}\_i)$, we can rewrite the output as
 
 {% equation(id="linear-attn") %}
-\mathbf{o}_i = \frac{\sum_{j} \phi(\mathbf{q}_i)^\top \phi(\mathbf{k}_j)\, \mathbf{v}_j}{\sum_{j} \phi(\mathbf{q}_i)^\top \phi(\mathbf{k}_j)} = \frac{\phi(\mathbf{q}_i)^\top \big(\sum_{j} \phi(\mathbf{k}_j)\, \mathbf{v}_j^\top\big)}{\phi(\mathbf{q}_i)^\top \big(\sum_{j} \phi(\mathbf{k}_j)\big)}.
+\begin{aligned}
+\mathbf{o}_i
+&= \frac{\sum_{j} \phi(\mathbf{q}_i)^\top \phi(\mathbf{k}_j)\, \mathbf{v}_j}{\sum_{j} \phi(\mathbf{q}_i)^\top \phi(\mathbf{k}_j)} \\
+&= \frac{\phi(\mathbf{q}_i)^\top \big(\sum_{j} \phi(\mathbf{k}_j)\, \mathbf{v}_j^\top\big)}{\phi(\mathbf{q}_i)^\top \big(\sum_{j} \phi(\mathbf{k}_j)\big)}.
+\end{aligned}
 {% end %}
 
 The associativity matters: instead of forming the $N \times N$ matrix $\phi(\mathbf{Q}) \phi(\mathbf{K})^\top$ and then multiplying by $\mathbf{V}$, we first form the $d \times d$ matrix $\sum\_{j} \phi(\mathbf{k}\_j)\, \mathbf{v}\_j^\top$ and then apply it to each query. The cost drops from $O(N^2 d)$ to $O(N d^2)$, ie, **linear in the sequence length**. The trade-off is that we have to live with whatever the feature map $\phi$ approximates. The Performer{{ reference(key="choromanski2021performer") }} uses random Fourier features that give an unbiased estimate of the softmax kernel; Linformer{{ reference(key="wang2020linformer") }} achieves linearity differently, by projecting the keys and values down to a fixed dimension $k \ll N$ before attention; Katharopoulos et al.{{ reference(key="katharopoulos2020transformers") }} use $\phi(\mathbf{x}) = \mathrm{elu}(\mathbf{x}) + 1$ and observe that the resulting causal attention can be implemented as a recurrent state, recovering RNN-like inference cost.
@@ -296,7 +330,10 @@ The trade-off is that pre-LN typically reaches a slightly worse final loss than 
 **Root Mean Square Norm**{{ reference(key="zhang2019rmsnorm") }} drops the mean-centring step of layer norm and normalises by the root mean square of the activations alone:
 
 {% equation(id="rmsnorm") %}
-\mathrm{RMSNorm}(\mathbf{z}) = \boldsymbol{\gamma} \odot \frac{\mathbf{z}}{\sqrt{\frac{1}{d} \sum_{j=1}^d z_j^2 + \varepsilon}}.
+\begin{aligned}
+\mathrm{RMSNorm}(\mathbf{z})
+&= \boldsymbol{\gamma} \odot \frac{\mathbf{z}}{\sqrt{\frac{1}{d} \sum_{j=1}^d z_j^2 + \varepsilon}}.
+\end{aligned}
 {% end %}
 
 The mean-subtraction in standard layer norm is a small but non-trivial fraction of the per-layer compute, and empirically the centring contributes little to training stability once the network has trained for a while. RMSNorm preserves the variance-control benefit of layer norm while saving the cost of a sum and a subtraction, and is the default in LLaMA, PaLM, and most recent open LLMs.
@@ -308,7 +345,10 @@ Sinusoidal positional encoding adds positional information at the input and trus
 For each two-dimensional slice of $\mathbf{q}$ and $\mathbf{k}$ at frequency $\omega\_i = 10000^{-2i/d}$, RoPE rotates the slice by angle $\omega\_i \mathrm{pos}$. Because the dot product of two rotated vectors is
 
 {% equation(id="rope-dot") %}
-\big(\mathbf{R}_{\omega \mathrm{pos}_q}\mathbf{q}\big)^\top \big(\mathbf{R}_{\omega \mathrm{pos}_k}\mathbf{k}\big) = \mathbf{q}^\top \mathbf{R}_{\omega(\mathrm{pos}_k - \mathrm{pos}_q)} \mathbf{k},
+\begin{aligned}
+\big(\mathbf{R}_{\omega \mathrm{pos}_q}\mathbf{q}\big)^\top \big(\mathbf{R}_{\omega \mathrm{pos}_k}\mathbf{k}\big)
+&= \mathbf{q}^\top \mathbf{R}_{\omega(\mathrm{pos}_k - \mathrm{pos}_q)} \mathbf{k},
+\end{aligned}
 {% end %}
 
 the attention score depends only on the **relative** position of the query and key, not on their absolute positions. This is the property the sinusoidal encoding only approximated through a linear map; RoPE makes it exact and structural. The other practical benefit is **length extrapolation**: a model trained at sequence length $N$ can be evaluated at sequence length $2N$ by extending the rotations, with a graceful (though not perfect) degradation in quality. Sinusoidal positional embeddings, learned absolute embeddings, and RoPE all exist in production; RoPE is the most common modern choice.
@@ -369,13 +409,20 @@ The key algorithmic ingredient that lets attention be tiled is the observation t
 
 {% mathblock(kind="proposition", name="Online softmax update", id="online-softmax") %}
 Suppose we have processed a prefix of scores $s\_1, \ldots, s\_k$ and maintain the running maximum $m\_k = \max\_{j \leq k} s\_j$ and running denominator $\ell\_k = \sum\_{j \leq k} e^{s\_j - m\_k}$. When a new score $s\_{k+1}$ arrives, the updated statistics are
-$$m\_{k+1} = \max(m\_k, s\_{k+1}), \qquad \ell\_{k+1} = \ell\_k\, e^{m\_k - m\_{k+1}} + e^{s\_{k+1} - m\_{k+1}}.$$
+$$\begin{aligned}
+m\_{k+1} &= \max(m\_k, s\_{k+1}), \\\\
+\ell\_{k+1} &= \ell\_k\, e^{m\_k - m\_{k+1}} + e^{s\_{k+1} - m\_{k+1}}.
+\end{aligned}$$
 The final softmax of the full row is then $p\_j = e^{s\_j - m\_N} / \ell\_N$.
 {% end %}
 
 {% mathblock(kind="proof", name="", id="online-softmax-proof") %}
 By the definition of the running denominator after the new sample, $\ell\_{k+1} = \sum\_{j \leq k+1} e^{s\_j - m\_{k+1}}$. Split the sum into the prefix and the new term:
-$$\ell\_{k+1} = \sum\_{j \leq k} e^{s\_j - m\_{k+1}} + e^{s\_{k+1} - m\_{k+1}} = e^{m\_k - m\_{k+1}} \sum\_{j \leq k} e^{s\_j - m\_k} + e^{s\_{k+1} - m\_{k+1}} = e^{m\_k - m\_{k+1}}\, \ell\_k + e^{s\_{k+1} - m\_{k+1}}.$$
+$$\begin{aligned}
+\ell\_{k+1} &= \sum\_{j \leq k} e^{s\_j - m\_{k+1}} + e^{s\_{k+1} - m\_{k+1}} \\\\
+&= e^{m\_k - m\_{k+1}} \sum\_{j \leq k} e^{s\_j - m\_k} + e^{s\_{k+1} - m\_{k+1}} \\\\
+&= e^{m\_k - m\_{k+1}}\, \ell\_k + e^{s\_{k+1} - m\_{k+1}}.
+\end{aligned}$$
 The maximum case is immediate. $\square$
 {% end %}
 
@@ -430,7 +477,10 @@ Replace the dense FFN of {{ eqref(id="ffn") }} with $E$ parallel FFN experts $\m
 The full output would be $\sum\_{e=1}^{E} g\_e(\mathbf{x})\, \mathrm{FFN}\_e(\mathbf{x})$, an expensive dense mixture. Sparsity is introduced by restricting the sum to the **top-$k$** experts:
 
 {% equation(id="moe-output") %}
-\mathrm{MoE}(\mathbf{x}) = \sum_{e \in \mathrm{TopK}(\mathbf{g}(\mathbf{x}),\, k)} \tilde{g}_e(\mathbf{x})\, \mathrm{FFN}_e(\mathbf{x}),
+\begin{aligned}
+\mathrm{MoE}(\mathbf{x})
+&= \sum_{e \in \mathrm{TopK}(\mathbf{g}(\mathbf{x}),\, k)} \tilde{g}_e(\mathbf{x})\, \mathrm{FFN}_e(\mathbf{x}),
+\end{aligned}
 {% end %}
 
 where $\tilde{g}\_e$ are the gate values renormalised over the selected experts so they sum to one. Switch Transformer uses $k = 1$ for maximum simplicity; Mixtral{{ reference(key="jiang2024mixtral") }} and DeepSeekMoE{{ reference(key="dai2024deepseekmoe") }} use $k = 2$; the original GShard used $k = 2$ as a compromise between expressivity and load-balance variance. The argument for $k > 1$ is that gradients flow through every selected expert and the network can interpolate between experts, while $k = 1$ gives binary routing decisions that are non-differentiable and that GShard handles by passing the gradient straight through the gate.
@@ -482,7 +532,11 @@ A typical ViT uses patch size $P = 16$ on $224 \times 224$ images, giving $N = 1
 CLIP{{ reference(key="radford2021clip") }} was the first model to demonstrate that the multimodal alignment between vision and language could be learned at scale entirely from naturally occurring image-text pairs scraped from the web. The architecture is two separate Transformers: a Vision Transformer that produces an image embedding $\mathbf{u} \in \mathbb{R}^{d}$, and a text Transformer that produces a text embedding $\mathbf{v} \in \mathbb{R}^{d}$. Both are projected to the same dimension. The training objective is a symmetric **contrastive loss**: for a batch of $B$ image-text pairs, the model is asked to identify the correct text for each image (and vice versa) out of the $B$ candidates in the batch.
 
 {% equation(id="clip-loss") %}
-\mathcal{L}_{\text{CLIP}} = -\frac{1}{2 B} \sum_{i=1}^{B} \log \frac{e^{\tau\, \mathbf{u}_i^\top \mathbf{v}_i}}{\sum_{j=1}^{B} e^{\tau\, \mathbf{u}_i^\top \mathbf{v}_j}} - \frac{1}{2 B} \sum_{i=1}^{B} \log \frac{e^{\tau\, \mathbf{u}_i^\top \mathbf{v}_i}}{\sum_{j=1}^{B} e^{\tau\, \mathbf{u}_j^\top \mathbf{v}_i}},
+\begin{aligned}
+\mathcal{L}_{\text{CLIP}}
+&= -\frac{1}{2 B} \sum_{i=1}^{B} \log \frac{e^{\tau\, \mathbf{u}_i^\top \mathbf{v}_i}}{\sum_{j=1}^{B} e^{\tau\, \mathbf{u}_i^\top \mathbf{v}_j}} \\
+&\quad - \frac{1}{2 B} \sum_{i=1}^{B} \log \frac{e^{\tau\, \mathbf{u}_i^\top \mathbf{v}_i}}{\sum_{j=1}^{B} e^{\tau\, \mathbf{u}_j^\top \mathbf{v}_i}},
+\end{aligned}
 {% end %}
 
 with a learned temperature $\tau$. This is the categorical cross-entropy from the [logistic regression](/blog/logistic-regression/) post applied symmetrically along both axes of the $B \times B$ similarity matrix. The diagonal entries are the matched pairs, and the loss pushes them up while pushing the off-diagonal entries (the hard negatives) down. With a large enough batch (the original CLIP used $B = 32{,}768$, which required sharding the contrastive loss across devices), every image is forced to be discriminated against tens of thousands of unrelated captions per step, and the resulting embeddings are good enough that **zero-shot classification** works directly: to classify an image into one of $K$ classes, encode each class name as a text prompt, encode the image, and pick the class whose text embedding has the highest cosine similarity with the image embedding.
@@ -559,7 +613,10 @@ The catch is that we don't know what tokens to verify, since the autoregressive 
 
 {% mathblock(kind="proposition", name="Speculative decoding sampler", id="spec-dec-sampler") %}
 Let $p$ be the target model's next-token distribution and $q$ the draft model's. Suppose the draft proposes a token $\tilde{x} \sim q(\cdot)$. Accept $\tilde{x}$ with probability $\min(1,\, p(\tilde{x}) / q(\tilde{x}))$. If rejected, sample a replacement $x$ from the **residual distribution**
-$$p\_{\text{res}}(x) = \frac{\max\!\big(0,\, p(x) - q(x)\big)}{\sum\_{x'} \max\!\big(0,\, p(x') - q(x')\big)}.$$
+$$\begin{aligned}
+p\_{\text{res}}(x)
+&= \frac{\max\!\big(0,\, p(x) - q(x)\big)}{\sum\_{x'} \max\!\big(0,\, p(x') - q(x')\big)}.
+\end{aligned}$$
 The accepted (or replacement) token is distributed exactly according to $p$.
 {% end %}
 

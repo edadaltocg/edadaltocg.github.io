@@ -173,7 +173,13 @@ where $\odot$ is the elementwise (Hadamard) product and $\phi^{(\ell)\prime}$ is
 {% mathblock(kind="proof", name="", id="bp-recurrence-proof") %}
 Apply the chain rule to $\partial \ell / \partial z^{(\ell)}\_j$, summing over the units of layer $\ell + 1$ that depend on $z^{(\ell)}\_j$:
 
-$$\delta^{(\ell)}\_j = \frac{\partial \ell}{\partial z^{(\ell)}\_j} = \sum\_{k=1}^{d\_{\ell+1}} \frac{\partial \ell}{\partial z^{(\ell+1)}\_k} \cdot \frac{\partial z^{(\ell+1)}\_k}{\partial z^{(\ell)}\_j}.$$
+$$
+\begin{aligned}
+\delta^{(\ell)}\_j
+&= \frac{\partial \ell}{\partial z^{(\ell)}\_j} \\\\
+&= \sum\_{k=1}^{d\_{\ell+1}} \frac{\partial \ell}{\partial z^{(\ell+1)}\_k} \cdot \frac{\partial z^{(\ell+1)}\_k}{\partial z^{(\ell)}\_j}.
+\end{aligned}
+$$
 
 The first factor is $\delta^{(\ell+1)}\_k$ by definition. For the second factor, expand $z^{(\ell+1)}\_k = \sum\_m W^{(\ell+1)}\_{k,m}\, a^{(\ell)}\_m + b^{(\ell+1)}\_k$ and $a^{(\ell)}\_m = \phi^{(\ell)}(z^{(\ell)}\_m)$. Differentiating with respect to $z^{(\ell)}\_j$ leaves only the $m = j$ term:
 
@@ -181,21 +187,37 @@ $$\frac{\partial z^{(\ell+1)}\_k}{\partial z^{(\ell)}\_j} = W^{(\ell+1)}\_{k,j} 
 
 Substituting back,
 
-$$\delta^{(\ell)}\_j = \phi^{(\ell)\prime}\big(z^{(\ell)}\_j\big) \cdot \sum\_{k=1}^{d\_{\ell+1}} W^{(\ell+1)}\_{k,j}\, \delta^{(\ell+1)}\_k = \phi^{(\ell)\prime}\big(z^{(\ell)}\_j\big) \cdot \big(\mathbf{W}^{(\ell+1)\top}\, \boldsymbol{\delta}^{(\ell+1)}\big)\_j.$$
+$$
+\begin{aligned}
+\delta^{(\ell)}\_j
+&= \phi^{(\ell)\prime}\big(z^{(\ell)}\_j\big) \cdot \sum\_{k=1}^{d\_{\ell+1}} W^{(\ell+1)}\_{k,j}\, \delta^{(\ell+1)}\_k \\\\
+&= \phi^{(\ell)\prime}\big(z^{(\ell)}\_j\big) \cdot \big(\mathbf{W}^{(\ell+1)\top}\, \boldsymbol{\delta}^{(\ell+1)}\big)\_j.
+\end{aligned}
+$$
 
 Stacking over $j$ gives the claimed elementwise product. $\square$
 {% end %}
 
 {% mathblock(kind="proposition", name="Per-parameter gradients", id="bp-params") %}
 For every layer $\ell$,
-$$\frac{\partial \ell}{\partial \mathbf{W}^{(\ell)}} = \boldsymbol{\delta}^{(\ell)}\, \mathbf{a}^{(\ell-1)\top}, \qquad \frac{\partial \ell}{\partial \mathbf{b}^{(\ell)}} = \boldsymbol{\delta}^{(\ell)}.$$
+$$
+\begin{aligned}
+\frac{\partial \ell}{\partial \mathbf{W}^{(\ell)}} &= \boldsymbol{\delta}^{(\ell)}\, \mathbf{a}^{(\ell-1)\top}, \\\\
+\frac{\partial \ell}{\partial \mathbf{b}^{(\ell)}} &= \boldsymbol{\delta}^{(\ell)}.
+\end{aligned}
+$$
 The full empirical-risk gradient is the average of these single-sample gradients over the training set.
 {% end %}
 
 {% mathblock(kind="proof", name="", id="bp-params-proof") %}
 Differentiating $z^{(\ell)}\_j = \sum\_m W^{(\ell)}\_{j,m}\, a^{(\ell-1)}\_m + b^{(\ell)}\_j$ gives $\partial z^{(\ell)}\_j / \partial W^{(\ell)}\_{j,m} = a^{(\ell-1)}\_m$ and $\partial z^{(\ell)}\_j / \partial b^{(\ell)}\_j = 1$. By the chain rule,
 
-$$\frac{\partial \ell}{\partial W^{(\ell)}\_{j,m}} = \delta^{(\ell)}\_j \cdot a^{(\ell-1)}\_m, \qquad \frac{\partial \ell}{\partial b^{(\ell)}\_j} = \delta^{(\ell)}\_j.$$
+$$
+\begin{aligned}
+\frac{\partial \ell}{\partial W^{(\ell)}\_{j,m}} &= \delta^{(\ell)}\_j \cdot a^{(\ell-1)}\_m, \\\\
+\frac{\partial \ell}{\partial b^{(\ell)}\_j} &= \delta^{(\ell)}\_j.
+\end{aligned}
+$$
 
 The first is the $(j, m)$ entry of the outer product $\boldsymbol{\delta}^{(\ell)}\, \mathbf{a}^{(\ell-1)\top}$. Averaging over the $N$ training samples gives the empirical risk gradient. $\square$
 {% end %}
@@ -215,7 +237,12 @@ Time is $O\!\left(B \sum\_{\ell=1}^{L} d\_\ell\, d\_{\ell-1}\right)$ for a batch
 To make the recurrence concrete, here is a single training step for a tiny network: $D = 2$ inputs, one hidden layer of width $d\_1 = 2$ with sigmoid activation, and one output unit with sigmoid activation trained against binary cross-entropy. The parameters are
 
 {% equation(id="example-params") %}
-\mathbf{W}^{(1)} = \begin{pmatrix} 0.5 & -0.5 \\ 1.0 & 0.5 \end{pmatrix}, \quad \mathbf{b}^{(1)} = \begin{pmatrix} 0 \\ 0 \end{pmatrix}, \quad \mathbf{w}^{(2)} = \begin{pmatrix} 1.0 \\ -1.0 \end{pmatrix}, \quad b^{(2)} = 0,
+\begin{aligned}
+\mathbf{W}^{(1)} &= \begin{pmatrix} 0.5 & -0.5 \\ 1.0 & 0.5 \end{pmatrix}, &
+\mathbf{b}^{(1)} &= \begin{pmatrix} 0 \\ 0 \end{pmatrix}, \\
+\mathbf{w}^{(2)} &= \begin{pmatrix} 1.0 \\ -1.0 \end{pmatrix}, &
+b^{(2)} &= 0,
+\end{aligned}
 {% end %}
 
 and the single training example is $\mathbf{x} = (1, 0)^{\top}$ with target $y = 1$. All numerical values below are rounded to four decimal places.
@@ -223,7 +250,12 @@ and the single training example is $\mathbf{x} = (1, 0)^{\top}$ with target $y =
 **Forward pass.** The hidden pre-activations are
 
 {% equation(id="example-fwd-z1") %}
-\mathbf{z}^{(1)} = \mathbf{W}^{(1)} \mathbf{x} + \mathbf{b}^{(1)} = \begin{pmatrix} 0.5 \cdot 1 + (-0.5) \cdot 0 \\ 1.0 \cdot 1 + 0.5 \cdot 0 \end{pmatrix} = \begin{pmatrix} 0.5 \\ 1.0 \end{pmatrix},
+\begin{aligned}
+\mathbf{z}^{(1)}
+&= \mathbf{W}^{(1)} \mathbf{x} + \mathbf{b}^{(1)} \\
+&= \begin{pmatrix} 0.5 \cdot 1 + (-0.5) \cdot 0 \\ 1.0 \cdot 1 + 0.5 \cdot 0 \end{pmatrix} \\
+&= \begin{pmatrix} 0.5 \\ 1.0 \end{pmatrix},
+\end{aligned}
 {% end %}
 
 and the hidden activations are
@@ -235,7 +267,12 @@ and the hidden activations are
 The output unit then computes
 
 {% equation(id="example-fwd-z2") %}
-z^{(2)} = \mathbf{w}^{(2)\top} \mathbf{a}^{(1)} + b^{(2)} \approx 1.0 \cdot 0.6225 + (-1.0) \cdot 0.7311 \approx -0.1086,
+\begin{aligned}
+z^{(2)}
+&= \mathbf{w}^{(2)\top} \mathbf{a}^{(1)} + b^{(2)} \\
+&\approx 1.0 \cdot 0.6225 + (-1.0) \cdot 0.7311 \\
+&\approx -0.1086,
+\end{aligned}
 {% end %}
 
 {% equation(id="example-fwd-yhat") %}
@@ -253,7 +290,12 @@ Since $y = 1$, the BCE loss for this sample is $\ell = -\log \hat{y} \approx 0.7
 The output-layer parameter gradients follow from {{ mref(kind="proposition", id="bp-params") }}:
 
 {% equation(id="example-grad-w2") %}
-\frac{\partial \ell}{\partial \mathbf{w}^{(2)}} = \delta^{(2)}\, \mathbf{a}^{(1)} \approx -0.5271 \cdot \begin{pmatrix} 0.6225 \\ 0.7311 \end{pmatrix} \approx \begin{pmatrix} -0.3281 \\ -0.3853 \end{pmatrix},
+\begin{aligned}
+\frac{\partial \ell}{\partial \mathbf{w}^{(2)}}
+&= \delta^{(2)}\, \mathbf{a}^{(1)} \\
+&\approx -0.5271 \cdot \begin{pmatrix} 0.6225 \\ 0.7311 \end{pmatrix} \\
+&\approx \begin{pmatrix} -0.3281 \\ -0.3853 \end{pmatrix},
+\end{aligned}
 {% end %}
 
 {% equation(id="example-grad-b2") %}
@@ -263,19 +305,34 @@ The output-layer parameter gradients follow from {{ mref(kind="proposition", id=
 Propagate the error back through the recurrence in {{ mref(kind="proposition", id="bp-recurrence") }}. The sigmoid derivative reuses the cached activations as $\sigma'(z^{(1)}\_j) = a^{(1)}\_j\,(1 - a^{(1)}\_j)$:
 
 {% equation(id="example-sigprime") %}
-\sigma'(\mathbf{z}^{(1)}) = \mathbf{a}^{(1)} \odot (1 - \mathbf{a}^{(1)}) \approx \begin{pmatrix} 0.6225 \cdot 0.3775 \\ 0.7311 \cdot 0.2689 \end{pmatrix} \approx \begin{pmatrix} 0.2350 \\ 0.1966 \end{pmatrix}.
+\begin{aligned}
+\sigma'(\mathbf{z}^{(1)})
+&= \mathbf{a}^{(1)} \odot (1 - \mathbf{a}^{(1)}) \\
+&\approx \begin{pmatrix} 0.6225 \cdot 0.3775 \\ 0.7311 \cdot 0.2689 \end{pmatrix} \\
+&\approx \begin{pmatrix} 0.2350 \\ 0.1966 \end{pmatrix}.
+\end{aligned}
 {% end %}
 
 Combining,
 
 {% equation(id="example-delta1") %}
-\boldsymbol{\delta}^{(1)} = \big(\mathbf{w}^{(2)}\, \delta^{(2)}\big) \odot \sigma'(\mathbf{z}^{(1)}) \approx \begin{pmatrix} -0.5271 \\ 0.5271 \end{pmatrix} \odot \begin{pmatrix} 0.2350 \\ 0.1966 \end{pmatrix} \approx \begin{pmatrix} -0.1239 \\ 0.1036 \end{pmatrix}.
+\begin{aligned}
+\boldsymbol{\delta}^{(1)}
+&= \big(\mathbf{w}^{(2)}\, \delta^{(2)}\big) \odot \sigma'(\mathbf{z}^{(1)}) \\
+&\approx \begin{pmatrix} -0.5271 \\ 0.5271 \end{pmatrix} \odot \begin{pmatrix} 0.2350 \\ 0.1966 \end{pmatrix} \\
+&\approx \begin{pmatrix} -0.1239 \\ 0.1036 \end{pmatrix}.
+\end{aligned}
 {% end %}
 
 Finally, the hidden-layer parameter gradients:
 
 {% equation(id="example-grad-w1") %}
-\frac{\partial \ell}{\partial \mathbf{W}^{(1)}} = \boldsymbol{\delta}^{(1)}\, \mathbf{x}^{\top} \approx \begin{pmatrix} -0.1239 \\ 0.1036 \end{pmatrix} \begin{pmatrix} 1 & 0 \end{pmatrix} = \begin{pmatrix} -0.1239 & 0 \\ 0.1036 & 0 \end{pmatrix},
+\begin{aligned}
+\frac{\partial \ell}{\partial \mathbf{W}^{(1)}}
+&= \boldsymbol{\delta}^{(1)}\, \mathbf{x}^{\top} \\
+&\approx \begin{pmatrix} -0.1239 \\ 0.1036 \end{pmatrix} \begin{pmatrix} 1 & 0 \end{pmatrix} \\
+&= \begin{pmatrix} -0.1239 & 0 \\ 0.1036 & 0 \end{pmatrix},
+\end{aligned}
 {% end %}
 
 {% equation(id="example-grad-b1") %}
@@ -293,7 +350,12 @@ Even with the gradient in hand, the loss surface of an MLP is not convex (the co
 Computing $\nabla J$ exactly requires a full pass over the dataset, which is wasteful when $N$ is large and the gradient at each step is similar. Stochastic gradient descent (SGD) replaces the full gradient by an unbiased estimator $\widetilde{\nabla} J(\boldsymbol{\theta})$ obtained from a uniformly sampled minibatch $\mathcal{B} \subset \\{1, \ldots, N\\}$ of size $B$:
 
 {% equation(id="sgd-grad") %}
-\widetilde{\nabla} J(\boldsymbol{\theta}) = \frac{1}{B} \sum*{i \in \mathcal{B}} \nabla \ell\big(\mathbf{y}\_i, \hat{\mathbf{y}}\_i(\boldsymbol{\theta})\big), \qquad \mathbb{E}*{\mathcal{B}}\!\left[\widetilde{\nabla} J\right] = \nabla J.
+\begin{aligned}
+\widetilde{\nabla} J(\boldsymbol{\theta})
+&= \frac{1}{B} \sum_{i \in \mathcal{B}} \nabla \ell\big(\mathbf{y}_i, \hat{\mathbf{y}}_i(\boldsymbol{\theta})\big), \\
+\mathbb{E}_{\mathcal{B}}\!\left[\widetilde{\nabla} J\right]
+&= \nabla J.
+\end{aligned}
 {% end %}
 
 The update rule itself is unchanged from the deterministic case:
@@ -339,7 +401,10 @@ Different parameters in a deep network often need different learning rates: the 
 where the squaring is elementwise. Both $\mathbf{m}\_t$ and $\mathbf{v}\_t$ are biased towards zero in the early steps because they start at $\mathbf{0}$, so Adam applies an explicit bias correction:
 
 {% equation(id="adam-bias-correction") %}
-\hat{\mathbf{m}}_{t+1} = \frac{\mathbf{m}_{t+1}}{1 - \beta*1^{t+1}}, \qquad \hat{\mathbf{v}}*{t+1} = \frac{\mathbf{v}\_{t+1}}{1 - \beta_2^{t+1}}.
+\begin{aligned}
+\hat{\mathbf{m}}_{t+1} &= \frac{\mathbf{m}_{t+1}}{1 - \beta_1^{t+1}}, \\
+\hat{\mathbf{v}}_{t+1} &= \frac{\mathbf{v}_{t+1}}{1 - \beta_2^{t+1}}.
+\end{aligned}
 {% end %}
 
 The parameter update divides the bias-corrected first moment by the elementwise square root of the bias-corrected second moment:
@@ -388,7 +453,13 @@ Under the linearisation $\phi(z) \approx z$, this preserves the variance of the 
 
 {% mathblock(kind="proof", name="(sketch)", id="xavier-proof") %}
 Assume the inputs $a\_j$ have variance $\mathrm{Var}(a\_j) = s^2$ and are zero-mean and uncorrelated. The pre-activation is $z\_i = \sum\_{j=1}^{d\_{\text{in}}} W\_{i,j}\, a\_j$. Under the independence assumptions on $W$ and $a$,
-$$\mathrm{Var}(z\_i) = \sum\_{j=1}^{d\_{\text{in}}} \mathrm{Var}(W\_{i,j})\, \mathrm{Var}(a\_j) = d\_{\text{in}} \cdot \mathrm{Var}(W\_{i,j}) \cdot s^2.$$
+$$
+\begin{aligned}
+\mathrm{Var}(z\_i)
+&= \sum\_{j=1}^{d\_{\text{in}}} \mathrm{Var}(W\_{i,j})\, \mathrm{Var}(a\_j) \\\\
+&= d\_{\text{in}} \cdot \mathrm{Var}(W\_{i,j}) \cdot s^2.
+\end{aligned}
+$$
 Setting $\mathrm{Var}(z\_i) = s^2$ gives the **forward** condition $\mathrm{Var}(W\_{i,j}) = 1 / d\_{\text{in}}$. The symmetric calculation on the backward pass (where the multiplication is by $\mathbf{W}^{\top}$ instead of $\mathbf{W}$) gives the **backward** condition $\mathrm{Var}(W\_{i,j}) = 1 / d\_{\text{out}}$. Glorot and Bengio's compromise averages the two, $\mathrm{Var}(W\_{i,j}) = 2 / (d\_{\text{in}} + d\_{\text{out}})$. $\square$
 {% end %}
 
@@ -421,7 +492,11 @@ J_{\mathrm{reg}}(\boldsymbol{\theta}) = J(\boldsymbol{\theta}) + \frac{\lambda}{
 with strength $\lambda > 0$. The penalty has the same form as the ridge term that made the [logistic-regression](/blog/logistic-regression/) Hessian positive definite on separable data, and the same Bayesian interpretation: it is the negative log-prior under an independent zero-mean Gaussian prior on every weight. The gradient picks up an extra $\lambda \boldsymbol{\theta}$ term, so plain SGD with weight decay reduces to
 
 {% equation(id="weight-decay-sgd") %}
-\boldsymbol{\theta}_{t+1} = \boldsymbol{\theta}_{t} - \eta\, \big(\widetilde{\nabla} J(\boldsymbol{\theta}_{t}) + \lambda\, \boldsymbol{\theta}_{t}\big) = (1 - \eta \lambda)\, \boldsymbol{\theta}_{t} - \eta\, \widetilde{\nabla} J(\boldsymbol{\theta}_{t}),
+\begin{aligned}
+\boldsymbol{\theta}_{t+1}
+&= \boldsymbol{\theta}_{t} - \eta\, \big(\widetilde{\nabla} J(\boldsymbol{\theta}_{t}) + \lambda\, \boldsymbol{\theta}_{t}\big) \\
+&= (1 - \eta \lambda)\, \boldsymbol{\theta}_{t} - \eta\, \widetilde{\nabla} J(\boldsymbol{\theta}_{t}),
+\end{aligned}
 {% end %}
 
 a multiplicative shrinkage of the parameter vector at every step, hence the name. With Adam, mixing weight decay into the gradient as above interacts badly with the per-coordinate rescaling, so the **decoupled weight decay** of AdamW applies the shrinkage outside the moment buffers, $\boldsymbol{\theta}\_{t+1} \leftarrow \boldsymbol{\theta}\_{t+1} - \eta \lambda \boldsymbol{\theta}\_{t}$, after the standard Adam update. AdamW is the modern default and is essentially free to enable.
@@ -449,7 +524,12 @@ The name says where the statistics come from: per-unit mean and variance are com
 
 {% mathblock(kind="proposition", name="Batch normalisation", id="batchnorm") %}
 For a minibatch of size $B$ and a single hidden unit with pre-activations $z\_1, \ldots, z\_B$, compute the batch mean and variance,
-$$\mu\_{\mathcal{B}} = \frac{1}{B} \sum\_{i=1}^{B} z\_i, \qquad \sigma\_{\mathcal{B}}^{2} = \frac{1}{B} \sum\_{i=1}^{B} (z\_i - \mu\_{\mathcal{B}})^{2},$$
+$$
+\begin{aligned}
+\mu\_{\mathcal{B}} &= \frac{1}{B} \sum\_{i=1}^{B} z\_i, \\\\
+\sigma\_{\mathcal{B}}^{2} &= \frac{1}{B} \sum\_{i=1}^{B} (z\_i - \mu\_{\mathcal{B}})^{2},
+\end{aligned}
+$$
 standardise,
 $$\hat{z}\_i = \frac{z\_i - \mu\_{\mathcal{B}}}{\sqrt{\sigma\_{\mathcal{B}}^{2} + \varepsilon}},$$
 and apply a per-unit learned affine transform,
@@ -470,7 +550,10 @@ Rescaling $\mathbf{w} \to \alpha \mathbf{w}$ sends $z\_i \to \alpha z\_i$, hence
 At inference time, the batch statistics are not available (one might be processing a single example), so they are replaced by exponential moving averages collected during training,
 
 {% equation(id="bn-ema") %}
-\mu_{\mathrm{run}} \leftarrow (1 - \alpha)\, \mu_{\mathrm{run}} + \alpha\, \mu_{\mathcal{B}}, \qquad \sigma_{\mathrm{run}}^{2} \leftarrow (1 - \alpha)\, \sigma_{\mathrm{run}}^{2} + \alpha\, \sigma_{\mathcal{B}}^{2},
+\begin{aligned}
+\mu_{\mathrm{run}} &\leftarrow (1 - \alpha)\, \mu_{\mathrm{run}} + \alpha\, \mu_{\mathcal{B}}, \\
+\sigma_{\mathrm{run}}^{2} &\leftarrow (1 - \alpha)\, \sigma_{\mathrm{run}}^{2} + \alpha\, \sigma_{\mathcal{B}}^{2},
+\end{aligned}
 {% end %}
 
 with momentum $\alpha \in [0.01, 0.1]$. Batch norm has a small regularising side effect because the per-batch noise in $\mu\_{\mathcal{B}}$ and $\sigma\_{\mathcal{B}}$ acts like injected noise on the activations.

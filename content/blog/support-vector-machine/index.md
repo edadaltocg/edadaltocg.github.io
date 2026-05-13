@@ -58,7 +58,10 @@ Under this normalisation the geometric margin becomes $1 / |\theta\_1|$, so maxi
 The hard-margin SVM is therefore the constrained quadratic program
 
 {% equation(id="hard-margin") %}
-\min_{\theta_0, \theta_1}\; \tfrac{1}{2}\, \theta_1^2 \quad \text{subject to} \quad y_i (\theta_0 + \theta_1 x_i) \geq 1, \quad i = 1, \ldots, N.
+\begin{aligned}
+\min_{\theta_0, \theta_1}\;\; & \tfrac{1}{2}\, \theta_1^2 \\
+\text{subject to}\;\; & y_i (\theta_0 + \theta_1 x_i) \geq 1, \quad i = 1, \ldots, N.
+\end{aligned}
 {% end %}
 
 The samples for which the constraint holds with equality are called **support vectors**, named because they alone _support_ (in the load-bearing sense) the optimal hyperplane: they are the only points that touch the margin and, as we will see in the dual, the only points whose data actually shapes the solution. Removing any non-support point leaves the boundary untouched.
@@ -89,14 +92,20 @@ We relax the constraint $y\_i z\_i \geq 1$ by allowing each sample to violate th
 The hyperparameter $C > 0$ controls the trade-off between margin width and constraint violations.
 
 {% equation(id="soft-margin") %}
-\min_{\theta_0, \theta_1, \boldsymbol{\xi}}\; \tfrac{1}{2}\, \theta_1^2 + C \sum_{i=1}^{N} \xi_i \quad \text{subject to} \quad y_i (\theta_0 + \theta_1 x_i) \geq 1 - \xi_i,\; \xi_i \geq 0.
+\begin{aligned}
+\min_{\theta_0, \theta_1, \boldsymbol{\xi}}\;\; & \tfrac{1}{2}\, \theta_1^2 + C \sum_{i=1}^{N} \xi_i \\
+\text{subject to}\;\; & y_i (\theta_0 + \theta_1 x_i) \geq 1 - \xi_i, \\
+& \xi_i \geq 0.
+\end{aligned}
 {% end %}
 
 At the optimum the slacks take the smallest value compatible with the constraints, namely $\xi\_i^{\ast} = \max(0, 1 - y\_i (\theta\_0 + \theta\_1 x\_i))$.
 Substituting this back into {{ eqref(id="soft-margin") }} eliminates the $\xi\_i$ entirely and turns the program into an unconstrained minimisation in $(\theta\_0, \theta\_1)$:
 
 {% equation(id="hinge-form") %}
-\min_{\theta_0, \theta_1}\; \tfrac{1}{2}\, \theta_1^2 + C \sum_{i=1}^{N} \max\!\big(0,\; 1 - y_i (\theta_0 + \theta_1 x_i)\big).
+\min_{\theta_0, \theta_1}\; \tfrac{1}{2}\, \theta_1^2
+
++ C \sum_{i=1}^{N} \max\!\big(0,\; 1 - y_i (\theta_0 + \theta_1 x_i)\big).
 {% end %}
 
 The per-sample term is the **hinge loss**:
@@ -161,7 +170,10 @@ Stack the inputs row-wise into $\mathbf{X} \in \mathbb{R}^{N \times D}$ and the 
 The vector of scores is $\mathbf{z} = \mathbf{X}\mathbf{w} + b\, \mathbf{1}$, and the soft-margin cost in matrix form is
 
 {% equation(id="svm-cost-multi") %}
-J(\mathbf{w}, b) = \tfrac{1}{2}\, \lVert \mathbf{w} \rVert_2^2 + \frac{C}{N} \sum_{i=1}^{N} \max\!\big(0,\; 1 - y_i (\mathbf{w}^{\top} \mathbf{x}_i + b)\big).
+\begin{aligned}
+J(\mathbf{w}, b) &= \tfrac{1}{2}\, \lVert \mathbf{w} \rVert_2^2 \\
+&\quad + \frac{C}{N} \sum_{i=1}^{N} \max\!\big(0,\; 1 - y_i (\mathbf{w}^{\top} \mathbf{x}_i + b)\big).
+\end{aligned}
 {% end %}
 
 The factor of $1/N$ is a normalisation choice that makes the trade-off independent of the dataset size; some references absorb it into $C$ or write the penalty as $\lambda \lVert \mathbf{w} \rVert\_2^2 / 2$ with $\lambda = 1/(NC)$.
@@ -179,7 +191,10 @@ The hinge loss is convex but not differentiable at the kink, so we work with the
 Let $z\_i = \mathbf{w}^{\top} \mathbf{x}\_i + b$ and define the **active set** $\mathcal{A}(\mathbf{w}, b) = \\{i : y\_i z\_i < 1\\}$.
 A sub-gradient of $J$ at $(\mathbf{w}, b)$ is
 
-$$\partial\_{\mathbf{w}} J = \mathbf{w} - \frac{C}{N} \sum\_{i \in \mathcal{A}} y\_i\, \mathbf{x}\_i, \qquad \partial\_b J = -\frac{C}{N} \sum\_{i \in \mathcal{A}} y\_i.$$
+$$\begin{aligned}
+\partial\_{\mathbf{w}} J &= \mathbf{w} - \frac{C}{N} \sum\_{i \in \mathcal{A}} y\_i\, \mathbf{x}\_i, \\
+\partial\_b J &= -\frac{C}{N} \sum\_{i \in \mathcal{A}} y\_i.
+\end{aligned}$$
 {% end %}
 
 {% mathblock(kind="proof", name="", id="svm-subgrad-proof") %}
@@ -215,7 +230,10 @@ The simplest option is stochastic sub-gradient descent on the per-sample loss.
 **Pegasos**{{ reference(key="shalev2007pegasos") }} is the canonical example: at iteration $t$ pick a random sample $i\_t$, set the step size $\eta\_t = 1 / (\lambda t)$ with $\lambda = 1/(NC)$, and update
 
 {% equation(id="pegasos-update") %}
-\mathbf{w}_{t+1} = (1 - \eta_t \lambda)\, \mathbf{w}_t + \eta_t\, C\, y_{i_t}\, \mathbf{x}_{i_t}\, \mathbb{1}[y_{i_t} z_{i_t} < 1]
+\begin{aligned}
+\mathbf{w}_{t+1} &= (1 - \eta_t \lambda)\, \mathbf{w}_t \\
+&\quad + \eta_t\, C\, y_{i_t}\, \mathbf{x}_{i_t}\, \mathbb{1}[y_{i_t} z_{i_t} < 1]
+\end{aligned}
 {% end %}
 
 followed by an optional projection onto the ball $\lVert \mathbf{w} \rVert\_2 \leq 1 / \sqrt{\lambda}$, which keeps the iterates inside a region known to contain the optimum.
@@ -248,13 +266,22 @@ Why bother with a dual at all? Two reasons. First, the dual depends on the data 
 Form the Lagrangian of {{ eqref(id="soft-margin") }} with multipliers $\boldsymbol{\alpha} \in \mathbb{R}^{N}\_{\geq 0}$ for the margin constraints and $\boldsymbol{\beta} \in \mathbb{R}^{N}\_{\geq 0}$ for the slack non-negativity:
 
 {% equation(id="svm-lagrangian") %}
-\mathcal{L}(\mathbf{w}, b, \boldsymbol{\xi}, \boldsymbol{\alpha}, \boldsymbol{\beta}) = \tfrac{1}{2} \lVert \mathbf{w} \rVert_2^2 + C \sum_i \xi_i - \sum_i \alpha_i \big[y_i (\mathbf{w}^{\top} \mathbf{x}_i + b) - 1 + \xi_i\big] - \sum_i \beta_i \xi_i.
+\begin{aligned}
+\mathcal{L}(\mathbf{w}, b, \boldsymbol{\xi}, \boldsymbol{\alpha}, \boldsymbol{\beta})
+&= \tfrac{1}{2} \lVert \mathbf{w} \rVert_2^2 + C \sum_i \xi_i \\
+&\quad - \sum_i \alpha_i \big[y_i (\mathbf{w}^{\top} \mathbf{x}_i + b) - 1 + \xi_i\big] \\
+&\quad - \sum_i \beta_i \xi_i.
+\end{aligned}
 {% end %}
 
 The KKT stationarity conditions $\nabla\_{\mathbf{w}} \mathcal{L} = \mathbf{0}$, $\partial \mathcal{L} / \partial b = 0$, and $\partial \mathcal{L} / \partial \xi\_i = 0$ give the three identities
 
 {% equation(id="kkt-stationarity") %}
-\mathbf{w} = \sum_{i=1}^{N} \alpha_i y_i \mathbf{x}_i, \qquad \sum_{i=1}^{N} \alpha_i y_i = 0, \qquad \alpha_i + \beta_i = C.
+\begin{aligned}
+\mathbf{w} &= \sum_{i=1}^{N} \alpha_i y_i \mathbf{x}_i, \\
+\sum_{i=1}^{N} \alpha_i y_i &= 0, \\
+\alpha_i + \beta_i &= C.
+\end{aligned}
 {% end %}
 
 The first identity is the **representer theorem** for SVMs: the optimal weight vector lies in the span of the training inputs, weighted by the Lagrange multipliers.
@@ -262,12 +289,21 @@ The third combined with $\beta\_i \geq 0$ collapses to the box constraint $0 \le
 Substituting the three identities back into the Lagrangian eliminates $\mathbf{w}$, $b$, and $\boldsymbol{\xi}$ entirely and produces the **dual problem**:
 
 {% equation(id="svm-dual") %}
-\max_{\boldsymbol{\alpha}}\; \sum_{i=1}^{N} \alpha_i - \tfrac{1}{2} \sum_{i, j = 1}^{N} \alpha_i \alpha_j\, y_i y_j\, \mathbf{x}_i^{\top} \mathbf{x}_j \quad \text{subject to} \quad 0 \leq \alpha_i \leq C,\; \sum_{i=1}^{N} \alpha_i y_i = 0.
+\begin{aligned}
+\max_{\boldsymbol{\alpha}}\;\; & \sum_{i=1}^{N} \alpha_i
+- \tfrac{1}{2} \sum_{i, j = 1}^{N} \alpha_i \alpha_j\, y_i y_j\, \mathbf{x}_i^{\top} \mathbf{x}_j \\
+\text{subject to}\;\; & 0 \leq \alpha_i \leq C, \\
+& \sum_{i=1}^{N} \alpha_i y_i = 0.
+\end{aligned}
 {% end %}
 
 {% mathblock(kind="proof", name="(dual derivation)", id="svm-dual-proof") %}
 Plug each KKT identity from {{ eqref(id="kkt-stationarity") }} into {{ eqref(id="svm-lagrangian") }}. The slack term collapses, $C \sum\_i \xi\_i - \sum\_i \alpha\_i \xi\_i - \sum\_i \beta\_i \xi\_i = \sum\_i \xi\_i (C - \alpha\_i - \beta\_i) = 0$, using $\alpha\_i + \beta\_i = C$. The bias term collapses, $-b \sum\_i \alpha\_i y\_i = 0$, using $\sum\_i \alpha\_i y\_i = 0$. The two remaining $\mathbf{w}$-dependent terms become
-$$\tfrac{1}{2} \lVert \mathbf{w} \rVert\_2^2 - \mathbf{w}^{\top} \!\!\sum\_i \alpha\_i y\_i \mathbf{x}\_i = \tfrac{1}{2} \lVert \mathbf{w} \rVert\_2^2 - \lVert \mathbf{w} \rVert\_2^2 = -\tfrac{1}{2} \sum\_{i,j} \alpha\_i \alpha\_j y\_i y\_j \mathbf{x}\_i^{\top} \mathbf{x}\_j,$$
+$$\begin{aligned}
+& \tfrac{1}{2} \lVert \mathbf{w} \rVert\_2^2 - \mathbf{w}^{\top} \!\!\sum\_i \alpha\_i y\_i \mathbf{x}\_i \\
+&= \tfrac{1}{2} \lVert \mathbf{w} \rVert\_2^2 - \lVert \mathbf{w} \rVert\_2^2 \\
+&= -\tfrac{1}{2} \sum\_{i,j} \alpha\_i \alpha\_j y\_i y\_j \mathbf{x}\_i^{\top} \mathbf{x}\_j,
+\end{aligned}$$
 using $\mathbf{w} = \sum\_i \alpha\_i y\_i \mathbf{x}\_i$ in both terms. Adding the surviving $+\sum\_i \alpha\_i$ from the constraint expansion yields {{ eqref(id="svm-dual") }}. The box constraint $0 \leq \alpha\_i \leq C$ is dual feasibility ($\alpha\_i \geq 0$, $\beta\_i \geq 0$) combined with $\alpha\_i + \beta\_i = C$. $\square$
 {% end %}
 
@@ -309,7 +345,10 @@ The convexity of $J$ and the structure of the hinge loss admit clean convergence
 Let $J$ be convex with bounded sub-gradient norm $G$.
 Run sub-gradient descent with step size $\eta\_t = c / \sqrt{t}$ from $\boldsymbol{\theta}\_0$.
 Let $\bar{\boldsymbol{\theta}}\_T = \tfrac{1}{T} \sum\_{t=1}^{T} \boldsymbol{\theta}\_t$ be the running average. Then
-$$J(\bar{\boldsymbol{\theta}}\_T) - J(\boldsymbol{\theta}^{\ast}) \leq O\!\left(\frac{G\, \lVert \boldsymbol{\theta}\_0 - \boldsymbol{\theta}^{\ast} \rVert\_2}{\sqrt{T}}\right).$$
+$$\begin{aligned}
+J(\bar{\boldsymbol{\theta}}\_T) - J(\boldsymbol{\theta}^{\ast})
+&\leq O\!\left(\frac{G\, \lVert \boldsymbol{\theta}\_0 - \boldsymbol{\theta}^{\ast} \rVert\_2}{\sqrt{T}}\right).
+\end{aligned}$$
 {% end %}
 
 {% mathblock(kind="proof", name="(sketch)", id="subgrad-converge-proof") %}
@@ -442,7 +481,10 @@ For modest $K$ this works well in practice and is the default in scikit-learn fo
 The principled alternative is **Crammer-Singer**, a single joint program with one weight vector $\mathbf{w}\_k$ per class and a multiclass margin loss
 
 {% equation(id="crammer-singer") %}
-\ell_{\mathrm{CS}}(\mathbf{x}, y; \mathbf{W}) = \max_{k \neq y}\, \max\!\big(0,\; 1 + \mathbf{w}_k^{\top} \mathbf{x} - \mathbf{w}_y^{\top} \mathbf{x}\big).
+\begin{aligned}
+\ell_{\mathrm{CS}}(\mathbf{x}, y; \mathbf{W})
+&= \max_{k \neq y}\, \max\!\big(0,\; 1 + \mathbf{w}_k^{\top} \mathbf{x} - \mathbf{w}_y^{\top} \mathbf{x}\big).
+\end{aligned}
 {% end %}
 
 The loss is zero when the score of the true class beats every other class by at least $1$, and otherwise penalises the gap to the most-violating wrong class.

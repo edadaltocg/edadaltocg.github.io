@@ -42,7 +42,11 @@ For this task, we have collected a supervised dataset of input/label pairs denot
 As in the [regression case](/blog/linear-regression/), we view the relationship between inputs and outputs through its conditional probability distribution $Pr(y \mid x)$, and we seek the parameters $\theta$ that maximise the joint probability of observing all $N$ training labels given their inputs:
 
 {% equation(id="mle-joint") %}
-\hat{\theta}^{\ast} = \argmax_{\theta} \Big[ Pr\big(y_1, y_2, \ldots, y_N \mid x_1, x_2, \ldots, x_N, \theta\big)\Big]
+\begin{aligned}
+\hat{\theta}^{\ast} = \argmax_{\theta} \Big[\, Pr\big(
+  &y_1, y_2, \ldots, y_N \mid \\\\
+  &x_1, x_2, \ldots, x_N, \theta \big)\, \Big]
+\end{aligned}
 {% end %}
 
 Under the same i.i.d. assumption from the regression note, the joint factorises into a product of per-sample probabilities:
@@ -98,7 +102,10 @@ We can dissect the BCE into the same loss/cost components introduced in the [reg
 and the cost function is its average over the training set:
 
 {% equation(id="bce-cost") %}
-\hat{\theta}^{\ast} = \argmin_{\theta} J(\theta) = \argmin_{\theta} \frac{1}{N} \sum_{i=1}^{N} \ell\big(y_i, f_{\theta}(x_i)\big)
+\begin{aligned}
+\hat{\theta}^{\ast} &= \argmin_{\theta} J(\theta) \\\\
+&= \argmin_{\theta} \frac{1}{N} \sum_{i=1}^{N} \ell\big(y_i, f_{\theta}(x_i)\big)
+\end{aligned}
 {% end %}
 
 The BCE per-sample loss satisfies the same well-behaved-loss properties as the squared error.
@@ -120,7 +127,12 @@ Let $\ell(y, \hat{p}) = -y \log \hat{p} - (1 - y) \log (1 - \hat{p})$ for $y \in
 **(iii)** Both $\log \hat{p}$ and $\log(1 - \hat{p})$ are smooth on $(0, 1)$, and so is their linear combination.
 
 **(iv)** The first and second derivatives are:
-$$\frac{\partial \ell}{\partial \hat{p}} = -\frac{y}{\hat{p}} + \frac{1 - y}{1 - \hat{p}}, \qquad \frac{\partial^2 \ell}{\partial \hat{p}^2} = \frac{y}{\hat{p}^2} + \frac{1 - y}{(1 - \hat{p})^2}.$$
+$$
+\begin{aligned}
+\frac{\partial \ell}{\partial \hat{p}} &= -\frac{y}{\hat{p}} + \frac{1 - y}{1 - \hat{p}}, \\\\
+\frac{\partial^2 \ell}{\partial \hat{p}^2} &= \frac{y}{\hat{p}^2} + \frac{1 - y}{(1 - \hat{p})^2}.
+\end{aligned}
+$$
 For $y \in \\{0, 1\\}$ exactly one of the two terms is non-zero and strictly positive on $(0, 1)$, so the second derivative is strictly positive everywhere. Hence $\ell$ is strictly convex in $\hat{p}$. $\square$
 {% end %}
 
@@ -233,7 +245,10 @@ This has the same algebraic shape as the gradient of the squared-error cost: a s
 We now generalise to a vector input $\mathbf{x} \in \mathbb{R}^D$, while keeping the output $y \in \\{0, 1\\}$ binary. As in the regression case, we absorb the bias by augmenting each input with a leading $1$, so $\tilde{\mathbf{x}} = (1, x\_{1}, \ldots, x\_{D})^{\top} \in \mathbb{R}^{D+1}$ and $\boldsymbol{\theta} = (\theta\_{0}, \theta\_{1}, \ldots, \theta\_{D})^{\top} \in \mathbb{R}^{D+1}$. The model becomes:
 
 {% equation(id="logistic-model-multi") %}
-f_{\boldsymbol{\theta}}(\mathbf{x}) = \sigma(\boldsymbol{\theta}^{\top} \tilde{\mathbf{x}}) = \frac{1}{1 + \exp(-\boldsymbol{\theta}^{\top} \tilde{\mathbf{x}})}
+\begin{aligned}
+f_{\boldsymbol{\theta}}(\mathbf{x}) &= \sigma(\boldsymbol{\theta}^{\top} \tilde{\mathbf{x}}) \\\\
+&= \frac{1}{1 + \exp(-\boldsymbol{\theta}^{\top} \tilde{\mathbf{x}})}
+\end{aligned}
 {% end %}
 
 ### Matrix form of the cost function
@@ -247,7 +262,11 @@ Stack the $N$ augmented inputs row-wise into the design matrix $\mathbf{X} \in \
 Letting $\log$ act elementwise and writing $\mathbf{1}$ for the vector of ones, the BCE cost in matrix form is:
 
 {% equation(id="bce-cost-multi") %}
-J(\boldsymbol{\theta}) = -\frac{1}{N} \Big[\, \mathbf{y}^{\top} \log \mathbf{p} + (\mathbf{1} - \mathbf{y})^{\top} \log (\mathbf{1} - \mathbf{p}) \,\Big]
+\begin{aligned}
+J(\boldsymbol{\theta}) = -\frac{1}{N} \Big[\,
+&\mathbf{y}^{\top} \log \mathbf{p} \\\\
+&+ (\mathbf{1} - \mathbf{y})^{\top} \log (\mathbf{1} - \mathbf{p}) \,\Big]
+\end{aligned}
 {% end %}
 
 ### Gradient and Hessian
@@ -298,7 +317,10 @@ Convexity guarantees a unique global minimum (under the conditions above), but u
 The simplest option is to take steps in the direction of steepest descent:
 
 {% equation(id="gradient-descent") %}
-\boldsymbol{\theta}_{t+1} = \boldsymbol{\theta}_{t} - \eta\, \nabla_{\boldsymbol{\theta}} J(\boldsymbol{\theta}_t) = \boldsymbol{\theta}_t - \frac{\eta}{N}\, \mathbf{X}^{\top}(\mathbf{p}_t - \mathbf{y})
+\begin{aligned}
+\boldsymbol{\theta}_{t+1} &= \boldsymbol{\theta}_{t} - \eta\, \nabla_{\boldsymbol{\theta}} J(\boldsymbol{\theta}_t) \\\\
+&= \boldsymbol{\theta}_t - \frac{\eta}{N}\, \mathbf{X}^{\top}(\mathbf{p}_t - \mathbf{y})
+\end{aligned}
 {% end %}
 
 with a learning rate $\eta > 0$.
@@ -316,7 +338,10 @@ Each step is cheap and uses only first-order information. The convergence rate d
 The natural second-order alternative is the Newton-Raphson update, which uses the Hessian to rescale the step:
 
 {% equation(id="newton-update") %}
-\boldsymbol{\theta}_{t+1} = \boldsymbol{\theta}_{t} - \mathbf{H}_{t}^{-1}\, \nabla_{\boldsymbol{\theta}} J(\boldsymbol{\theta}_{t})
+\begin{aligned}
+\boldsymbol{\theta}_{t+1} ={}& \boldsymbol{\theta}_{t} \\\\
+&- \mathbf{H}_{t}^{-1}\, \nabla_{\boldsymbol{\theta}} J(\boldsymbol{\theta}_{t})
+\end{aligned}
 {% end %}
 
 Let us derive the IRLS form step by step. Substitute {{ eqref(id="bce-grad-matrix") }} and {{ eqref(id="bce-hessian") }} into {{ eqref(id="newton-update") }} (the $1/N$ factors in the gradient and Hessian cancel against each other when we form $\mathbf{H}^{-1} \nabla J$):
@@ -344,7 +369,10 @@ This is well-defined whenever no $p\_{i,t} \in \\{0, 1\\}$, since then every dia
 so the update collapses to:
 
 {% equation(id="irls-update") %}
-\boldsymbol{\theta}_{t+1} = (\mathbf{X}^{\top} \mathbf{S}_{t}\, \mathbf{X})^{-1}\, \mathbf{X}^{\top} \mathbf{S}_{t}\, \mathbf{z}_{t}
+\begin{aligned}
+\boldsymbol{\theta}_{t+1} ={}& (\mathbf{X}^{\top} \mathbf{S}_{t}\, \mathbf{X})^{-1} \\\\
+&\quad \mathbf{X}^{\top} \mathbf{S}_{t}\, \mathbf{z}_{t}
+\end{aligned}
 {% end %}
 
 This is exactly the [normal equations](/blog/linear-regression/) of a **weighted least-squares** problem with design matrix $\mathbf{X}$, target $\mathbf{z}\_t$, and per-sample weights $\mathbf{S}\_t$ (ie, the closed-form solution to $\min\_{\boldsymbol{\theta}} \lVert \mathbf{S}\_t^{1/2} (\mathbf{z}\_t - \mathbf{X} \boldsymbol{\theta}) \rVert\_2^2$). Each Newton step on the BCE cost is therefore one weighted least-squares solve, with both the weights and the target re-derived from the current $\boldsymbol{\theta}\_t$. This is the **iteratively reweighted least squares** (IRLS) algorithm: logistic regression is, in the end, linear regression run again and again until the weights agree with the predictions they produce.
@@ -372,7 +400,10 @@ For $D$ in the tens of thousands (text classification, genomics, any setting whe
 L-BFGS belongs to the **quasi-Newton** family ("quasi" meaning _almost_ or _resembling_, since these methods follow Newton's recipe of rescaling the gradient by inverse curvature without ever paying the price of computing second derivatives). The short version is Newton without the Hessian bill: most of the convergence speed of Newton's method, without ever having to write down a second derivative. It imitates Newton's method by maintaining an implicit approximation $\mathbf{B}\_t \approx \mathbf{H}\_t^{-1}$ of the inverse Hessian, but constructs it from gradient differences alone (no second derivatives are ever computed). The full BFGS update would store and update a dense $(D+1) \times (D+1)$ matrix, which defeats the purpose. The "limited-memory" variant keeps only the last $m$ pairs of curvature information $\\{(\mathbf{s}\_k, \mathbf{y}\_k)\\}\_{k=t-m}^{t-1}$, where:
 
 {% equation(id="lbfgs-pairs") %}
-\mathbf{s}_k = \boldsymbol{\theta}_{k+1} - \boldsymbol{\theta}_k, \qquad \mathbf{y}_k = \nabla J(\boldsymbol{\theta}_{k+1}) - \nabla J(\boldsymbol{\theta}_k)
+\begin{aligned}
+\mathbf{s}_k &= \boldsymbol{\theta}_{k+1} - \boldsymbol{\theta}_k, \\\\
+\mathbf{y}_k &= \nabla J(\boldsymbol{\theta}_{k+1}) - \nabla J(\boldsymbol{\theta}_k)
+\end{aligned}
 {% end %}
 
 The product $\mathbf{B}\_t \nabla J(\boldsymbol{\theta}\_t)$ is computed by a two-loop recursion that touches only those $m$ vector pairs and the current gradient, never forming $\mathbf{B}\_t$ explicitly.{% sidenote(id="lbfgs-two-loop") %}The standard reference is Nocedal and Wright, _Numerical Optimization_, Algorithm 7.4. Each iteration costs $O(m D)$ in time and $O(m D)$ in memory; a typical choice is $m \in [5, 20]$.{% end %} The resulting update is:
@@ -504,7 +535,11 @@ Pr(\boldsymbol{\theta} \mid \mathcal{D}) \propto Pr(\mathcal{D} \mid \boldsymbol
 The MAP estimate is the mode of the posterior, $\hat{\boldsymbol{\theta}}^{\mathrm{MAP}} = \argmax\_{\boldsymbol{\theta}} Pr(\boldsymbol{\theta} \mid \mathcal{D})$. Taking the negative log of both sides turns the product into a sum and the maximisation into a minimisation, exactly the same trick we used to go from likelihood to NLL:
 
 {% equation(id="map-nll") %}
-\hat{\boldsymbol{\theta}}^{\mathrm{MAP}} = \argmin\_{\boldsymbol{\theta}}\, \Big[\, -\log Pr(\mathcal{D} \mid \boldsymbol{\theta}) - \log Pr(\boldsymbol{\theta}) \,\Big]
+\begin{aligned}
+\hat{\boldsymbol{\theta}}^{\mathrm{MAP}} = \argmin_{\boldsymbol{\theta}}\, \Big[\,
+&-\log Pr(\mathcal{D} \mid \boldsymbol{\theta}) \\\\
+&- \log Pr(\boldsymbol{\theta}) \,\Big]
+\end{aligned}
 {% end %}
 
 The first term is $N$ times the BCE cost {{ eqref(id="bce-cost-multi") }}, identical to the MLE objective. The second term is new. It is the regularisation penalty, and its shape is determined by the choice of prior. A Gaussian prior on $\boldsymbol{\theta}$ produces an $\ell_2$ penalty (ridge); a Laplace prior produces an $\ell_1$ penalty (Lasso). The strength $\lambda$ controls how much weight you give the prior relative to the likelihood.
@@ -518,7 +553,10 @@ A subtle point is that MAP is still a _point_ estimate, not a full Bayesian trea
 The intuition is shrinkage. Penalising the squared norm of $\boldsymbol{\theta}$ pulls every coefficient toward zero, trading a small amount of bias for a large reduction in variance. The model fits the training set slightly worse but generalises better, especially when features are noisy or weakly informative. Geometrically, the level sets of $\lVert \boldsymbol{\theta} \rVert_2^2$ are spheres around the origin, so the optimum lives at the point where the BCE contours first touch a sphere, gently nudging every coordinate inward. The squared $\ell_2$ norm is the formal expression of this idea:
 
 {% equation(id="ridge-cost") %}
-J_{\lambda}^{\mathrm{ridge}}(\boldsymbol{\theta}) = J(\boldsymbol{\theta}) + \frac{\lambda}{2} \lVert \boldsymbol{\theta} \rVert_2^2
+\begin{aligned}
+J_{\lambda}^{\mathrm{ridge}}(\boldsymbol{\theta}) ={}& J(\boldsymbol{\theta}) \\\\
+&+ \frac{\lambda}{2} \lVert \boldsymbol{\theta} \rVert_2^2
+\end{aligned}
 {% end %}
 
 Under the MAP reading this corresponds to a zero-mean isotropic Gaussian prior $\boldsymbol{\theta} \sim \mathcal{N}(\mathbf{0}, \tau^2 \mathbf{I})$ with $\lambda = 1/(N \tau^2)$. The penalty is smooth and strictly convex, so the regularised cost stays smooth and inherits a strong-convexity modulus $\mu \geq \lambda$ regardless of $\mathbf{X}$.
@@ -526,7 +564,10 @@ Under the MAP reading this corresponds to a zero-mean isotropic Gaussian prior $
 The gradient and Hessian pick up clean linear and constant terms:
 
 {% equation(id="ridge-grad") %}
-\nabla_{\boldsymbol{\theta}} J_{\lambda}^{\mathrm{ridge}} = \frac{1}{N}\, \mathbf{X}^{\top}(\mathbf{p} - \mathbf{y}) + \lambda\, \boldsymbol{\theta}, \qquad \nabla_{\boldsymbol{\theta}}^{2} J_{\lambda}^{\mathrm{ridge}} = \frac{1}{N}\, \mathbf{X}^{\top} \mathbf{S}\, \mathbf{X} + \lambda\, \mathbf{I}
+\begin{aligned}
+\nabla_{\boldsymbol{\theta}} J_{\lambda}^{\mathrm{ridge}} &= \frac{1}{N}\, \mathbf{X}^{\top}(\mathbf{p} - \mathbf{y}) + \lambda\, \boldsymbol{\theta}, \\\\
+\nabla_{\boldsymbol{\theta}}^{2} J_{\lambda}^{\mathrm{ridge}} &= \frac{1}{N}\, \mathbf{X}^{\top} \mathbf{S}\, \mathbf{X} + \lambda\, \mathbf{I}
+\end{aligned}
 {% end %}
 
 The $\lambda \mathbf{I}$ term lifts every eigenvalue of the Hessian by $\lambda$, so the matrix is uniformly positive definite even on rank-deficient or separable data. IRLS, gradient descent, and L-BFGS all work without modification. Convention often skips the bias term $\theta\_0$ from the penalty so the prior does not pull the intercept toward zero.
@@ -536,7 +577,10 @@ The $\lambda \mathbf{I}$ term lifts every eigenvalue of the Hessian by $\lambda$
 The intuition shifts from shrinking everything a little to **switching some features off entirely**. Lasso says: assume only a handful of the $D$ features actually drive the prediction, and let the optimiser pick which ones by setting the rest to exactly zero. This matters when features are cheap to collect but expensive to maintain or interpret, when domain experts want a short shortlist of predictors to reason about, or when the problem genuinely has a sparse underlying structure (text classification with thousands of words, gene expression with thousands of probes). The penalty is the $\ell_1$ norm:
 
 {% equation(id="lasso-cost") %}
-J_{\lambda}^{\mathrm{lasso}}(\boldsymbol{\theta}) = J(\boldsymbol{\theta}) + \lambda\, \lVert \boldsymbol{\theta} \rVert_1
+\begin{aligned}
+J_{\lambda}^{\mathrm{lasso}}(\boldsymbol{\theta}) ={}& J(\boldsymbol{\theta}) \\\\
+&+ \lambda\, \lVert \boldsymbol{\theta} \rVert_1
+\end{aligned}
 {% end %}
 
 Under MAP this is a zero-mean Laplace (double-exponential) prior on each coordinate of $\boldsymbol{\theta}$. Geometrically, the level sets of $\lVert \boldsymbol{\theta} \rVert_1$ are diamonds (cross-polytopes in higher dimensions) with sharp corners on every coordinate axis. When the BCE contours first meet such a diamond they almost always touch at a corner, where some coordinates of $\boldsymbol{\theta}$ are exactly zero. That is the geometric source of sparsity: corners attract the optimum, and the corners sit on the axes. Ridge has no corners, so it never produces exact zeros.
@@ -555,7 +599,11 @@ The intuition starts from a known weakness of Lasso. When two features carry nea
 Elastic net, introduced by Zou and Hastie (2005), fixes both by adding a small $\ell_2$ piece on top of the $\ell_1$ penalty:
 
 {% equation(id="elastic-net-cost") %}
-J_{\lambda, \alpha}^{\mathrm{en}}(\boldsymbol{\theta}) = J(\boldsymbol{\theta}) + \lambda\, \Big[\, \alpha\, \lVert \boldsymbol{\theta} \rVert_1 + \frac{1 - \alpha}{2}\, \lVert \boldsymbol{\theta} \rVert_2^2 \,\Big]
+\begin{aligned}
+J_{\lambda, \alpha}^{\mathrm{en}}(\boldsymbol{\theta}) ={}& J(\boldsymbol{\theta}) \\\\
+&+ \lambda\, \Big[\, \alpha\, \lVert \boldsymbol{\theta} \rVert_1 \\\\
+&\quad + \frac{1 - \alpha}{2}\, \lVert \boldsymbol{\theta} \rVert_2^2 \,\Big]
+\end{aligned}
 {% end %}
 
 with mixing parameter $\alpha \in [0, 1]$. At $\alpha = 0$ this reduces to ridge, at $\alpha = 1$ to Lasso. Intermediate values give a penalty whose level sets look like rounded diamonds: they still have corners on the axes (so sparsity survives), but the sides bulge outward (so correlated features get pulled together rather than apart).
@@ -575,7 +623,11 @@ The penalty strength $\lambda$ is a hyperparameter, almost always chosen by cros
 We now generalise to $K > 2$ classes. The output $y$ is one of $K$ mutually exclusive categories, encoded as a one-hot vector $\mathbf{y} \in \\{0, 1\\}^{K}$ with $\sum\_k y\_k = 1$. We replace the single parameter vector with a parameter matrix $\mathbf{W} \in \mathbb{R}^{(D+1) \times K}$ whose $k$-th column $\mathbf{w}\_k$ scores class $k$, and we replace the sigmoid with the [softmax function](/blog/softmax-function/) to map the $K$ scores into a probability distribution:
 
 {% equation(id="softmax-model") %}
-p_k = f_{\mathbf{W}}(\tilde{\mathbf{x}})\*k = \mathrm{softmax}(\mathbf{W}^{\top} \tilde{\mathbf{x}})_k = \frac{\exp(\mathbf{w}_k^{\top} \tilde{\mathbf{x}})}{\sum_{j=1}^{K} \exp(\mathbf{w}_j^{\top} \tilde{\mathbf{x}})}
+\begin{aligned}
+p_k &= f_{\mathbf{W}}(\tilde{\mathbf{x}})\*k \\\\
+&= \mathrm{softmax}(\mathbf{W}^{\top} \tilde{\mathbf{x}})_k \\\\
+&= \frac{\exp(\mathbf{w}_k^{\top} \tilde{\mathbf{x}})}{\sum_{j=1}^{K} \exp(\mathbf{w}_j^{\top} \tilde{\mathbf{x}})}
+\end{aligned}
 {% end %}
 
 Each $p\_k \in (0, 1)$ and $\sum\_k p\_k = 1$ by construction.
@@ -648,7 +700,10 @@ Stacking column-wise, the full gradient retains the same prediction-error shape 
 Adding the same vector $\mathbf{c} \in \mathbb{R}^{D+1}$ to every column of $\mathbf{W}$ shifts every score by the same constant, $\mathbf{w}\_k^{\top} \tilde{\mathbf{x}} + \mathbf{c}^{\top} \tilde{\mathbf{x}}$, which the softmax cancels exactly:
 
 {% equation(id="softmax-shift") %}
-\frac{\exp(\mathbf{w}_k^{\top} \tilde{\mathbf{x}} + \mathbf{c}^{\top} \tilde{\mathbf{x}})}{\sum_{j=1}^{K} \exp(\mathbf{w}_j^{\top} \tilde{\mathbf{x}} + \mathbf{c}^{\top} \tilde{\mathbf{x}})} = \frac{\exp(\mathbf{w}_k^{\top} \tilde{\mathbf{x}})}{\sum_{j=1}^{K} \exp(\mathbf{w}_j^{\top} \tilde{\mathbf{x}})}
+\begin{aligned}
+&\frac{\exp(\mathbf{w}_k^{\top} \tilde{\mathbf{x}} + \mathbf{c}^{\top} \tilde{\mathbf{x}})}{\sum_{j=1}^{K} \exp(\mathbf{w}_j^{\top} \tilde{\mathbf{x}} + \mathbf{c}^{\top} \tilde{\mathbf{x}})} \\\\
+&\qquad = \frac{\exp(\mathbf{w}_k^{\top} \tilde{\mathbf{x}})}{\sum_{j=1}^{K} \exp(\mathbf{w}_j^{\top} \tilde{\mathbf{x}})}
+\end{aligned}
 {% end %}
 
 So $\mathbf{W}$ is only identified up to a global column shift, and the unregularised cost has a $(D+1)$-dimensional flat direction along which the Hessian is singular. Two standard fixes: pin one class as a reference by fixing $\mathbf{w}\_K = \mathbf{0}$ (which recovers the binary model when $K = 2$), or add an $\ell\_2$ penalty $\frac{\lambda}{2} \lVert \mathbf{W} \rVert\_{F}^{2}$, which selects the unique minimum-norm solution and makes the Hessian positive definite.

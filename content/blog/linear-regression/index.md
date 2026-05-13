@@ -96,16 +96,22 @@ Consider the univariate normal distribution. It has support $y \in \mathbb{R}$ a
 We can rewrite $Pr(y_i \mid x_i, \phi)$ as:
 
 {% equation(id="gaussian-pdf") %}
-Pr(y_i \mid x_i, \phi) = \mathcal{N}(y_i \mid f_{\theta}(x_i), \sigma^2) = \frac{1}{\sqrt{2\pi\sigma^2}} \exp\left(-\frac{(y_i - f_{\theta}(x_i))^2}{2\sigma^2}\right)
+\begin{aligned}
+Pr(y_i \mid x_i, \phi) &= \mathcal{N}(y_i \mid f_{\theta}(x_i), \sigma^2) \\
+&= \frac{1}{\sqrt{2\pi\sigma^2}} \exp\left(-\frac{(y_i - f_{\theta}(x_i))^2}{2\sigma^2}\right)
+\end{aligned}
 {% end %}
 
 In this simplified version, we let the model predict the mean $\mu_i = f_{\theta}(x_i)$ and treat $\sigma^2$ as a fixed constant. Substituting {{ eqref(id="gaussian-pdf") }} into the NLL objective {{ eqref(id="nll") }}:
 
 {% equation(id="nll-gaussian") %}
 \begin{aligned}
-\hat{\theta}^{\ast} &= \argmin_{\theta} \Bigg[-\overset{N}{\underset{i=1}{\sum}} \log \frac{1}{\sqrt{2\pi\sigma^2}} \exp\left(-\frac{(y_i - f_{\theta}(x_i))^2}{2\sigma^2}\right)\Bigg] \\
-&= \argmin_{\theta} \Bigg[-\overset{N}{\underset{i=1}{\sum}} \left(-\frac{1}{2}\log(2\pi\sigma^2) - \frac{(y_i - f_{\theta}(x_i))^2}{2\sigma^2}\right)\Bigg] \\
-&= \argmin_{\theta} \Bigg[\overset{N}{\underset{i=1}{\sum}} \frac{(y_i - f_{\theta}(x_i))^2}{2\sigma^2} + \frac{N}{2}\log(2\pi\sigma^2)\Bigg]
+\hat{\theta}^{\ast} &= \argmin_{\theta} \Bigg[-\overset{N}{\underset{i=1}{\sum}} \log \bigg( \frac{1}{\sqrt{2\pi\sigma^2}} \\
+&\qquad\qquad \cdot \exp\left(-\frac{(y_i - f_{\theta}(x_i))^2}{2\sigma^2}\right) \bigg)\Bigg] \\
+&= \argmin_{\theta} \Bigg[-\overset{N}{\underset{i=1}{\sum}} \bigg(-\frac{1}{2}\log(2\pi\sigma^2) \\
+&\qquad\qquad - \frac{(y_i - f_{\theta}(x_i))^2}{2\sigma^2}\bigg)\Bigg] \\
+&= \argmin_{\theta} \Bigg[\overset{N}{\underset{i=1}{\sum}} \frac{(y_i - f_{\theta}(x_i))^2}{2\sigma^2} \\
+&\qquad\qquad + \frac{N}{2}\log(2\pi\sigma^2)\Bigg]
 \end{aligned}
 {% end %}
 
@@ -161,7 +167,10 @@ A cost function $J(\theta)$ is the average loss over the training data: $J(\thet
 We can now dissect {{ eqref(id="mse") }} into these two components. The individual loss is the squared error $\ell(y_i, \hat{y}_i) = (y_i - \hat{y}_i)^2$, and the cost function is its average over the training set:
 
 {% equation(id="mse-cost") %}
-\hat{\theta}^{\ast} = \argmin_{\theta} J(\theta) = \argmin_{\theta} \frac{1}{N} \overset{N}{\underset{i=1}{\sum}} (y_i - f_{\theta}(x_i))^2
+\begin{aligned}
+\hat{\theta}^{\ast} &= \argmin_{\theta} J(\theta) \\
+&= \argmin_{\theta} \frac{1}{N} \overset{N}{\underset{i=1}{\sum}} (y_i - f_{\theta}(x_i))^2
+\end{aligned}
 {% end %}
 
 ### Point estimation
@@ -183,7 +192,10 @@ Let $y \sim \mathcal{N}(\mu, \sigma^2)$. Then $\argmax_y Pr(y \mid \mu, \sigma^2
 {% mathblock(kind="proof", name="", id="gaussian-mode-proof") %}
 The density of the normal distribution is $Pr(y \mid \mu, \sigma^2) = \frac{1}{\sqrt{2\pi\sigma^2}} \exp\left(-\frac{(y - \mu)^2}{2\sigma^2}\right)$. Since $\frac{1}{\sqrt{2\pi\sigma^2}}$ is a positive constant and the exponential is a strictly increasing function, maximizing the density is equivalent to maximizing the exponent:
 
-$$\argmax_y Pr(y \mid \mu, \sigma^2) = \argmax_y \left(-\frac{(y - \mu)^2}{2\sigma^2}\right) = \argmin_y (y - \mu)^2$$
+$$\begin{aligned}
+\argmax_y Pr(y \mid \mu, \sigma^2) &= \argmax_y \left(-\frac{(y - \mu)^2}{2\sigma^2}\right) \\
+&= \argmin_y (y - \mu)^2
+\end{aligned}$$
 
 The function $(y - \mu)^2$ is a convex quadratic with a unique minimum. Setting its derivative to zero: $\frac{d}{dy}(y - \mu)^2 = 2(y - \mu) = 0$, which gives $y = \mu$. $\square$
 {% end %}
@@ -227,8 +239,10 @@ Expanding and substituting {{ eqref(id="theta0-solution") }}:
 
 {% equation(id="theta1-derivation") %}
 \begin{aligned}
-\overset{N}{\underset{i=1}{\sum}} x_i\, y_i - (\bar{y} - \theta_1^{\ast}\, \bar{x}) \overset{N}{\underset{i=1}{\sum}} x_i - \theta_1^{\ast} \overset{N}{\underset{i=1}{\sum}} x_i^2 &= 0 \\
-\overset{N}{\underset{i=1}{\sum}} x_i\, y_i - N\bar{x}\bar{y} + \theta_1^{\ast}\!\left(N\bar{x}^2 - \overset{N}{\underset{i=1}{\sum}} x_i^2\right) &= 0
+\overset{N}{\underset{i=1}{\sum}} x_i\, y_i - (\bar{y} - \theta_1^{\ast}\, \bar{x}) \overset{N}{\underset{i=1}{\sum}} x_i & \\
+{} - \theta_1^{\ast} \overset{N}{\underset{i=1}{\sum}} x_i^2 &= 0 \\
+\overset{N}{\underset{i=1}{\sum}} x_i\, y_i - N\bar{x}\bar{y} & \\
+{} + \theta_1^{\ast}\!\left(N\bar{x}^2 - \overset{N}{\underset{i=1}{\sum}} x_i^2\right) &= 0
 \end{aligned}
 {% end %}
 
@@ -249,7 +263,10 @@ The numerator is the sample covariance between $x$ and $y$ (up to a factor of $N
 We now generalise to a vector input $\mathbf{x} \in \mathbb{R}^D$, while keeping the output $y \in \mathbb{R}$ scalar. To keep the algebra clean, we absorb the bias term by augmenting each input with a leading $1$, so that $\tilde{\mathbf{x}} = (1, x_{1}, \ldots, x_{D})^{\top} \in \mathbb{R}^{D+1}$ and $\boldsymbol{\theta} = (\theta_{0}, \theta_{1}, \ldots, \theta_{D})^{\top} \in \mathbb{R}^{D+1}$. The model is then a single inner product:
 
 {% equation(id="linear-model-multi") %}
-f_{\boldsymbol{\theta}}(\mathbf{x}) = \theta_{0} + \theta_{1} x_{1} + \cdots + \theta_{D} x_{D} = \boldsymbol{\theta}^{\top} \tilde{\mathbf{x}}
+\begin{aligned}
+f_{\boldsymbol{\theta}}(\mathbf{x}) &= \theta_{0} + \theta_{1} x_{1} + \cdots + \theta_{D} x_{D} \\
+&= \boldsymbol{\theta}^{\top} \tilde{\mathbf{x}}
+\end{aligned}
 {% end %}
 
 ### Matrix form of the cost function
@@ -263,7 +280,10 @@ The probabilistic story from the univariate case carries over unchanged: under t
 the vector of predictions is $\mathbf{X}\boldsymbol{\theta}$ and the vector of residuals is $\mathbf{y} - \mathbf{X}\boldsymbol{\theta}$. The cost function is the squared $\ell_{2}$ norm of the residual:
 
 {% equation(id="cost-multi") %}
-J(\boldsymbol{\theta}) = \frac{1}{N} \lVert \mathbf{y} - \mathbf{X}\boldsymbol{\theta} \rVert_{2}^{2} = \frac{1}{N} (\mathbf{y} - \mathbf{X}\boldsymbol{\theta})^{\top} (\mathbf{y} - \mathbf{X}\boldsymbol{\theta})
+\begin{aligned}
+J(\boldsymbol{\theta}) &= \frac{1}{N} \lVert \mathbf{y} - \mathbf{X}\boldsymbol{\theta} \rVert_{2}^{2} \\
+&= \frac{1}{N} (\mathbf{y} - \mathbf{X}\boldsymbol{\theta})^{\top} (\mathbf{y} - \mathbf{X}\boldsymbol{\theta})
+\end{aligned}
 {% end %}
 
 ### The normal equations
@@ -271,13 +291,19 @@ J(\boldsymbol{\theta}) = \frac{1}{N} \lVert \mathbf{y} - \mathbf{X}\boldsymbol{\
 Expanding {{ eqref(id="cost-multi") }} and dropping the $1/N$ factor (it does not affect the $\argmin$):
 
 {% equation(id="cost-expanded") %}
-N \cdot J(\boldsymbol{\theta}) = \mathbf{y}^{\top} \mathbf{y} - 2\, \boldsymbol{\theta}^{\top} \mathbf{X}^{\top} \mathbf{y} + \boldsymbol{\theta}^{\top} \mathbf{X}^{\top} \mathbf{X}\, \boldsymbol{\theta}
+\begin{aligned}
+N \cdot J(\boldsymbol{\theta}) &= \mathbf{y}^{\top} \mathbf{y} - 2\, \boldsymbol{\theta}^{\top} \mathbf{X}^{\top} \mathbf{y} \\
+&\quad + \boldsymbol{\theta}^{\top} \mathbf{X}^{\top} \mathbf{X}\, \boldsymbol{\theta}
+\end{aligned}
 {% end %}
 
 Taking the gradient with respect to $\boldsymbol{\theta}$ and setting it to zero:{% sidenote(id="matrix-calc") %}We use the identities $\nabla_{\boldsymbol{\theta}} (\boldsymbol{\theta}^{\top} \mathbf{a}) = \mathbf{a}$ and $\nabla_{\boldsymbol{\theta}} (\boldsymbol{\theta}^{\top} \mathbf{A} \boldsymbol{\theta}) = (\mathbf{A} + \mathbf{A}^{\top}) \boldsymbol{\theta}$, which equals $2 \mathbf{A} \boldsymbol{\theta}$ when $\mathbf{A}$ is symmetric.{% end %}
 
 {% equation(id="gradient-zero") %}
-\nabla_{\boldsymbol{\theta}} J = \frac{2}{N} \left( \mathbf{X}^{\top} \mathbf{X}\, \boldsymbol{\theta} - \mathbf{X}^{\top} \mathbf{y} \right) = \mathbf{0}
+\begin{aligned}
+\nabla_{\boldsymbol{\theta}} J &= \frac{2}{N} \left( \mathbf{X}^{\top} \mathbf{X}\, \boldsymbol{\theta} - \mathbf{X}^{\top} \mathbf{y} \right) \\
+&= \mathbf{0}
+\end{aligned}
 {% end %}
 
 Rearranging gives the _normal equations_, so named because they say the residual $\mathbf{y} - \mathbf{X}\boldsymbol{\theta}$ is _normal_ (perpendicular) to every column of $\mathbf{X}$, ie, the fitted values $\mathbf{X}\boldsymbol{\theta}$ are the orthogonal projection of $\mathbf{y}$ onto the column space of $\mathbf{X}$:
@@ -354,7 +380,10 @@ The vector $\mathbf{u}\_{j}$ is the residual of $\mathbf{x}\_{j}$ after subtract
 The entries of $\mathbf{R}$ fall out as a side effect. Reading {{ eqref(id="gram-schmidt") }} backwards:
 
 {% equation(id="x-decomposition") %}
-\mathbf{x}_{j} = \mathbf{u}_{j} + \sum_{k=1}^{j-1} \langle \mathbf{q}_{k}, \mathbf{x}_{j} \rangle\, \mathbf{q}_{k} = \lVert \mathbf{u}_{j} \rVert_{2}\, \mathbf{q}_{j} + \sum_{k=1}^{j-1} \langle \mathbf{q}_{k}, \mathbf{x}_{j} \rangle\, \mathbf{q}_{k}
+\begin{aligned}
+\mathbf{x}_{j} &= \mathbf{u}_{j} + \sum_{k=1}^{j-1} \langle \mathbf{q}_{k}, \mathbf{x}_{j} \rangle\, \mathbf{q}_{k} \\
+&= \lVert \mathbf{u}_{j} \rVert_{2}\, \mathbf{q}_{j} + \sum_{k=1}^{j-1} \langle \mathbf{q}_{k}, \mathbf{x}_{j} \rangle\, \mathbf{q}_{k}
+\end{aligned}
 {% end %}
 
 which gives:
@@ -408,13 +437,19 @@ When $\mathbf{X}$ is rank-deficient (collinear features, or $N < D+1$), $\mathbf
 where $\mathbf{U} \in \mathbb{R}^{N \times N}$ and $\mathbf{V} \in \mathbb{R}^{(D+1) \times (D+1)}$ are orthogonal and $\boldsymbol{\Sigma} \in \mathbb{R}^{N \times (D+1)}$ is diagonal with non-negative singular values $\sigma_{1} \geq \sigma_{2} \geq \cdots \geq \sigma_{r} > 0$ (with $r = \mathrm{rank}(\mathbf{X})$) and zeros elsewhere. The Moore-Penrose pseudoinverse is:
 
 {% equation(id="pseudoinverse-svd") %}
-\mathbf{X}^{+} = \mathbf{V} \boldsymbol{\Sigma}^{+} \mathbf{U}^{\top}, \qquad \boldsymbol{\Sigma}^{+}_{i,i} = \begin{cases} 1 / \sigma_{i} & \text{if } \sigma_{i} > 0 \\ 0 & \text{otherwise} \end{cases}
+\begin{aligned}
+\mathbf{X}^{+} &= \mathbf{V} \boldsymbol{\Sigma}^{+} \mathbf{U}^{\top}, \\
+\boldsymbol{\Sigma}^{+}_{i,i} &= \begin{cases} 1 / \sigma_{i} & \text{if } \sigma_{i} > 0 \\ 0 & \text{otherwise} \end{cases}
+\end{aligned}
 {% end %}
 
 so the SVD-based solution is:
 
 {% equation(id="svd-solution") %}
-\hat{\boldsymbol{\theta}}^{\ast} = \mathbf{X}^{+} \mathbf{y} = \mathbf{V} \boldsymbol{\Sigma}^{+} \mathbf{U}^{\top} \mathbf{y}
+\begin{aligned}
+\hat{\boldsymbol{\theta}}^{\ast} &= \mathbf{X}^{+} \mathbf{y} \\
+&= \mathbf{V} \boldsymbol{\Sigma}^{+} \mathbf{U}^{\top} \mathbf{y}
+\end{aligned}
 {% end %}
 
 When $\mathbf{X}$ has full column rank, this coincides with the QR solution and with {{ eqref(id="normal-solution") }}. When $\mathbf{X}$ is rank-deficient, infinitely many least-squares solutions exist and the SVD picks the one with minimum $\lVert \boldsymbol{\theta} \rVert_{2}$. Inverting only the non-zero singular values also exposes a natural regularisation knob: small $\sigma\_{i}$ amplify noise in $\mathbf{y}$, so truncating them (zeroing out their inverses) yields the _truncated SVD_, a close cousin of ridge regression.
@@ -424,7 +459,10 @@ When $\mathbf{X}$ has full column rank, this coincides with the QR solution and 
 A clean way to see where the SVD comes from is via the eigendecompositions of $\mathbf{X}^{\top} \mathbf{X}$ and $\mathbf{X} \mathbf{X}^{\top}$. Both are symmetric positive semidefinite, so they admit real orthonormal eigendecompositions:
 
 {% equation(id="svd-eig-v") %}
-\mathbf{X}^{\top} \mathbf{X} = \mathbf{V} \boldsymbol{\Lambda} \mathbf{V}^{\top}, \qquad \boldsymbol{\Lambda} = \mathrm{diag}(\lambda_{1}, \ldots, \lambda_{D+1}), \quad \lambda_{i} \geq 0
+\begin{aligned}
+\mathbf{X}^{\top} \mathbf{X} &= \mathbf{V} \boldsymbol{\Lambda} \mathbf{V}^{\top}, \\
+\boldsymbol{\Lambda} &= \mathrm{diag}(\lambda_{1}, \ldots, \lambda_{D+1}), \quad \lambda_{i} \geq 0
+\end{aligned}
 {% end %}
 
 {% equation(id="svd-eig-u") %}
