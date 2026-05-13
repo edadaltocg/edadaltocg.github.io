@@ -56,40 +56,43 @@ def parse_bib(text):
 
 
 LATEX_ACCENTS = {
-    r"{\"o}": "ö",
-    r"{\"a}": "ä",
-    r"{\"u}": "ü",
-    r"{\"O}": "Ö",
-    r"{\"A}": "Ä",
-    r"{\"U}": "Ü",
-    r"{\'e}": "é",
-    r"{\'a}": "á",
-    r"{\'i}": "í",
-    r"{\'o}": "ó",
-    r"{\'u}": "ú",
-    r"{\'E}": "É",
-    r"{\`e}": "è",
-    r"{\`a}": "à",
-    r"{\`i}": "ì",
-    r"{\`o}": "ò",
-    r"{\^e}": "ê",
-    r"{\^a}": "â",
-    r"{\^i}": "î",
-    r"{\^o}": "ô",
-    r"{\~n}": "ñ",
-    r"{\~o}": "õ",
-    r"{\~a}": "ã",
-    r"{\c{c}}": "ç",
-    r"{\c c}": "ç",
-    r"{\L}": "Ł",
-    r"{\l}": "ł",
-    r"{\ss}": "ß",
+    "o": "ö",
+    "a": "ä",
+    "u": "ü",
+    "O": "Ö",
+    "A": "Ä",
+    "U": "Ü",
 }
+LATEX_ACCENTS_ACUTE = {
+    "e": "é",
+    "a": "á",
+    "i": "í",
+    "o": "ó",
+    "u": "ú",
+    "E": "É",
+    "n": "ń",
+}
+LATEX_ACCENTS_GRAVE = {"e": "è", "a": "à", "i": "ì", "o": "ò"}
+LATEX_ACCENTS_CIRC = {"e": "ê", "a": "â", "i": "î", "o": "ô"}
+LATEX_ACCENTS_TILDE = {"n": "ñ", "o": "õ", "a": "ã"}
+LATEX_OTHER = {"L": "Ł", "l": "ł", "ss": "ß"}
 
 
 def clean_title(t: str) -> str:
-    for k, v in LATEX_ACCENTS.items():
-        t = t.replace(k, v)
+    # Both `{\"o}` and `\"{o}` and `\"o` forms occur.
+    for letter, ch in LATEX_ACCENTS.items():
+        t = re.sub(rf"\{{?\\\"\{{?{letter}\}}?\}}?", ch, t)
+    for letter, ch in LATEX_ACCENTS_ACUTE.items():
+        t = re.sub(rf"\{{?\\'\{{?{letter}\}}?\}}?", ch, t)
+    for letter, ch in LATEX_ACCENTS_GRAVE.items():
+        t = re.sub(rf"\{{?\\`\{{?{letter}\}}?\}}?", ch, t)
+    for letter, ch in LATEX_ACCENTS_CIRC.items():
+        t = re.sub(rf"\{{?\\\^\{{?{letter}\}}?\}}?", ch, t)
+    for letter, ch in LATEX_ACCENTS_TILDE.items():
+        t = re.sub(rf"\{{?\\~\{{?{letter}\}}?\}}?", ch, t)
+    t = re.sub(r"\{?\\c\s*\{?c\}?\}?", "ç", t)
+    for k, v in LATEX_OTHER.items():
+        t = t.replace(rf"{{\{k}}}", v).replace(rf"\{k}{{}}", v)
     return re.sub(r"[{}\\]", "", t).strip()
 
 
@@ -210,6 +213,26 @@ def process(bib_path: Path, fix: bool) -> list[str]:
             problems.append(f"  [{key}] weak match ({score:.2f}): {hit.get('title')!r}")
             continue
         if fix and score >= MATCH_FIX:
+            existing_surnames = {
+                first_surname(a).lower()
+                for a in f.get("author", "").split(" and ")
+                if a
+            }
+            dblp_surnames = {
+                clean_title(s).lower()
+                for s in authors_from_dblp(hit).split(" and ")
+                if s
+            }
+            dblp_surnames = {s.split(",")[0].strip() for s in dblp_surnames}
+            if (
+                existing_surnames
+                and dblp_surnames
+                and existing_surnames.isdisjoint(dblp_surnames)
+            ):
+                problems.append(
+                    f"  [{key}] dblp match has no overlapping author; skipped"
+                )
+                continue
             new = render_entry(key, hit)
             m = re.search(
                 rf"@\w+\s*\{{\s*{re.escape(key)}\s*,.*?\n\}}", text, re.DOTALL

@@ -11,7 +11,7 @@ categories = ["notes"]
 math = true
 +++
 
-## From Linear Models to Neural Networks
+## From linear models to neural networks
 
 The [linear regression](/blog/linear-regression/) and [logistic regression](/blog/logistic-regression/) posts share a common shape: a linear score $\boldsymbol{\theta}^{\top} \tilde{\mathbf{x}}$ feeds through an output transformation. The transformation is the identity for real-valued regression, the sigmoid for binary classification, and the [softmax](/blog/softmax-function/) for the multiclass case. Both models work well when the relationship between inputs and outputs is captured by such a linear score and they fail when it is not.
 
@@ -44,7 +44,7 @@ Three observations follow directly from the construction. The output head is unc
 
 What remains in this note is to formalise the architecture, justify why the construction is expressive enough to be worth bothering with, derive the gradient via backpropagation, walk through optimisation and initialisation in the regime where the loss surface is no longer convex, and address the regularisation techniques that keep deep networks generalising.
 
-## Feedforward Architecture
+## Feedforward architecture
 
 Let $L \geq 1$ denote the number of layers, $d\_0 = D$ the input dimension, and $d\_L$ the output dimension. Each layer $\ell \in \\{1, \ldots, L\\}$ has a weight matrix $\mathbf{W}^{(\ell)} \in \mathbb{R}^{d\_\ell \times d\_{\ell-1}}$, a bias vector $\mathbf{b}^{(\ell)} \in \mathbb{R}^{d\_\ell}$, and an activation $\phi^{(\ell)}$ applied elementwise. The forward pass is defined recursively by:
 
@@ -60,7 +60,7 @@ with the model output $\hat{\mathbf{y}} = \mathbf{a}^{(L)}$. The collection of a
 
 The choice of $\phi^{(L)}$ on the output layer is dictated by the task. Regression heads use the identity $\phi^{(L)}(\mathbf{z}) = \mathbf{z}$ to leave the prediction in $\mathbb{R}^{d\_L}$. Binary classification heads use the sigmoid, exactly as in the [logistic-regression](/blog/logistic-regression/) post, so $\hat{y}$ lives in $(0, 1)$. Multiclass heads use the [softmax](/blog/softmax-function/), so $\hat{\mathbf{y}}$ lies in the probability simplex. The hidden activations $\phi^{(1)}, \ldots, \phi^{(L-1)}$ are free design choices and are the subject of a later section.
 
-## Universal Approximation
+## Universal approximation
 
 Why bother stacking layers at all? The answer is that an MLP with even a single hidden layer is, in a precise sense, expressive enough to approximate any reasonable function on a bounded domain. The one-line version is that a wide enough hidden layer can draw any continuous curve to any tolerance you ask for; the catch is that "wide enough" can mean astronomically wide, which is why depth ends up mattering in practice.
 
@@ -95,7 +95,7 @@ Because $\phi$ is non-polynomial, no smoothed version is annihilated by any fini
 The theorem guarantees that some MLP fits $f$ to arbitrary accuracy. It does not say that gradient descent on a finite dataset will find that MLP, that the required width $d\_1$ is feasible, or that the parameter values needed are stable under noise. In practice, **depth** trades off against width exponentially for many functions: deep networks compute hierarchies of features that a single wide layer would need exponentially more units to match.{% sidenote(id="depth-width") %}Telgarsky{{ reference(key="telgarsky2016benefits") }} gives explicit functions that a depth-$L$ ReLU network of width $O(L)$ computes but that any depth-$O(L^{1/3})$ network needs width $\Omega(2^L)$ to approximate.{% end %} The combination of expressivity, optimisability, and statistical generalisation is what makes deep networks useful, and only the first of these is what universal approximation establishes.
 {% end %}
 
-## Activation Functions
+## Activation functions
 
 The hidden activations are where the network gets its non-linearity, and the choice meaningfully affects both expressivity and trainability. Four are worth knowing.
 
@@ -132,7 +132,7 @@ GELU is smooth everywhere, behaves like ReLU for large $|z|$, and gates small in
 Use **ReLU** as the default for hidden layers in feedforward and convolutional architectures. Use **GELU** in transformer-style architectures, where the smoothness pays off. Reserve **sigmoid** and **tanh** for places where bounded output is structurally required, such as binary heads, gating mechanisms, and classical recurrent cells. Avoid sigmoid and tanh in deep hidden stacks, where their saturation will throttle backpropagation.
 {% end %}
 
-## Loss Functions
+## Loss functions
 
 The loss machinery is unchanged from the prior posts. For a regression head with output $\hat{\mathbf{y}} \in \mathbb{R}^{d\_L}$ we use mean squared error, derived in the [linear-regression](/blog/linear-regression/) post as the negative log-likelihood under a Gaussian observation model. For a binary head with $\hat{y} \in (0, 1)$ we use binary cross-entropy, derived in the [logistic-regression](/blog/logistic-regression/) post as the negative log-likelihood under a Bernoulli model. For a multiclass head with $\hat{\mathbf{y}}$ in the simplex we use categorical cross-entropy, derived in the same post as the negative log-likelihood under a categorical model and computed numerically via the [softmax](/blog/softmax-function/) log-sum-exp identity.
 
@@ -210,7 +210,7 @@ For a 2-layer ReLU regressor with MSE loss, the entire forward + backward pass f
 Time is $O\!\left(B \sum\_{\ell=1}^{L} d\_\ell\, d\_{\ell-1}\right)$ for a batch of size $B$, dominated by the $L$ matrix multiplications in each direction. Memory is $O\!\left(B \sum\_{\ell=0}^{L} d\_\ell\right)$ to cache activations for the backward pass, plus $O(P)$ to hold the parameter gradients. The backward pass costs roughly twice the forward pass, since each layer produces two products (one against $\mathbf{a}^{(\ell-1)}$ and one against $\boldsymbol{\delta}^{(\ell+1)}$) instead of one. Activation memory is the practical bottleneck for very deep or wide networks, and **gradient checkpointing** (recomputing a subset of activations on the backward pass instead of caching them) trades extra computation for lower memory.
 {% end %}
 
-### A Worked Example by Hand
+### A worked example by hand
 
 To make the recurrence concrete, here is a single training step for a tiny network: $D = 2$ inputs, one hidden layer of width $d\_1 = 2$ with sigmoid activation, and one output unit with sigmoid activation trained against binary cross-entropy. The parameters are
 
@@ -288,7 +288,7 @@ Two sanity checks fall out for free. The zero column of $\partial \ell / \partia
 
 Even with the gradient in hand, the loss surface of an MLP is not convex (the composition of affine maps with non-linearities destroys the convexity of the per-layer pieces) and there is no analogue of the IRLS or normal-equations closed form from the linear and logistic cases. We rely on first-order iterative methods. Three are foundational.
 
-### Stochastic Gradient Descent
+### Stochastic gradient descent
 
 Computing $\nabla J$ exactly requires a full pass over the dataset, which is wasteful when $N$ is large and the gradient at each step is similar. Stochastic gradient descent (SGD) replaces the full gradient by an unbiased estimator $\widetilde{\nabla} J(\boldsymbol{\theta})$ obtained from a uniformly sampled minibatch $\mathcal{B} \subset \\{1, \ldots, N\\}$ of size $B$:
 
@@ -365,7 +365,7 @@ In code the whole update is six lines, with the bias correction visible directly
 Time is $O(B \cdot P)$ as for SGD, plus $O(P)$ for the elementwise updates of $\mathbf{m}$, $\mathbf{v}$, and the parameter update itself. The constant overhead is roughly $3\times$ that of SGD (three passes over the parameter buffer instead of one), which is invisible next to the matmul cost in any reasonably sized network. Memory is the real difference: Adam stores $\mathbf{m}$ and $\mathbf{v}$ at the same shape as $\boldsymbol{\theta}$, so optimiser state alone is $2P$ on top of the $P$-sized gradient buffer. For a model with $P = 10^9$ parameters in float32, this is 8 GB of optimiser state, often the bottleneck before activation memory becomes one. Mixed-precision training and 8-bit optimisers exist precisely to compress this footprint.
 {% end %}
 
-## Initialisation and the Vanishing or Exploding Gradient Problem
+## Initialisation and the vanishing or exploding gradient problem
 
 The forward and backward passes both reduce to a chain of matrix multiplications interleaved with elementwise non-linearities. A chain of $L$ matrices behaves geometrically: the norm of a propagated signal scales like the product of the per-matrix singular values. If those products are systematically far from $1$, the signal either explodes or vanishes through the depth, and the network cannot train. The numbers are unforgiving on this: $0.9^{50} \approx 0.005$ vanishes, $1.1^{50} \approx 117$ explodes, so the entire trick of training a deep network is keeping the per-layer multiplier hugging $1$.
 
@@ -410,7 +410,7 @@ Initialisation alone is not always enough. The next section covers the technique
 
 A network with enough parameters can drive its training loss arbitrarily close to zero, often by memorising idiosyncrasies of the training set that do not generalise. Regularisation is the umbrella term for techniques that close the gap between training and test performance, either by constraining the parameters, by injecting noise into training, or by normalising the per-layer statistics so that the optimiser sees a better-conditioned landscape. The last category overlaps with optimisation rather than with regularisation in the strict statistical sense, but the methods are normally taught together because they share the same place in the training loop and their effects compound.
 
-### Weight Decay
+### Weight decay
 
 The simplest regulariser adds a quadratic penalty on the weights to the cost function:
 
@@ -443,7 +443,7 @@ The mechanism has two complementary interpretations. Statistically, dropout is a
 <figcaption>Without dropout the train loss collapses to near zero while the validation loss climbs; dropout keeps the gap small.</figcaption>
 </figure> Typical drop probabilities are $p = 0.1$ to $0.5$ in fully connected layers and lower in convolutional ones. Dropout is largely absent from the hidden states of modern transformers but remains standard inside attention as **attention dropout** on the softmax output.
 
-### Batch Normalisation
+### Batch normalisation
 
 The name says where the statistics come from: per-unit mean and variance are computed over the current minibatch (the _batch_ axis), then used to standardise that unit. Ioffe and Szegedy{{ reference(key="ioffe2015batchnorm") }} observed that the distribution of pre-activations to each layer drifts during training as upstream weights change, which slows convergence. **Batch normalisation** counters this drift by standardising the pre-activations of each unit across the minibatch, then re-introducing controlled scale and shift via two learned parameters per unit.
 
@@ -459,6 +459,14 @@ with parameters $\gamma, \beta \in \mathbb{R}$ trained jointly with the rest of 
 
 The learned $\gamma$ and $\beta$ recover the network's ability to produce any mean and variance it wants on each unit, so batch norm does not, in principle, limit expressivity. What it does is decouple the optimisation of layer $\ell$ from the optimisation of all upstream layers: gradient updates that change the scale of upstream weights are absorbed into $\mu\_{\mathcal{B}}$ and $\sigma\_{\mathcal{B}}$ at the next batch, leaving the downstream loss unaffected. The picture is that batch norm standardises every unit and then hands the optimiser two knobs ($\gamma$ and $\beta$) per unit to undo the standardisation if it wants, so the optimiser pays for scale changes only when they actually help. In practice this lets the optimiser take much larger steps and dampens sensitivity to initialisation.
 
+{% mathblock(kind="proposition", name="Scale invariance to upstream weights", id="bn-scale-invariance") %}
+If the pre-activation of a unit is $z\_i = \mathbf{w}^{\top} \mathbf{a}\_i$ for some upstream activation $\mathbf{a}\_i$, then rescaling $\mathbf{w} \to \alpha \mathbf{w}$ for any $\alpha > 0$ leaves $\mathrm{BN}(z\_i)$ unchanged (in the limit $\varepsilon \to 0$).
+{% end %}
+
+{% mathblock(kind="proof", name="(scale invariance)", id="bn-scale-proof") %}
+Rescaling $\mathbf{w} \to \alpha \mathbf{w}$ sends $z\_i \to \alpha z\_i$, hence $\mu\_{\mathcal{B}} \to \alpha \mu\_{\mathcal{B}}$ and $\sigma\_{\mathcal{B}} \to \lvert \alpha \rvert \sigma\_{\mathcal{B}}$. The standardised value becomes $(\alpha z\_i - \alpha \mu\_{\mathcal{B}}) / (\lvert \alpha \rvert \sigma\_{\mathcal{B}}) = \mathrm{sign}(\alpha)\, \hat{z}\_i$, which equals $\hat{z}\_i$ for $\alpha > 0$. The affine layer $\gamma \hat{z}\_i + \beta$ then yields the same output regardless of $\alpha$. The downstream loss therefore depends on the upstream weights only through their direction, not their magnitude, so any gradient component that points along the rescaling direction has no effect on the loss. $\square$
+{% end %}
+
 At inference time, the batch statistics are not available (one might be processing a single example), so they are replaced by exponential moving averages collected during training,
 
 {% equation(id="bn-ema") %}
@@ -471,7 +479,7 @@ with momentum $\alpha \in [0.01, 0.1]$. Batch norm has a small regularising side
 Batch norm's statistics are only meaningful when $B$ is large enough that the empirical mean and variance are reasonable estimates of the population values. Tiny batches ($B < 16$) and per-device batches in distributed training make the statistics noisy and degrade performance. Recurrent networks fed variable-length sequences cannot share statistics across time steps cleanly. Both cases are exactly where layer normalisation comes in.
 {% end %}
 
-### Layer Normalisation
+### Layer normalisation
 
 Layer normalisation, due to Ba, Kiros, and Hinton{{ reference(key="ba2016layernorm") }}{% sidenote(id="ln-ref") %}The same Jimmy Ba behind Adam.{% end %}, swaps the axis along which statistics are computed: instead of normalising each unit across the batch, it normalises the units of a single sample across the feature dimension.
 
@@ -487,7 +495,7 @@ The two key practical differences from batch norm follow directly. The statistic
 
 Variants worth knowing exist for completeness. **RMSNorm** drops the mean-centring step and normalises by the root-mean-square alone, saving a few flops while preserving most of the benefits, and is the default in modern large language models. **Group normalisation** computes statistics over groups of channels within a single sample and is a useful CNN replacement for batch norm at small batch sizes.
 
-### Early Stopping
+### Early stopping
 
 The cheapest regulariser is to monitor a held-out validation loss during training and stop the moment it starts increasing, even if the training loss is still decreasing. Because gradient descent moves the parameters away from their initialisation by an amount that grows with the number of steps, early stopping implicitly bounds $\lVert \boldsymbol{\theta}\_{t} - \boldsymbol{\theta}\_{0} \rVert$ and is therefore close cousins with weight decay around the initialisation point. It is essentially free, requires no architectural change, and ought to be enabled by default in any training run that has a validation set.
 

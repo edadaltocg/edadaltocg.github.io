@@ -65,3 +65,7 @@ which is the negative log-likelihood under the softmax model. Its gradient with 
 {% math() %}
 \frac{\partial \mathcal{L}}{\partial z_i} = \sigma(\mathbf{z})\_i - \mathbb{1}[i = y].
 {% end %}
+
+{% mathblock(kind="proof", name="(softmax cross-entropy gradient)", id="softmax-grad-proof") %}
+Differentiating the two terms of $\mathcal{L} = -z\_y + \log \sum\_j e^{z\_j}$ with respect to $z\_i$: the first contributes $-\partial z\_y / \partial z\_i = -\mathbb{1}[i = y]$, and the second contributes $\partial / \partial z\_i \log \sum\_j e^{z\_j} = e^{z\_i} / \sum\_j e^{z\_j} = \sigma(\mathbf{z})\_i$ by the chain rule. Summing gives the stated identity. $\square$
+{% end %}

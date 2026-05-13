@@ -25,17 +25,26 @@
   integrity="sha256-4O4pS1SH31ZqrSO2A/2QJTVjTPqVe+jnYgOWUVr7EEc=" crossorigin="anonymous"></script>
 
 <style>
-  .katex-display>.katex {
-    display: inline-block;
+  /* Wide display equations should scroll horizontally inside their own
+     box on narrow screens instead of overflowing the page. The scroll
+     container must be `.katex-display` (the outer block); putting
+     overflow on the inner `.katex` lets KaTeX's centred layout still
+     poke past the right margin on mobile. */
+  .katex-display {
     max-width: 100%;
     overflow-x: auto;
     overflow-y: hidden;
+    padding: 0.5em 0;
+  }
+
+  .katex-display > .katex {
+    display: inline-block;
+    max-width: none;
     white-space: nowrap;
+    text-align: initial;
   }
 
   .katex {
-    width: 100%;
-    white-space: normal;
     text-indent: 0;
   }
 </style>

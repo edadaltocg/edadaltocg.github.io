@@ -11,7 +11,7 @@ categories = ["notes"]
 math = true
 +++
 
-## Univariate Linear Regression
+## Univariate linear regression
 
 Consider the following problem.
 We want to predict a single scalar output $y \in \mathbb{R}$ from a single input $x \in \mathbb{R}$ using a model $f_{\theta}:\mathbb{R} \to \mathbb{R}$ with parameters vector $\boldsymbol{\theta}$.
@@ -31,7 +31,7 @@ where $\theta_0$ is the intercept (or bias) and $\theta_1$ is the slope, so $\bo
 <figcaption>The best-fit line minimises the sum of squared vertical residuals (grey segments).</figcaption>
 </figure>
 
-### Maximum Likelihood Estimation
+### Maximum likelihood estimation
 
 For this task, we have collected a supervised dataset of input/output pairs denoted $\mathcal{D}\=\\{(x\_i, y\_i)\\}\_{i=1}^N$.
 We can view the relationship between inputs and outputs through its conditional probability distribution $Pr(y\mid x)$.
@@ -64,7 +64,7 @@ Substituting back into our objective, we arrive at
 \hat{\theta}^{\ast} = \argmax_{\theta} \Bigg[\overset{N}{\underset{i=1}{\Pi}} Pr\big(y_i | f_{\theta}(x_i)\big)\Bigg]
 {% end %}
 
-### The Log-Likelihood
+### The log-likelihood
 
 As you may have noticed, this equation does not look convenient to optimise symbolically or numerically.
 Probabilities lie between 0 and 1, and multiplying several of them may vanish very quickly, making it hard to represent with floating-point arithmetic due to its limited precision.
@@ -89,7 +89,7 @@ In machine learning, by convention, learning problems are formulated as a minimi
 
 This is known as the negative log-likelihood (NLL) loss.
 
-### Choosing a Distribution
+### Choosing a distribution
 
 Before we elaborate what loss functions are, let's solve this problem by picking a suitable distribution.
 Consider the univariate normal distribution. It has support $y \in \mathbb{R}$ and parameters $\mu \in \mathbb{R}$ and $\sigma^2 \in \mathbb{R}^+$, ie, $\phi = (\mu, \sigma^2)$.
@@ -117,7 +117,7 @@ Since $\sigma^2$ is constant with respect to $\theta$, both $\frac{1}{2\sigma^2}
 
 This is the mean squared error (MSE) criterion.{% sidenote(id="mse-note") %}Strictly speaking, the MSE divides by $N$: $\frac{1}{N}\sum_i (y_i - f_{\theta}(x_i))^2$. Since $N$ is a constant, it does not change the $\argmin$.{% end %}
 
-### Loss and Cost Functions
+### Loss and cost functions
 
 {% mathblock(kind="definition", name="Loss function", id="loss") %}
 A loss function $\ell(y, \hat{y})$ measures the discrepancy between a predicted value $\hat{y}$ and the true value $y$.
@@ -164,11 +164,11 @@ We can now dissect {{ eqref(id="mse") }} into these two components. The individu
 \hat{\theta}^{\ast} = \argmin_{\theta} J(\theta) = \argmin_{\theta} \frac{1}{N} \overset{N}{\underset{i=1}{\sum}} (y_i - f_{\theta}(x_i))^2
 {% end %}
 
-### Point Estimation
+### Point estimation
 
 You may have noticed that our model $f$ no longer predicts $y$ directly, but the mean $\mu$ of the normal distribution over $y$.
 At inference time, however, we want a single best prediction given the inputs. This is called a _point estimate_.
-A natural choice is the mode of the predicted distribution, i.e., the value of $y$ that maximizes the likelihood:
+A natural choice is the mode of the predicted distribution, ie, the value of $y$ that maximises the likelihood:
 
 {% equation(id="point-estimate") %}
 \hat{y} = \argmax_{y} Pr\!\left(y \mid f_{\hat{\theta}^{\ast}}(x), \sigma^2\right)
@@ -188,7 +188,7 @@ $$\argmax_y Pr(y \mid \mu, \sigma^2) = \argmax_y \left(-\frac{(y - \mu)^2}{2\sig
 The function $(y - \mu)^2$ is a convex quadratic with a unique minimum. Setting its derivative to zero: $\frac{d}{dy}(y - \mu)^2 = 2(y - \mu) = 0$, which gives $y = \mu$. $\square$
 {% end %}
 
-### Closed-Form Solution
+### Closed-form solution
 
 We can now substitute the linear model {{ eqref(id="linear-model") }} into the cost function {{ eqref(id="mse-cost") }}:
 
@@ -234,13 +234,17 @@ Expanding and substituting {{ eqref(id="theta0-solution") }}:
 
 Solving for $\theta_1^{\ast}$ and recognising that $\sum_i x_i y_i - N\bar{x}\bar{y} = \sum_i (x_i - \bar{x})(y_i - \bar{y})$ and $\sum_i x_i^2 - N\bar{x}^2 = \sum_i (x_i - \bar{x})^2$, we obtain:
 
+{% mathblock(kind="note", name="Centering identity", id="centering") %}
+Expanding the right side, $\sum\_i (x\_i - \bar{x})(y\_i - \bar{y}) = \sum\_i x\_i y\_i - \bar{y} \sum\_i x\_i - \bar{x} \sum\_i y\_i + N \bar{x} \bar{y} = \sum\_i x\_i y\_i - N \bar{x} \bar{y}$, since $\sum\_i x\_i = N \bar{x}$ and $\sum\_i y\_i = N \bar{y}$. The second identity is the special case $y = x$.
+{% end %}
+
 {% equation(id="theta1-solution") %}
 \theta_1^{\ast} = \frac{\overset{N}{\underset{i=1}{\sum}} (x_i - \bar{x})(y_i - \bar{y})}{\overset{N}{\underset{i=1}{\sum}} (x_i - \bar{x})^2}
 {% end %}
 
 The numerator is the sample covariance between $x$ and $y$ (up to a factor of $N$), and the denominator is the sample variance of $x$. Together, {{ eqref(id="theta0-solution") }} and {{ eqref(id="theta1-solution") }} give the unique closed-form solution for the optimal parameters of univariate linear regression under the MSE criterion.
 
-## Multivariate Linear Regression
+## Multivariate linear regression
 
 We now generalise to a vector input $\mathbf{x} \in \mathbb{R}^D$, while keeping the output $y \in \mathbb{R}$ scalar. To keep the algebra clean, we absorb the bias term by augmenting each input with a leading $1$, so that $\tilde{\mathbf{x}} = (1, x_{1}, \ldots, x_{D})^{\top} \in \mathbb{R}^{D+1}$ and $\boldsymbol{\theta} = (\theta_{0}, \theta_{1}, \ldots, \theta_{D})^{\top} \in \mathbb{R}^{D+1}$. The model is then a single inner product:
 
@@ -248,7 +252,7 @@ We now generalise to a vector input $\mathbf{x} \in \mathbb{R}^D$, while keeping
 f_{\boldsymbol{\theta}}(\mathbf{x}) = \theta_{0} + \theta_{1} x_{1} + \cdots + \theta_{D} x_{D} = \boldsymbol{\theta}^{\top} \tilde{\mathbf{x}}
 {% end %}
 
-### Matrix Form of the Cost Function
+### Matrix form of the cost function
 
 The probabilistic story from the univariate case carries over unchanged: under the i.i.d. Gaussian assumption with the model predicting the mean, the NLL again reduces to a sum of squared errors. What changes is only the form of $f_{\boldsymbol{\theta}}$. Stacking the $N$ augmented training inputs row-wise into the _design matrix_ $\mathbf{X} \in \mathbb{R}^{N \times (D+1)}$ and the outputs into $\mathbf{y} \in \mathbb{R}^{N}$:
 
@@ -262,7 +266,7 @@ the vector of predictions is $\mathbf{X}\boldsymbol{\theta}$ and the vector of r
 J(\boldsymbol{\theta}) = \frac{1}{N} \lVert \mathbf{y} - \mathbf{X}\boldsymbol{\theta} \rVert_{2}^{2} = \frac{1}{N} (\mathbf{y} - \mathbf{X}\boldsymbol{\theta})^{\top} (\mathbf{y} - \mathbf{X}\boldsymbol{\theta})
 {% end %}
 
-### The Normal Equations
+### The normal equations
 
 Expanding {{ eqref(id="cost-multi") }} and dropping the $1/N$ factor (it does not affect the $\argmin$):
 
@@ -282,7 +286,7 @@ Rearranging gives the _normal equations_, so named because they say the residual
 \mathbf{X}^{\top} \mathbf{X}\, \boldsymbol{\theta} = \mathbf{X}^{\top} \mathbf{y}
 {% end %}
 
-When $\mathbf{X}^{\top} \mathbf{X} \in \mathbb{R}^{(D+1) \times (D+1)}$ is invertible (which requires $\mathbf{X}$ to have full column rank,{% sidenote(id="rank") %}The _rank_ of a matrix $\mathbf{A} \in \mathbb{R}^{m \times n}$ is the dimension of the vector space spanned by its columns. Equivalently, the maximum number of linearly independent columns (or rows; the row rank and column rank always agree). It satisfies $\mathrm{rank}(\mathbf{A}) \leq \min(m, n)$. We say $\mathbf{A}$ has _full column rank_ when $\mathrm{rank}(\mathbf{A}) = n$, meaning no column can be written as a linear combination of the others. For the design matrix $\mathbf{X}$, full column rank requires $N \geq D+1$ (more samples than parameters) _and_ that no feature is a linear combination of the others. Perfectly collinear features (e.g., including both temperature in Celsius and Fahrenheit) drop the rank and make $\mathbf{X}^{\top} \mathbf{X}$ singular.{% end %} i.e., $N \geq D+1$ and the features to be linearly independent), we can solve in closed form:
+When $\mathbf{X}^{\top} \mathbf{X} \in \mathbb{R}^{(D+1) \times (D+1)}$ is invertible (which requires $\mathbf{X}$ to have full column rank,{% sidenote(id="rank") %}The _rank_ of a matrix $\mathbf{A} \in \mathbb{R}^{m \times n}$ is the dimension of the vector space spanned by its columns. Equivalently, the maximum number of linearly independent columns (or rows; the row rank and column rank always agree). It satisfies $\mathrm{rank}(\mathbf{A}) \leq \min(m, n)$. We say $\mathbf{A}$ has _full column rank_ when $\mathrm{rank}(\mathbf{A}) = n$, meaning no column can be written as a linear combination of the others. For the design matrix $\mathbf{X}$, full column rank requires $N \geq D+1$ (more samples than parameters) _and_ that no feature is a linear combination of the others. Perfectly collinear features (eg, including both temperature in Celsius and Fahrenheit) drop the rank and make $\mathbf{X}^{\top} \mathbf{X}$ singular.{% end %} ie, $N \geq D+1$ and the features to be linearly independent), we can solve in closed form:
 
 {% equation(id="normal-solution") %}
 \hat{\boldsymbol{\theta}}^{\ast} = (\mathbf{X}^{\top} \mathbf{X})^{-1} \mathbf{X}^{\top} \mathbf{y}
@@ -298,11 +302,11 @@ The cost $J(\boldsymbol{\theta}) = \frac{1}{N} \lVert \mathbf{y} - \mathbf{X}\bo
 The Hessian of $J$ is $\nabla_{\boldsymbol{\theta}}^{2} J = \frac{2}{N} \mathbf{X}^{\top} \mathbf{X}$. For any $\mathbf{v} \in \mathbb{R}^{D+1}$, $\mathbf{v}^{\top} \mathbf{X}^{\top} \mathbf{X}\, \mathbf{v} = \lVert \mathbf{X} \mathbf{v} \rVert_{2}^{2} \geq 0$, so the Hessian is positive semidefinite and $J$ is convex. If $\mathbf{X}$ has full column rank, then $\mathbf{X} \mathbf{v} = \mathbf{0} \iff \mathbf{v} = \mathbf{0}$, the Hessian is positive definite, and $J$ is strictly convex with a unique minimiser. $\square$
 {% end %}
 
-### Numerical Solution via Matrix Factorisation
+### Numerical solution via matrix factorisation
 
 In practice, one rarely forms $(\mathbf{X}^{\top} \mathbf{X})^{-1}$ explicitly. Forming the Gram matrix $\mathbf{X}^{\top} \mathbf{X}$ squares the condition number of $\mathbf{X}$, so even mildly ill-conditioned features become numerically catastrophic. Direct factorisations of $\mathbf{X}$ avoid this entirely.
 
-#### QR Factorisation
+#### QR factorisation
 
 Any matrix $\mathbf{X} \in \mathbb{R}^{N \times (D+1)}$ with full column rank admits a _thin QR factorisation_, where the letters stand for an orthogonal matrix $\mathbf{Q}$ and a right (upper) triangular matrix $\mathbf{R}$:
 
@@ -371,7 +375,7 @@ For memory, we hold $\mathbf{X}$ ($N(D+1)$ entries), $\mathbf{Q}$ (same shape), 
 Classical Gram-Schmidt as written above loses orthogonality catastrophically in finite precision when the columns of $\mathbf{X}$ are nearly linearly dependent. The _modified Gram-Schmidt_ variant, which subtracts each projection one at a time and updates the working vector in place, is markedly more stable. Production solvers (LAPACK's `geqrf`, NumPy's `np.linalg.qr`) use _Householder reflections_ instead: a sequence of orthogonal transformations $\mathbf{H}\_{j} = \mathbf{I} - 2 \mathbf{v}\_{j} \mathbf{v}\_{j}^{\top}$ chosen to zero out everything below the diagonal of column $j$. Householder QR is backward-stable and is the default for any serious least-squares computation.
 {% end %}
 
-#### Back-Substitution
+#### Back-substitution
 
 Let $\mathbf{c} = \mathbf{Q}^{\top} \mathbf{y} \in \mathbb{R}^{D+1}$. Because $\mathbf{R}$ is upper triangular, the system $\mathbf{R}\, \boldsymbol{\theta} = \mathbf{c}$ written out is:
 
@@ -393,7 +397,7 @@ Memory holds only the $(D+1) \times (D+1)$ matrix $\mathbf{R}$ and the two lengt
 
 The QR factorisation that produces $\mathbf{R}$ in the first place dominates the end-to-end cost at $O(N D^{2})$ time.
 
-#### Singular Value Decomposition
+#### Singular value decomposition
 
 When $\mathbf{X}$ is rank-deficient (collinear features, or $N < D+1$), $\mathbf{R}$ has zeros on the diagonal and the QR approach breaks down. The _singular value decomposition_ handles this case gracefully. Its name comes from the singular values $\sigma\_i$, which measure how far the matrix is from being singular along each principal direction: a $\sigma\_i$ near zero is a direction where $\mathbf{X}$ collapses information, ie, a direction in which $\mathbf{X}$ behaves singularly. A useful picture is that the SVD reads $\mathbf{X}$ as a sequence of axes (the singular vectors) and a stretching strength along each axis (the singular value), so $\mathbf{X}$ becomes "rotate, stretch, rotate again".
 
@@ -439,6 +443,10 @@ with $r = \mathrm{rank}(\mathbf{X})$. The two sets of eigenvectors are linked th
 \mathbf{u}_{i} = \frac{1}{\sigma_{i}} \mathbf{X} \mathbf{v}_{i}, \qquad i = 1, \ldots, r
 {% end %}
 
+{% mathblock(kind="proof", name="(SVD from eigendecomposition)", id="svd-from-eig-proof") %}
+Substituting $\mathbf{X} = \mathbf{U} \boldsymbol{\Sigma} \mathbf{V}^{\top}$ into $\mathbf{X}^{\top} \mathbf{X}$ and using $\mathbf{U}^{\top} \mathbf{U} = \mathbf{I}$ gives $\mathbf{X}^{\top} \mathbf{X} = \mathbf{V} (\boldsymbol{\Sigma}^{\top} \boldsymbol{\Sigma}) \mathbf{V}^{\top}$. Comparing with {{ eqref(id="svd-eig-v") }}, the columns of $\mathbf{V}$ are eigenvectors of $\mathbf{X}^{\top} \mathbf{X}$ and the diagonal of $\boldsymbol{\Sigma}^{\top} \boldsymbol{\Sigma}$ holds the eigenvalues, so $\lambda\_i = \sigma\_i^2$. The same calculation on $\mathbf{X} \mathbf{X}^{\top} = \mathbf{U} (\boldsymbol{\Sigma} \boldsymbol{\Sigma}^{\top}) \mathbf{U}^{\top}$ shows $\mathbf{U}$ holds the eigenvectors of $\mathbf{X} \mathbf{X}^{\top}$ with the same non-zero eigenvalues. For the link {{ eqref(id="u-from-v") }}, apply $\mathbf{X}$ to $\mathbf{v}\_i$: $\mathbf{X} \mathbf{v}\_i = \mathbf{U} \boldsymbol{\Sigma} \mathbf{V}^{\top} \mathbf{v}\_i = \mathbf{U} \boldsymbol{\Sigma} \mathbf{e}\_i = \sigma\_i \mathbf{u}\_i$, so $\mathbf{u}\_i = \mathbf{X} \mathbf{v}\_i / \sigma\_i$ whenever $\sigma\_i > 0$. $\square$
+{% end %}
+
 (and remaining columns of $\mathbf{U}$ are filled in by extending to an orthonormal basis of $\mathbb{R}^{N}$). This _eigendecomposition_ recipe is conceptually simple but suffers the same "squared condition number" problem as the normal equations: forming $\mathbf{X}^{\top} \mathbf{X}$ loses precision.
 
 {% mathblock(kind="warning", name="What real solvers do", id="svd-solver-warning") %}
@@ -480,7 +488,7 @@ Regularisation has a clean Bayesian interpretation. Instead of maximising the li
 
 The choice of $\Omega$ encodes _what kind_ of simplicity we prefer. The two canonical choices are the squared $\ell\_2$ norm and the $\ell\_1$ norm, leading to ridge regression and the LASSO respectively.
 
-### Ridge Regression
+### Ridge regression
 
 Ridge regression penalises the squared $\ell\_2$ norm of the parameters. The name comes from the diagonal "ridge" the penalty adds to $\mathbf{X}^{\top}\mathbf{X}$ in the normal equations: visualising the eigenvalues of $\mathbf{X}^{\top}\mathbf{X}$ as a row of bars, $\lambda \mathbf{I}$ raises every bar by the same amount, lifting flat spots into a clearly positive ridge that we can safely invert. Reach for it when features are collinear or $D \approx N$ and the unregularised solution is unstable.
 
@@ -527,7 +535,7 @@ For any finite $\lambda > 0$ and any index $i$ with $\sigma\_i > 0$, the corresp
 
 This last property matters in practice: ridge produces dense parameter vectors. Every feature receives a small but non-zero weight. If the goal is variable selection rather than just prediction, ridge is the wrong tool.
 
-### LASSO Regression
+### LASSO regression
 
 The LASSO (least absolute shrinkage and selection operator) replaces the squared $\ell\_2$ penalty with the $\ell\_1$ norm. The acronym is also a literal image of what the method does: it lassos a small set of relevant variables and ties the rest to zero, returning a sparse model. Use it when you suspect only a handful of features really matter and want feature selection baked into the fit.
 

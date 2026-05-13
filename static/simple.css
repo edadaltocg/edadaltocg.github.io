@@ -476,7 +476,8 @@ mark {
 }
 
 main img,
-main video {
+main video,
+main svg {
   max-width: 100%;
   height: auto;
   border-radius: 5px;
@@ -484,7 +485,22 @@ main video {
 
 figure {
   margin: 0;
+  max-width: 100%;
+  overflow-x: auto;
 }
+
+figure img,
+figure svg {
+  max-width: 100%;
+  height: auto;
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* KaTeX display-equation overflow handling lives in
+   templates/partials/katex.html so that it loads after the KaTeX CDN
+   stylesheet and reliably wins the cascade. */
 
 figcaption {
   font-size: 0.9rem;

@@ -11,7 +11,7 @@ categories = ["notes"]
 math = true
 +++
 
-## Univariate Hard-Margin SVM
+## Univariate hard-margin SVM
 
 We turn to a different angle on binary classification.
 As in the [logistic regression note](/blog/logistic-regression/), the inputs are scalars $x \in \mathbb{R}$ and the labels are binary, but we now relabel the two classes as $y \in \\{-1, +1\\}$ rather than $\\{0, 1\\}$.
@@ -27,7 +27,7 @@ f_{\theta}(x) = \mathrm{sign}(\theta_0 + \theta_1 x).
 The decision boundary is the level set $z = 0$, a single point in $\mathbb{R}$ (and a hyperplane in higher dimensions).
 For a sample $(x\_i, y\_i)$, the product $y\_i z\_i$ is positive exactly when the classifier is correct, with magnitude $|z\_i|$ measuring how confidently the score sits away from the boundary.
 
-### Functional and Geometric Margin
+### Functional and geometric margin
 
 Logistic regression squashes the score through a sigmoid and asks for the parameters that maximise the joint label likelihood.
 SVMs ignore probabilities entirely and ask a more geometric question instead: among all separating boundaries, which one sits as far as possible from the closest training point?
@@ -45,7 +45,7 @@ The functional margin is sensitive to rescaling: multiplying $(\theta\_0, \theta
 The geometric margin removes that ambiguity by dividing through by $|\theta\_1|$.
 This is the quantity we want to maximise.
 
-### The Hard-Margin Program
+### The hard-margin program
 
 Maximising $\gamma = \min\_i \hat{\gamma}\_i / |\theta\_1|$ over $(\theta\_0, \theta\_1)$ is awkward because the objective is invariant under positive rescaling.
 The standard trick is to fix the scale by demanding that the closest point sits at functional margin exactly $1$:
@@ -83,7 +83,7 @@ The linear-separability assumption is fragile.
 A single mislabelled point or a small overlap between classes is enough to make {{ eqref(id="hard-margin") }} infeasible, and even when separability holds, the solution can swing wildly when one outlier sits close to the wrong side.
 The soft margin fixes both problems.
 
-## Univariate Soft-Margin SVM
+## Univariate soft-margin SVM
 
 We relax the constraint $y\_i z\_i \geq 1$ by allowing each sample to violate the margin by a non-negative slack $\xi\_i \geq 0$ (so named because $\xi\_i$ takes up the _slack_ between the demanded margin of $1$ and the score the model actually achieves), then pay a linear penalty $C \xi\_i$ for the violation. The constraint is now **soft** rather than hard: it can be broken at a finite cost instead of being absolutely forbidden. This is what lets the program survive non-separable data and ignore the occasional outlier that would otherwise dictate the entire solution.
 The hyperparameter $C > 0$ controls the trade-off between margin width and constraint violations.
@@ -146,7 +146,7 @@ Setting the gradient to zero, as we did with the BCE cost, would solve the smoot
 The hinge kink breaks this approach: at every active sample ($y\_i z\_i = 1$) the gradient is set-valued rather than a single vector, so the first-order optimality condition becomes a sub-differential inclusion rather than a system of equations.
 There is no closed form, and we have to optimise iteratively.
 
-## Multivariate Soft-Margin SVM
+## Multivariate soft-margin SVM
 
 We now generalise to a vector input $\mathbf{x} \in \mathbb{R}^D$.
 Unlike in the regression and logistic notes, we keep the bias $b$ separate from the weight vector $\mathbf{w}$ rather than absorbing it into an augmented $\boldsymbol{\theta}$, because the regulariser penalises $\mathbf{w}$ but not $b$.
@@ -171,7 +171,7 @@ The factor of $1/N$ is a normalisation choice that makes the trade-off independe
 <figcaption>Small $C$ tolerates many margin violations and prefers a wide margin; large $C$ refuses to violate constraints and tracks the data tightly.</figcaption>
 </figure>
 
-### Sub-gradient of the Cost
+### Sub-gradient of the cost
 
 The hinge loss is convex but not differentiable at the kink, so we work with the sub-differential rather than the gradient.
 
@@ -204,12 +204,12 @@ A non-negative sum of convex functions is convex, and adding a $1$-strongly conv
 Strong convexity in $\mathbf{w}$ guarantees a unique optimal $\mathbf{w}^{\ast}$ for any $C > 0$, regardless of whether the data is separable.
 This is the structural reason the soft-margin SVM is so much better behaved than the hard-margin version.
 
-### Numerical Solution
+### Numerical solution
 
 The cost is convex but non-smooth, so we cannot use Newton's method directly (the Hessian is undefined at every active sample).
 Three families of solvers dominate practice: stochastic sub-gradient methods on the primal, coordinate descent on the primal, and dual coordinate descent.
 
-#### Sub-Gradient Descent and Pegasos
+#### Sub-gradient descent and Pegasos
 
 The simplest option is stochastic sub-gradient descent on the per-sample loss.
 **Pegasos**{{ reference(key="shalev2007pegasos") }} is the canonical example: at iteration $t$ pick a random sample $i\_t$, set the step size $\eta\_t = 1 / (\lambda t)$ with $\lambda = 1/(NC)$, and update
@@ -234,14 +234,14 @@ _Memory._ Only $\mathbf{w}\_t$ and $b\_t$ need to be stored, both $O(D)$. The de
 Each Pegasos step is cheap, and the algorithm needs no kernel cache.
 The price is the sub-linear convergence rate inherent to first-order methods on non-smooth objectives, which we quantify below.
 
-#### Coordinate Descent on the Primal
+#### Coordinate descent on the primal
 
 A complementary approach is to update one coordinate of $\mathbf{w}$ at a time, holding the others fixed.
 For each coordinate $j$ the one-dimensional sub-problem is convex piecewise-quadratic and admits a closed-form minimiser via a soft-thresholding operation, similar in spirit to the per-coordinate updates used in coordinate-descent solvers for the lasso.
 The method is attractive when the design matrix is sparse and column-accessed, and is the engine behind LIBLINEAR's primal solvers for linear SVM.
 We do not derive the per-coordinate update here.
 
-#### Dual Coordinate Descent and SMO
+#### Dual coordinate descent and SMO
 
 The third route is to attack the dual.
 Why bother with a dual at all? Two reasons. First, the dual depends on the data only through inner products $\mathbf{x}\_i^{\top} \mathbf{x}\_j$, which is exactly the structural opening that lets us swap in a kernel later and learn non-linear boundaries without touching the algorithm. Second, the number of dual variables is $N$ (one per sample) rather than $D$ (one per feature), which is the right scaling whenever $N \ll D$ (text classification with sparse high-dimensional inputs is the canonical example). Put briefly: the primal carries one weight per feature, the dual carries one weight per training point, and the dual only ever looks at the data through pairwise similarities.
@@ -263,6 +263,12 @@ Substituting the three identities back into the Lagrangian eliminates $\mathbf{w
 
 {% equation(id="svm-dual") %}
 \max_{\boldsymbol{\alpha}}\; \sum_{i=1}^{N} \alpha_i - \tfrac{1}{2} \sum_{i, j = 1}^{N} \alpha_i \alpha_j\, y_i y_j\, \mathbf{x}_i^{\top} \mathbf{x}_j \quad \text{subject to} \quad 0 \leq \alpha_i \leq C,\; \sum_{i=1}^{N} \alpha_i y_i = 0.
+{% end %}
+
+{% mathblock(kind="proof", name="(dual derivation)", id="svm-dual-proof") %}
+Plug each KKT identity from {{ eqref(id="kkt-stationarity") }} into {{ eqref(id="svm-lagrangian") }}. The slack term collapses, $C \sum\_i \xi\_i - \sum\_i \alpha\_i \xi\_i - \sum\_i \beta\_i \xi\_i = \sum\_i \xi\_i (C - \alpha\_i - \beta\_i) = 0$, using $\alpha\_i + \beta\_i = C$. The bias term collapses, $-b \sum\_i \alpha\_i y\_i = 0$, using $\sum\_i \alpha\_i y\_i = 0$. The two remaining $\mathbf{w}$-dependent terms become
+$$\tfrac{1}{2} \lVert \mathbf{w} \rVert\_2^2 - \mathbf{w}^{\top} \!\!\sum\_i \alpha\_i y\_i \mathbf{x}\_i = \tfrac{1}{2} \lVert \mathbf{w} \rVert\_2^2 - \lVert \mathbf{w} \rVert\_2^2 = -\tfrac{1}{2} \sum\_{i,j} \alpha\_i \alpha\_j y\_i y\_j \mathbf{x}\_i^{\top} \mathbf{x}\_j,$$
+using $\mathbf{w} = \sum\_i \alpha\_i y\_i \mathbf{x}\_i$ in both terms. Adding the surviving $+\sum\_i \alpha\_i$ from the constraint expansion yields {{ eqref(id="svm-dual") }}. The box constraint $0 \leq \alpha\_i \leq C$ is dual feasibility ($\alpha\_i \geq 0$, $\beta\_i \geq 0$) combined with $\alpha\_i + \beta\_i = C$. $\square$
 {% end %}
 
 This is a convex QP in $\boldsymbol{\alpha}$ with a Gram-matrix structure: every entry is the inner product of two training inputs.
@@ -295,7 +301,7 @@ In practice one does not form $\mathbf{w}$ explicitly during SMO. The decision r
 <figcaption>Most $\alpha_i$ are exactly zero; only the support vectors carry weight in the dual sum.</figcaption>
 </figure>
 
-### Convergence Guarantees
+### Convergence guarantees
 
 The convexity of $J$ and the structure of the hinge loss admit clean convergence statements for each of the three solvers.
 
@@ -328,7 +334,7 @@ Original analysis in Shalev-Shwartz et al.{{ reference(key="shalev2007pegasos") 
 {% end %}
 
 {% mathblock(kind="proposition", name="Dual coordinate descent / SMO convergence", id="smo-converge") %}
-Run dual coordinate ascent (e.g., SMO) on {{ eqref(id="svm-dual") }}.
+Run dual coordinate ascent (eg, SMO) on {{ eqref(id="svm-dual") }}.
 Then $\boldsymbol{\alpha}\_t \to \boldsymbol{\alpha}^{\ast}$ globally, and the dual objective converges at a **linear rate**: there exist constants $c \in (0, 1)$ and $C\_0 > 0$ such that
 $$D(\boldsymbol{\alpha}^{\ast}) - D(\boldsymbol{\alpha}\_t) \leq C\_0\, c^{\,t}.$$
 {% end %}

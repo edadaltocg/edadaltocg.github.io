@@ -11,7 +11,7 @@ categories = ["notes"]
 math = true
 +++
 
-## Univariate Logistic Regression
+## Univariate logistic regression
 
 Consider the following problem.
 We want to predict a binary output $y \in \\{0, 1\\}$ from a single input $x \in \mathbb{R}$ using a model $f\_{\theta}:\mathbb{R} \to (0, 1)$ with parameters vector $\boldsymbol{\theta}$.
@@ -36,7 +36,7 @@ where, as before, $\theta\_0$ is the intercept and $\theta\_1$ is the slope, so 
 <figcaption>The sigmoid family: the slope $\theta_1$ controls how sharp the transition is, the bias $\theta_0$ controls where the midpoint $0.5$ falls.</figcaption>
 </figure>
 
-### Maximum Likelihood Estimation
+### Maximum likelihood estimation
 
 For this task, we have collected a supervised dataset of input/label pairs denoted $\mathcal{D} = \\{(x\_i, y\_i)\\}\_{i=1}^N$ with $y\_i \in \\{0, 1\\}$.
 As in the [regression case](/blog/linear-regression/), we view the relationship between inputs and outputs through its conditional probability distribution $Pr(y \mid x)$, and we seek the parameters $\theta$ that maximise the joint probability of observing all $N$ training labels given their inputs:
@@ -55,7 +55,7 @@ The training examples $(x\_i, y\_i)$ are independently and identically distribut
 Pr\big(y_1, \ldots, y_N \mid x_1, \ldots, x_N, \theta\big) = \prod_{i=1}^{N} Pr\big(y_i \mid x_i, \theta\big)
 {% end %}
 
-### The Log-Likelihood
+### The log-likelihood
 
 Multiplying many probabilities underflows in floating-point arithmetic, so we apply the monotonic log transform and flip the sign to convert the maximisation into a minimisation. The resulting negative log-likelihood (NLL) is:
 
@@ -63,7 +63,7 @@ Multiplying many probabilities underflows in floating-point arithmetic, so we ap
 \hat{\theta}^{\ast} = \argmin_{\theta} \Bigg[-\sum_{i=1}^{N} \log Pr\big(y_i \mid f_{\theta}(x_i)\big)\Bigg]
 {% end %}
 
-### Choosing a Distribution
+### Choosing a distribution
 
 Because $y$ is binary, the natural choice is the Bernoulli distribution. It has support $y \in \\{0, 1\\}$ and a single parameter $p \in (0, 1)$ giving the probability of the positive class. With the model predicting $p\_i = f\_{\theta}(x\_i)$, we can write:
 
@@ -87,7 +87,7 @@ The two cases collapse into a single expression: when $y\_i = 1$ the second fact
 
 This is the **binary cross-entropy** (BCE), or log-loss, criterion. The name comes from information theory: the cross-entropy $H(q, p) = -\sum\_y q(y) \log p(y)$ measures the average number of bits (or nats) needed to encode samples from a true distribution $q$ using a code optimised for an estimated distribution $p$. Minimising it pulls the model's $p$ towards the data's $q$, with the minimum reached when they coincide. The way to keep this in your head is that the loss measures _surprise_: the cost of each example is the number of bits the model needs to write down the true label given how confident it was in advance, and a perfect model is never surprised.
 
-### Loss and Cost Functions
+### Loss and cost functions
 
 We can dissect the BCE into the same loss/cost components introduced in the [regression note](/blog/linear-regression/). The per-sample loss is:
 
@@ -124,7 +124,7 @@ $$\frac{\partial \ell}{\partial \hat{p}} = -\frac{y}{\hat{p}} + \frac{1 - y}{1 -
 For $y \in \\{0, 1\\}$ exactly one of the two terms is non-zero and strictly positive on $(0, 1)$, so the second derivative is strictly positive everywhere. Hence $\ell$ is strictly convex in $\hat{p}$. $\square$
 {% end %}
 
-### Properties of the Sigmoid
+### Properties of the sigmoid
 
 Two identities will be used throughout the rest of this post. They are worth committing to memory.
 
@@ -170,7 +170,7 @@ For reference, the two identities again in display form:
 \sigma'(z) = \sigma(z)\,\big(1 - \sigma(z)\big)
 {% end %}
 
-### Point Estimation
+### Point estimation
 
 Just as in the regression case, our model no longer predicts $y$ directly: it predicts the parameter $p$ of a distribution over $y$. At inference time we want a single class label, so we again take the **mode** of the predicted distribution as the point estimate.
 
@@ -179,7 +179,7 @@ Let $y \sim \mathrm{Bernoulli}(p)$ with $p \in (0, 1)$. Then $\argmax\_{y \in \\
 {% end %}
 
 {% mathblock(kind="proof", name="", id="bernoulli-mode-proof") %}
-$Pr(y = 1 \mid p) = p$ and $Pr(y = 0 \mid p) = 1 - p$. The argmax picks $y = 1$ exactly when $p \geq 1 - p$, i.e., when $p \geq 0.5$. $\square$
+$Pr(y = 1 \mid p) = p$ and $Pr(y = 0 \mid p) = 1 - p$. The argmax picks $y = 1$ exactly when $p \geq 1 - p$, ie, when $p \geq 0.5$. $\square$
 {% end %}
 
 For the logistic model this means thresholding the predicted probability at $0.5$, or equivalently (since $\sigma(z) \geq 0.5 \iff z \geq 0$) thresholding the linear score $\theta\_0 + \theta\_1 x$ at zero. The decision boundary is therefore a hyperplane in input space, exactly as in linear classification.
@@ -189,7 +189,7 @@ For the logistic model this means thresholding the predicted probability at $0.5
 <figcaption>Logistic regression draws a linear boundary, but the score it produces is a smooth probability field over the input space.</figcaption>
 </figure>
 
-### No Closed-Form Solution
+### No closed-form solution
 
 In the regression case, setting the gradient of the cost to zero yielded a linear system in $\theta$ with a clean closed-form solution. Let us repeat the exercise for BCE and see what changes.
 
@@ -228,7 +228,7 @@ For reference,
 
 This has the same algebraic shape as the gradient of the squared-error cost: a sum of (prediction $-$ target) weighted by the input. The structural difference is that $p\_i = \sigma(\theta\_0 + \theta\_1 x\_i)$ is a non-linear function of $\theta$, so setting $\partial J / \partial \theta\_j = 0$ produces a transcendental system with no closed-form solution. We have to optimise iteratively.
 
-## Multivariate Logistic Regression
+## Multivariate logistic regression
 
 We now generalise to a vector input $\mathbf{x} \in \mathbb{R}^D$, while keeping the output $y \in \\{0, 1\\}$ binary. As in the regression case, we absorb the bias by augmenting each input with a leading $1$, so $\tilde{\mathbf{x}} = (1, x\_{1}, \ldots, x\_{D})^{\top} \in \mathbb{R}^{D+1}$ and $\boldsymbol{\theta} = (\theta\_{0}, \theta\_{1}, \ldots, \theta\_{D})^{\top} \in \mathbb{R}^{D+1}$. The model becomes:
 
@@ -236,7 +236,7 @@ We now generalise to a vector input $\mathbf{x} \in \mathbb{R}^D$, while keeping
 f_{\boldsymbol{\theta}}(\mathbf{x}) = \sigma(\boldsymbol{\theta}^{\top} \tilde{\mathbf{x}}) = \frac{1}{1 + \exp(-\boldsymbol{\theta}^{\top} \tilde{\mathbf{x}})}
 {% end %}
 
-### Matrix Form of the Cost Function
+### Matrix form of the cost function
 
 Stack the $N$ augmented inputs row-wise into the design matrix $\mathbf{X} \in \mathbb{R}^{N \times (D+1)}$ and the labels into $\mathbf{y} \in \\{0, 1\\}^{N}$, exactly as in the [regression note](/blog/linear-regression/). The vector of predicted probabilities is the elementwise sigmoid of the linear scores:
 
@@ -289,11 +289,11 @@ $$\mathbf{v}^{\top} \mathbf{H}\, \mathbf{v} = \frac{1}{N}\, \mathbf{v}^{\top} \m
 since $\mathbf{S}$ has non-negative diagonal entries and admits a real square root $\mathbf{S}^{1/2}$. Thus $\mathbf{H}$ is positive semidefinite and $J$ is convex. If $\mathbf{X}$ has full column rank and every $p\_i \in (0, 1)$ (equivalently, every diagonal entry of $\mathbf{S}$ is strictly positive), then $\mathbf{S}^{1/2} \mathbf{X} \mathbf{v} = \mathbf{0}$ implies $\mathbf{X} \mathbf{v} = \mathbf{0}$ implies $\mathbf{v} = \mathbf{0}$, the Hessian is positive definite, and $J$ is strictly convex with a unique minimiser. $\square$
 {% end %}
 
-### Numerical Solution
+### Numerical solution
 
 Convexity guarantees a unique global minimum (under the conditions above), but unlike the regression case there is no closed-form expression for it. We have to iterate.
 
-#### Gradient Descent
+#### Gradient descent
 
 The simplest option is to take steps in the direction of steepest descent:
 
@@ -347,7 +347,7 @@ so the update collapses to:
 \boldsymbol{\theta}_{t+1} = (\mathbf{X}^{\top} \mathbf{S}_{t}\, \mathbf{X})^{-1}\, \mathbf{X}^{\top} \mathbf{S}_{t}\, \mathbf{z}_{t}
 {% end %}
 
-This is exactly the [normal equations](/blog/linear-regression/) of a **weighted least-squares** problem with design matrix $\mathbf{X}$, target $\mathbf{z}\_t$, and per-sample weights $\mathbf{S}\_t$ (i.e., the closed-form solution to $\min\_{\boldsymbol{\theta}} \lVert \mathbf{S}\_t^{1/2} (\mathbf{z}\_t - \mathbf{X} \boldsymbol{\theta}) \rVert\_2^2$). Each Newton step on the BCE cost is therefore one weighted least-squares solve, with both the weights and the target re-derived from the current $\boldsymbol{\theta}\_t$. This is the **iteratively reweighted least squares** (IRLS) algorithm: logistic regression is, in the end, linear regression run again and again until the weights agree with the predictions they produce.
+This is exactly the [normal equations](/blog/linear-regression/) of a **weighted least-squares** problem with design matrix $\mathbf{X}$, target $\mathbf{z}\_t$, and per-sample weights $\mathbf{S}\_t$ (ie, the closed-form solution to $\min\_{\boldsymbol{\theta}} \lVert \mathbf{S}\_t^{1/2} (\mathbf{z}\_t - \mathbf{X} \boldsymbol{\theta}) \rVert\_2^2$). Each Newton step on the BCE cost is therefore one weighted least-squares solve, with both the weights and the target re-derived from the current $\boldsymbol{\theta}\_t$. This is the **iteratively reweighted least squares** (IRLS) algorithm: logistic regression is, in the end, linear regression run again and again until the weights agree with the predictions they produce.
 
 In code, the entire Newton step is a handful of lines, and "weighted least squares" is visible directly in the final `np.linalg.solve`:
 
@@ -391,12 +391,12 @@ For memory, the design matrix $\mathbf{X}$ at $O(N D)$ dominates when $N$ is lar
 
 The trade-off against IRLS is clean. L-BFGS gives up the per-step quadratic convergence rate of Newton's method, but the $D^2$ memory term and the $D^3$ flop term both vanish, replaced by an $m D$ term with $m \approx 10$. This scales to $D$ in the millions where IRLS would be hopeless. For convex problems like BCE it converges superlinearly in practice, and the only inputs it needs from the user are the cost {{ eqref(id="bce-cost-multi") }} and its gradient {{ eqref(id="bce-grad-matrix") }}, both available in closed form.
 
-#### Convergence Guarantees
+#### Convergence guarantees
 
 All three methods admit clean convergence proofs once we establish two structural facts about the BCE cost: it is convex (already proven) and it is $L$-smooth, meaning its gradient is Lipschitz continuous.
 
 {% mathblock(kind="proposition", name="Smoothness of the BCE cost", id="bce-smooth") %}
-The BCE cost $J$ in {{ eqref(id="bce-cost-multi") }} is $L$-smooth with $L = \frac{1}{4N}\, \lambda\_{\max}(\mathbf{X}^{\top} \mathbf{X})$, i.e., for all $\boldsymbol{\theta}, \boldsymbol{\theta}' \in \mathbb{R}^{D+1}$,
+The BCE cost $J$ in {{ eqref(id="bce-cost-multi") }} is $L$-smooth with $L = \frac{1}{4N}\, \lambda\_{\max}(\mathbf{X}^{\top} \mathbf{X})$, ie, for all $\boldsymbol{\theta}, \boldsymbol{\theta}' \in \mathbb{R}^{D+1}$,
 $$\lVert \nabla J(\boldsymbol{\theta}) - \nabla J(\boldsymbol{\theta}') \rVert\_2 \leq L\, \lVert \boldsymbol{\theta} - \boldsymbol{\theta}' \rVert\_2.$$
 {% end %}
 
@@ -418,7 +418,7 @@ Run {{ eqref(id="gradient-descent") }} from any $\boldsymbol{\theta}\_0$ with co
 1. (**Convex case.**) If a minimiser $\boldsymbol{\theta}^{\ast}$ exists,
    $$J(\boldsymbol{\theta}\_t) - J(\boldsymbol{\theta}^{\ast}) \leq \frac{L\, \lVert \boldsymbol{\theta}\_0 - \boldsymbol{\theta}^{\ast} \rVert\_2^2}{2\, t}.$$
 
-2. (**Strongly convex case.**) If $J$ is additionally $\mu$-strongly convex (e.g., with an $\ell\_2$ penalty $\lambda > 0$ giving $\mu \geq \lambda$),
+2. (**Strongly convex case.**) If $J$ is additionally $\mu$-strongly convex (eg, with an $\ell\_2$ penalty $\lambda > 0$ giving $\mu \geq \lambda$),
    $$\lVert \boldsymbol{\theta}\_t - \boldsymbol{\theta}^{\ast} \rVert\_2^2 \leq \big(1 - \mu/L\big)^t\, \lVert \boldsymbol{\theta}\_0 - \boldsymbol{\theta}^{\ast} \rVert\_2^2.$$
    {% end %}
 
@@ -458,7 +458,7 @@ Run L-BFGS with a Wolfe line search on a strongly convex, $L$-smooth objective $
 The Wolfe conditions ensure each curvature pair $(\mathbf{s}\_k, \mathbf{y}\_k)$ satisfies $\mathbf{s}\_k^{\top} \mathbf{y}\_k > 0$, which keeps the implicit inverse-Hessian approximation $\mathbf{B}\_t$ symmetric positive definite. Combined with strong convexity, this yields a uniform bound on the eigenvalues of $\mathbf{B}\_t$, so each step is a descent direction with sufficient length to satisfy the Zoutendijk condition $\sum\_t (\nabla J(\boldsymbol{\theta}\_t)^{\top} \mathbf{B}\_t \nabla J(\boldsymbol{\theta}\_t))^2 / \lVert \mathbf{B}\_t \nabla J(\boldsymbol{\theta}\_t) \rVert\_2^2 < \infty$, forcing $\nabla J(\boldsymbol{\theta}\_t) \to \mathbf{0}$. That is global convergence. The R-superlinear rate is more delicate; the original argument is in Liu and Nocedal (1989), and a textbook treatment is in Nocedal and Wright, _Numerical Optimization_, §7.2. The intuition is that as $\boldsymbol{\theta}\_t \to \boldsymbol{\theta}^{\ast}$, the curvature pairs increasingly capture the true Hessian along the relevant subspace, and $\mathbf{B}\_t$ approximates $\mathbf{H}^{-1}(\boldsymbol{\theta}^{\ast})$ well enough that each step approaches a true Newton step. $\square$
 {% end %}
 
-L-BFGS without strong convexity (e.g., unregularised BCE on full-rank, non-separable data) still converges to the optimum, but only the global property holds. The superlinear rate requires strong convexity. This is one of the practical reasons to add even a tiny $\ell\_2$ penalty.
+L-BFGS without strong convexity (eg, unregularised BCE on full-rank, non-separable data) still converges to the optimum, but only the global property holds. The superlinear rate requires strong convexity. This is one of the practical reasons to add even a tiny $\ell\_2$ penalty.
 
 <figure>
 <img src="optim_convergence.svg" alt="Loss-versus-iteration curves on a log scale, with IRLS converging in a handful of Newton steps and gradient descent taking many more.">
@@ -489,7 +489,7 @@ J_{\lambda}(\boldsymbol{\theta}) = J(\boldsymbol{\theta}) + \lambda\, R(\boldsym
 
 where $R$ is a penalty function and $\lambda > 0$ controls the trade-off between fitting the data and keeping $\boldsymbol{\theta}$ small. The choice of $R$ shapes the optimum.
 
-### MAP Interpretation
+### MAP interpretation
 
 The penalty has a clean Bayesian reading as a **maximum a posteriori** (MAP) estimate. To see this it helps to first contrast MAP with the maximum likelihood (MLE) view we used to derive the unregularised cost.
 
@@ -548,9 +548,9 @@ Under MAP this is a zero-mean Laplace (double-exponential) prior on each coordin
 
 The cost is non-differentiable at those kinks, so smooth solvers like IRLS and L-BFGS no longer apply directly. The standard alternatives are **proximal gradient methods** (ISTA and its accelerated variant FISTA), which take a gradient step on the smooth BCE part and then apply a soft-thresholding operator that shrinks each coordinate of $\boldsymbol{\theta}$ toward zero by $\eta \lambda$, zeroing out anything below that threshold. **Coordinate descent** is the other standard choice and is what `glmnet` uses: cycle through coordinates one at a time, updating each via the closed-form solution to the one-dimensional sub-problem. A patched L-BFGS variant called **OWL-QN** also handles $\ell_1$ by tracking the sub-gradient along each axis.
 
-### Elastic Net
+### Elastic net
 
-The intuition starts from a known weakness of Lasso. When two features carry nearly the same signal (e.g., temperature in Celsius and Fahrenheit, two correlated gene probes, two synonyms in a bag-of-words model), Lasso picks one, zeros the other, and the choice flips arbitrarily across resamples of the data. The model is still accurate, but the picked-feature set is unstable, which is bad if the model's purpose is to tell you _which_ features matter. A second weakness shows up when the number of features $D$ exceeds the number of samples $N$: Lasso saturates and selects at most $N$ features, even if the true sparse subset is larger.
+The intuition starts from a known weakness of Lasso. When two features carry nearly the same signal (eg, temperature in Celsius and Fahrenheit, two correlated gene probes, two synonyms in a bag-of-words model), Lasso picks one, zeros the other, and the choice flips arbitrarily across resamples of the data. The model is still accurate, but the picked-feature set is unstable, which is bad if the model's purpose is to tell you _which_ features matter. A second weakness shows up when the number of features $D$ exceeds the number of samples $N$: Lasso saturates and selects at most $N$ features, even if the true sparse subset is larger.
 
 Elastic net, introduced by Zou and Hastie (2005), fixes both by adding a small $\ell_2$ piece on top of the $\ell_1$ penalty:
 
@@ -570,7 +570,7 @@ The defaults are easy. Reach for **ridge** when you want a stable, well-conditio
 The penalty strength $\lambda$ is a hyperparameter, almost always chosen by cross-validation over a logarithmically spaced grid. Standard practice is to standardise the features (zero mean, unit variance) before regularising, since the penalty treats every coordinate symmetrically and unscaled features would otherwise be penalised in proportion to their natural variance. The intercept $\theta\_0$ is typically excluded from the penalty.
 {% end %}
 
-## Multinomial Logistic Regression
+## Multinomial logistic regression
 
 We now generalise to $K > 2$ classes. The output $y$ is one of $K$ mutually exclusive categories, encoded as a one-hot vector $\mathbf{y} \in \\{0, 1\\}^{K}$ with $\sum\_k y\_k = 1$. We replace the single parameter vector with a parameter matrix $\mathbf{W} \in \mathbb{R}^{(D+1) \times K}$ whose $k$-th column $\mathbf{w}\_k$ scores class $k$, and we replace the sigmoid with the [softmax function](/blog/softmax-function/) to map the $K$ scores into a probability distribution:
 
@@ -580,7 +580,7 @@ p_k = f_{\mathbf{W}}(\tilde{\mathbf{x}})\*k = \mathrm{softmax}(\mathbf{W}^{\top}
 
 Each $p\_k \in (0, 1)$ and $\sum\_k p\_k = 1$ by construction.
 
-### The Categorical Cross-Entropy
+### The categorical cross-entropy
 
 The Bernoulli is replaced by the categorical distribution, whose probability mass function on a one-hot $\mathbf{y}$ with parameters $\mathbf{p} = (p\_1, \ldots, p\_K)$ is:
 
