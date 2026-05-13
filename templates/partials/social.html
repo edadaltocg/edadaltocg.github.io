@@ -159,5 +159,32 @@
   updateIcon();
   window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', updateIcon);
 })();
+
+(function() {
+  var langBtn = document.getElementById('lang-toggle');
+  if (!langBtn) return;
+  var langs = ['en', 'fr', 'es', 'it', 'pt', 'zh'];
+  var defaultLang = 'en';
+
+  function currentLang() {
+    var seg = window.location.pathname.split('/').filter(Boolean)[0];
+    return langs.indexOf(seg) !== -1 ? seg : defaultLang;
+  }
+
+  function pathWithoutLang() {
+    var parts = window.location.pathname.split('/').filter(Boolean);
+    if (langs.indexOf(parts[0]) !== -1) parts.shift();
+    return '/' + parts.join('/');
+  }
+
+  langBtn.addEventListener('click', function() {
+    var cur = currentLang();
+    var next = langs[(langs.indexOf(cur) + 1) % langs.length];
+    var rest = pathWithoutLang();
+    if (rest === '/') rest = '';
+    var target = next === defaultLang ? (rest || '/') : ('/' + next + rest);
+    window.location.pathname = target;
+  });
+})();
 </script>
 {#- End of social partial -#}

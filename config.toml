@@ -1,5 +1,5 @@
 # The URL the site will be built for
-base_url = "https://edadaltocg.github.io/"
+base_url = "https://edadaltocg.com/"
 
 default_language = "en"
 
@@ -24,6 +24,36 @@ taxonomies = [
   { name = "categories", feed = true },
   { name = "tags", feed = true },
 ]
+
+[languages.fr]
+title = "Ed's"
+generate_feeds = true
+build_search_index = true
+taxonomies = [{ name = "categories", feed = true }, { name = "tags", feed = true }]
+
+[languages.es]
+title = "Ed's"
+generate_feeds = true
+build_search_index = true
+taxonomies = [{ name = "categories", feed = true }, { name = "tags", feed = true }]
+
+[languages.it]
+title = "Ed's"
+generate_feeds = true
+build_search_index = true
+taxonomies = [{ name = "categories", feed = true }, { name = "tags", feed = true }]
+
+[languages.pt]
+title = "Ed's"
+generate_feeds = true
+build_search_index = true
+taxonomies = [{ name = "categories", feed = true }, { name = "tags", feed = true }]
+
+[languages.zh]
+title = "Ed's"
+generate_feeds = true
+build_search_index = false
+taxonomies = [{ name = "categories", feed = true }, { name = "tags", feed = true }]
 
 
 [markdown]

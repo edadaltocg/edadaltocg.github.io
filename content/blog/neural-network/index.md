@@ -87,13 +87,37 @@ Because $\phi$ is non-polynomial, no smoothed version is annihilated by any fini
 {% end %}
 
 <figure>
-<img src="uat_fit.svg" alt="A wide single-hidden-layer ReLU MLP fitting a sine curve, with the per-unit ReLU bumps lightly drawn underneath.">
-<figcaption>A wide single-hidden-layer ReLU MLP is a basis: each unit contributes a piecewise-linear bump (grey) and the head sums them into the target curve.</figcaption>
+<img src="uat_fit.svg" alt="A wide single-hidden-layer ReLU MLP trained on sin(x) over [-pi, pi], evaluated on [-3pi, 3pi]. Inside the training range the fit is tight; outside it the prediction degenerates into the linear extrapolation of the boundary ReLU units.">
+<figcaption>Inside the training range $[-\pi, \pi]$ the wide ReLU MLP matches $\sin x$ closely. Outside it, the prediction degenerates into the linear extrapolation of the outermost ReLU units.</figcaption>
 </figure>
 
 {% mathblock(kind="note", name="Expressivity is not learnability", id="uat-caveat") %}
 The theorem guarantees that some MLP fits $f$ to arbitrary accuracy. It does not say that gradient descent on a finite dataset will find that MLP, that the required width $d\_1$ is feasible, or that the parameter values needed are stable under noise. In practice, **depth** trades off against width exponentially for many functions: deep networks compute hierarchies of features that a single wide layer would need exponentially more units to match.{% sidenote(id="depth-width") %}Telgarsky{{ reference(key="telgarsky2016benefits") }} gives explicit functions that a depth-$L$ ReLU network of width $O(L)$ computes but that any depth-$O(L^{1/3})$ network needs width $\Omega(2^L)$ to approximate.{% end %} The combination of expressivity, optimisability, and statistical generalisation is what makes deep networks useful, and only the first of these is what universal approximation establishes.
 {% end %}
+
+## Inductive bias and extrapolation
+
+The previous figure delivered exactly what the theorem promised, and not a bit more. On the compact set $[-\pi, \pi]$ the wide ReLU MLP traces $\sin x$ tightly. Outside that set the network has no obligation to do anything sensible, and indeed it doesn't: each boundary ReLU continues as a half-line, and their sum is whatever piecewise-linear ramp those half-lines happen to form. The model has no notion that $\sin x$ is periodic, no notion that it should bend back, no notion of the function at all beyond the points it saw during training.
+
+This is what people mean by **inductive bias**: the structural assumptions baked into the model or its loss that decide how it generalises off the training distribution. A vanilla MLP fit by mean squared error has almost none. [Convolutional networks](/blog/convolutional-network/) bias toward translation equivariance, [recurrent networks](/blog/recurrent-neural-network/) toward sequential structure, transformers toward soft permutation symmetry over their input set. When the bias matches the function, generalisation is cheap; when it does not, the model behaves arbitrarily once you leave the data manifold, exactly as the ReLU MLP did above.
+
+A direct way to inject the right bias is to make the loss enforce a known equation. For $\sin x$ the relevant fact is that it satisfies the second-order ODE $y'' + y = 0$. A **physics-informed neural network**{{ reference(key="raissi2019physics") }} parametrises $y$ as a smooth MLP $y\_{\boldsymbol{\theta}}$ and trains it on two terms: a small set of noisy observations $\{(x\_i^{d}, y\_i^{d})\}\_{i=1}^{n}$ on the inner range $[-\pi, \pi]$, and the residual of the ODE evaluated at unlabelled collocation points $\{x\_m\}\_{m=1}^{M}$ that span the full interval $[-3\pi, 3\pi]$:
+
+{% equation(id="pinn-loss") %}
+\begin{aligned}
+J_{\text{PINN}}(\boldsymbol{\theta}) = \;& \frac{1}{n} \sum_{i=1}^{n} \big(y_{\boldsymbol{\theta}}(x_i^{d}) - y_i^{d}\big)^{2} \\
+& {} + \lambda \cdot \frac{1}{M} \sum_{m=1}^{M} \big(y_{\boldsymbol{\theta}}''(x_m) + y_{\boldsymbol{\theta}}(x_m)\big)^{2},
+\end{aligned}
+{% end %}
+
+with the derivatives $y\_{\boldsymbol{\theta}}'$ and $y\_{\boldsymbol{\theta}}''$ obtained by automatic differentiation through the network and $\lambda$ a weight balancing the two terms. The data term picks out which solution of the ODE we want (the one passing through the observations rather than, say, $\cos x$), while the residual term forces the network to obey the equation everywhere, including far from any data point.
+
+<figure>
+<img src="pinn_sin.svg" alt="A two-hidden-layer tanh MLP trained on 24 noisy observations of sin(x) on [-pi, pi] plus the residual of y'' + y = 0 evaluated on a collocation grid spanning [-3pi, 3pi]. The PINN prediction smooths the noise inside the data range and tracks sin(x) outside it. A baseline trained on the data alone overfits the noise inside the range and diverges outside.">
+<figcaption>Twenty-four noisy observations of $\sin x$ on $[-\pi, \pi]$ are not enough on their own: a data-only MLP overfits the noise inside the range and diverges outside (dotted). Adding the ODE residual on a collocation grid spanning $[-3\pi, 3\pi]$ regularises the fit inside the data range and extends it correctly outside (dashed).</figcaption>
+</figure>
+
+The contrast with the ReLU fit is the whole point. Both networks have similar capacity. The ReLU model was given clean function values on $[-\pi, \pi]$ and learned to interpolate them, with no constraint at all on its behaviour elsewhere. The PINN was given fewer and noisier values plus a global constraint on its second derivative, and recovered $\sin x$ both more accurately inside the data range (the physics smooths over the noise) and far beyond it (the equation extends naturally). Generalisation outside the training distribution is not something universal approximation or gradient descent provide for free; it has to come from somewhere, whether structural priors in the architecture, symmetries baked into the loss, equations the solution must satisfy, or simply data that already covers the target range.
 
 ## Activation functions
 
@@ -129,7 +153,7 @@ GELU is smooth everywhere, behaves like ReLU for large $|z|$, and gates small in
 </figure>
 
 {% mathblock(kind="note", name="What to use when", id="activation-defaults") %}
-Use **ReLU** as the default for hidden layers in feedforward and convolutional architectures. Use **GELU** in transformer-style architectures, where the smoothness pays off. Reserve **sigmoid** and **tanh** for places where bounded output is structurally required, such as binary heads, gating mechanisms, and classical recurrent cells. Avoid sigmoid and tanh in deep hidden stacks, where their saturation will throttle backpropagation.
+Use **ReLU** as the default for hidden layers in feedforward and [convolutional](/blog/convolutional-network/) architectures. Use **GELU** in transformer-style architectures, where the smoothness pays off. Reserve **sigmoid** and **tanh** for places where bounded output is structurally required, such as binary heads, gating mechanisms, and classical [recurrent cells](/blog/recurrent-neural-network/). Avoid sigmoid and tanh in deep hidden stacks, where their saturation will throttle backpropagation.
 {% end %}
 
 ## Loss functions
@@ -139,7 +163,7 @@ The loss machinery is unchanged from the prior posts. For a regression head with
 In every case the empirical risk we minimise is the average per-sample loss over the training set:
 
 {% equation(id="empirical-risk") %}
-J(\boldsymbol{\theta}) = \frac{1}{N} \sum\_{i=1}^{N} \ell\big(\mathbf{y}\_i, \hat{\mathbf{y}}\_i(\boldsymbol{\theta})\big),
+J(\boldsymbol{\theta}) = \frac{1}{N} \sum_{i=1}^{N} \ell\big(\mathbf{y}_i, \hat{\mathbf{y}}_i(\boldsymbol{\theta})\big),
 {% end %}
 
 with $\hat{\mathbf{y}}\_i = f\_{\boldsymbol{\theta}}(\mathbf{x}\_i)$ obtained from the forward pass {{ eqref(id="forward-pre") }} and {{ eqref(id="forward-act") }}. The gradient of $J$ with respect to every parameter is what we need to do gradient-based optimisation, and computing it efficiently is what backpropagation is for.
@@ -149,7 +173,7 @@ with $\hat{\mathbf{y}}\_i = f\_{\boldsymbol{\theta}}(\mathbf{x}\_i)$ obtained fr
 The forward pass evaluates $J(\boldsymbol{\theta})$. The backward pass evaluates $\nabla\_{\boldsymbol{\theta}} J$ in time that is essentially the same as the forward pass, by reusing intermediate activations and applying the chain rule once per layer in reverse. There is no magic in the algorithm: it is the chain rule walked backwards through the layers, paid for in memory by the activations the forward pass already had to compute. The trick is to track a single auxiliary quantity per layer, the gradient of the loss with respect to the pre-activation:
 
 {% equation(id="delta-def") %}
-\boldsymbol{\delta}^{(\ell)} = \frac{\partial \ell}{\partial \mathbf{z}^{(\ell)}} \in \mathbb{R}^{d\_\ell}.
+\boldsymbol{\delta}^{(\ell)} = \frac{\partial \ell}{\partial \mathbf{z}^{(\ell)}} \in \mathbb{R}^{d_\ell}.
 {% end %}
 
 We work out three propositions: the boundary value $\boldsymbol{\delta}^{(L)}$ for a softmax head with cross-entropy loss, the recurrence relating $\boldsymbol{\delta}^{(\ell)}$ to $\boldsymbol{\delta}^{(\ell+1)}$, and the per-parameter gradients in terms of $\boldsymbol{\delta}^{(\ell)}$. The case of MSE and BCE heads is identical in form, since the propositions of the [logistic-regression](/blog/logistic-regression/) post already established that the output-layer error reduces to (prediction $-$ target) for all three canonical pairings of likelihood and link function.
@@ -229,7 +253,7 @@ For a 2-layer ReLU regressor with MSE loss, the entire forward + backward pass f
 {{ include_code(path="content/blog/neural-network/plots.py", syntax="python", start=12, end=23) }}
 
 {% mathblock(kind="note", name="Cost of one forward + backward pass", id="bp-cost") %}
-Time is $O\!\left(B \sum\_{\ell=1}^{L} d\_\ell\, d\_{\ell-1}\right)$ for a batch of size $B$, dominated by the $L$ matrix multiplications in each direction. Memory is $O\!\left(B \sum\_{\ell=0}^{L} d\_\ell\right)$ to cache activations for the backward pass, plus $O(P)$ to hold the parameter gradients. The backward pass costs roughly twice the forward pass, since each layer produces two products (one against $\mathbf{a}^{(\ell-1)}$ and one against $\boldsymbol{\delta}^{(\ell+1)}$) instead of one. Activation memory is the practical bottleneck for very deep or wide networks, and **gradient checkpointing** (recomputing a subset of activations on the backward pass instead of caching them) trades extra computation for lower memory.
+Time is $O\\!\left(B \sum\_{\ell=1}^{L} d\_\ell\, d\_{\ell-1}\right)$ for a batch of size $B$, dominated by the $L$ matrix multiplications in each direction. Memory is $O\\!\left(B \sum\_{\ell=0}^{L} d\_\ell\right)$ to cache activations for the backward pass, plus $O(P)$ to hold the parameter gradients. The backward pass costs roughly twice the forward pass, since each layer produces two products (one against $\mathbf{a}^{(\ell-1)}$ and one against $\boldsymbol{\delta}^{(\ell+1)}$) instead of one. Activation memory is the practical bottleneck for very deep or wide networks, and **gradient checkpointing** (recomputing a subset of activations on the backward pass instead of caching them) trades extra computation for lower memory.
 {% end %}
 
 ### A worked example by hand
@@ -361,7 +385,7 @@ Computing $\nabla J$ exactly requires a full pass over the dataset, which is was
 The update rule itself is unchanged from the deterministic case:
 
 {% equation(id="sgd-update") %}
-\boldsymbol{\theta}_{t+1} = \boldsymbol{\theta}_{t} - \eta*t\, \widetilde{\nabla} J(\boldsymbol{\theta}*{t}),
+\boldsymbol{\theta}_{t+1} = \boldsymbol{\theta}_{t} - \eta_t\, \widetilde{\nabla} J(\boldsymbol{\theta}_{t}),
 {% end %}
 
 with a learning rate $\eta\_t > 0$. The minibatch is the central trade-off knob. A small $B$ makes each step cheap but gives a noisy gradient that wanders around the true descent direction. A large $B$ averages the noise out at higher per-step cost. Common choices fall in $B \in [32, 1024]$, large enough to use vector hardware efficiently and small enough that gradient noise still helps escape sharp minima.{% sidenote(id="sgd-noise") %}Keskar et al.{{ reference(key="keskar2017largebatch") }} observed empirically that small-batch SGD finds flatter minima that generalise better than the sharper minima found by very large batches. The mechanism is widely debated; the rule of thumb is to scale the learning rate proportionally with batch size, which keeps the implicit gradient-noise variance approximately constant.{% end %}
@@ -393,8 +417,8 @@ Different parameters in a deep network often need different learning rates: the 
 
 {% equation(id="adam-moments") %}
 \begin{aligned}
-\mathbf{m}_{t+1} &= \beta_1\, \mathbf{m}_{t} + (1 - \beta*1)\, \widetilde{\nabla} J(\boldsymbol{\theta}*{t}), \\
-\mathbf{v}_{t+1} &= \beta_2\, \mathbf{v}_{t} + (1 - \beta*2)\, \widetilde{\nabla} J(\boldsymbol{\theta}*{t})^{\odot 2},
+\mathbf{m}_{t+1} &= \beta_1\, \mathbf{m}_{t} + (1 - \beta_1)\, \widetilde{\nabla} J(\boldsymbol{\theta}_{t}), \\
+\mathbf{v}_{t+1} &= \beta_2\, \mathbf{v}_{t} + (1 - \beta_2)\, \widetilde{\nabla} J(\boldsymbol{\theta}_{t})^{\odot 2},
 \end{aligned}
 {% end %}
 
@@ -447,7 +471,7 @@ The two recipes below are named after their authors' first names: **Xavier** Glo
 
 {% mathblock(kind="proposition", name="Xavier initialisation", id="xavier-init") %}
 Suppose $\phi$ is approximately linear near zero (sigmoid, tanh) so that $\phi'(0) \approx 1$ for tanh and $\phi'(0) = 1/4$ for sigmoid (rescaled). For a layer with $d\_{\text{in}}$ inputs and $d\_{\text{out}}$ outputs, draw weights independently from
-$$W\_{i,j} \sim \mathcal{N}\!\left(0, \frac{2}{d\_{\text{in}} + d\_{\text{out}}}\right).$$
+$$W\_{i,j} \sim \mathcal{N}\\!\left(0, \frac{2}{d\_{\text{in}} + d\_{\text{out}}}\right).$$
 Under the linearisation $\phi(z) \approx z$, this preserves the variance of the pre-activations on the forward pass and of the gradients on the backward pass, in the average sense over $d\_{\text{in}}$ and $d\_{\text{out}}$.
 {% end %}
 
@@ -465,7 +489,7 @@ Setting $\mathrm{Var}(z\_i) = s^2$ gives the **forward** condition $\mathrm{Var}
 
 {% mathblock(kind="proposition", name="He initialisation", id="he-init") %}
 Suppose $\phi$ is the ReLU. Draw weights independently from
-$$W\_{i,j} \sim \mathcal{N}\!\left(0, \frac{2}{d\_{\text{in}}}\right).$$
+$$W\_{i,j} \sim \mathcal{N}\\!\left(0, \frac{2}{d\_{\text{in}}}\right).$$
 This preserves the variance of pre-activations on the forward pass under the assumption that the input distribution to each layer is symmetric around zero.
 {% end %}
 
@@ -516,7 +540,9 @@ The mechanism has two complementary interpretations. Statistically, dropout is a
 <figure>
 <img src="dropout_overfit.svg" alt="Train and validation loss curves for a small MLP with and without dropout, showing dropout closing the train/val gap.">
 <figcaption>Without dropout the train loss collapses to near zero while the validation loss climbs; dropout keeps the gap small.</figcaption>
-</figure> Typical drop probabilities are $p = 0.1$ to $0.5$ in fully connected layers and lower in convolutional ones. Dropout is largely absent from the hidden states of modern transformers but remains standard inside attention as **attention dropout** on the softmax output.
+</figure>
+
+Typical drop probabilities are $p = 0.1$ to $0.5$ in fully connected layers and lower in [convolutional](/blog/convolutional-network/) ones. Dropout is largely absent from the hidden states of modern transformers but remains standard inside attention as **attention dropout** on the softmax output.
 
 ### Batch normalisation
 
@@ -559,7 +585,7 @@ At inference time, the batch statistics are not available (one might be processi
 with momentum $\alpha \in [0.01, 0.1]$. Batch norm has a small regularising side effect because the per-batch noise in $\mu\_{\mathcal{B}}$ and $\sigma\_{\mathcal{B}}$ acts like injected noise on the activations.
 
 {% mathblock(kind="warning", name="When batch norm misbehaves", id="bn-warning") %}
-Batch norm's statistics are only meaningful when $B$ is large enough that the empirical mean and variance are reasonable estimates of the population values. Tiny batches ($B < 16$) and per-device batches in distributed training make the statistics noisy and degrade performance. Recurrent networks fed variable-length sequences cannot share statistics across time steps cleanly. Both cases are exactly where layer normalisation comes in.
+Batch norm's statistics are only meaningful when $B$ is large enough that the empirical mean and variance are reasonable estimates of the population values. Tiny batches ($B < 16$) and per-device batches in distributed training make the statistics noisy and degrade performance. [Recurrent networks](/blog/recurrent-neural-network/) fed variable-length sequences cannot share statistics across time steps cleanly. Both cases are exactly where layer normalisation comes in.
 {% end %}
 
 ### Layer normalisation
@@ -574,7 +600,7 @@ $$\mathrm{LN}(\mathbf{z}) = \boldsymbol{\gamma} \odot \frac{\mathbf{z} - \mu}{\s
 with per-feature learned vectors $\boldsymbol{\gamma}, \boldsymbol{\beta} \in \mathbb{R}^{d}$.
 {% end %}
 
-The two key practical differences from batch norm follow directly. The statistics depend on the sample alone, so layer norm behaves identically at training and inference time without any moving averages, and its quality is independent of the batch size. The trade-off is a weaker decoupling effect (no inter-sample averaging) and the assumption that all $d$ features within a sample are on a comparable scale, which is reasonable in transformers where the features come from a learned embedding and dubious in early CNN layers where channels have very different statistics.
+The two key practical differences from batch norm follow directly. The statistics depend on the sample alone, so layer norm behaves identically at training and inference time without any moving averages, and its quality is independent of the batch size. The trade-off is a weaker decoupling effect (no inter-sample averaging) and the assumption that all $d$ features within a sample are on a comparable scale, which is reasonable in transformers where the features come from a learned embedding and dubious in early [CNN layers](/blog/convolutional-network/) where channels have very different statistics.
 
 Variants worth knowing exist for completeness. **RMSNorm** drops the mean-centring step and normalises by the root-mean-square alone, saving a few flops while preserving most of the benefits, and is the default in modern large language models. **Group normalisation** computes statistics over groups of channels within a single sample and is a useful CNN replacement for batch norm at small batch sizes.
 
@@ -583,7 +609,7 @@ Variants worth knowing exist for completeness. **RMSNorm** drops the mean-centri
 The cheapest regulariser is to monitor a held-out validation loss during training and stop the moment it starts increasing, even if the training loss is still decreasing. Because gradient descent moves the parameters away from their initialisation by an amount that grows with the number of steps, early stopping implicitly bounds $\lVert \boldsymbol{\theta}\_{t} - \boldsymbol{\theta}\_{0} \rVert$ and is therefore close cousins with weight decay around the initialisation point. It is essentially free, requires no architectural change, and ought to be enabled by default in any training run that has a validation set.
 
 {% mathblock(kind="note", name="What to use when", id="reg-defaults") %}
-**AdamW with a small weight-decay coefficient** ($\lambda \in [10^{-4}, 10^{-2}]$) and **early stopping** are essentially free and should be the baseline for every training run. **Batch normalisation** is the standard choice in convolutional networks, where minibatches are large and channels have stable statistics. **Layer normalisation** (or RMSNorm) is the standard in transformers and recurrent networks, where batches vary and the per-sample statistics are meaningful. **Dropout** at $p \in [0.1, 0.3]$ remains useful in fully connected heads and inside attention, but is mostly redundant in well-normalised, well-regularised modern architectures with sufficient data. **Data augmentation**, although outside the scope of this note, is the most effective regulariser of all when the input modality admits invariances (random crops, flips, colour jitter for images and the like) and dwarfs the others in impact on test accuracy.
+**AdamW with a small weight-decay coefficient** ($\lambda \in [10^{-4}, 10^{-2}]$) and **early stopping** are essentially free and should be the baseline for every training run. **Batch normalisation** is the standard choice in [convolutional networks](/blog/convolutional-network/), where minibatches are large and channels have stable statistics. **Layer normalisation** (or RMSNorm) is the standard in transformers and [recurrent networks](/blog/recurrent-neural-network/), where batches vary and the per-sample statistics are meaningful. **Dropout** at $p \in [0.1, 0.3]$ remains useful in fully connected heads and inside attention, but is mostly redundant in well-normalised, well-regularised modern architectures with sufficient data. **Data augmentation**, although outside the scope of this note, is the most effective regulariser of all when the input modality admits invariances (random crops, flips, colour jitter for images and the like) and dwarfs the others in impact on test accuracy.
 {% end %}
 
 {% mathblock(kind="warning", name="Numerical pitfalls", id="nn-warnings") %}

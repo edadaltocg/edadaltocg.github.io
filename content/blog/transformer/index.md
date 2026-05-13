@@ -26,7 +26,7 @@ The atomic operation of the Transformer takes three sets of vectors as input. A 
 {% mathblock(kind="definition", name="Scaled dot-product attention", id="sdpa") %}
 $$\begin{aligned}
 \mathrm{Attention}(\mathbf{Q}, \mathbf{K}, \mathbf{V})
-&= \mathrm{softmax}\!\left(\frac{\mathbf{Q}\mathbf{K}^\top}{\sqrt{d\_k}}\right) \mathbf{V},
+&= \mathrm{softmax}\\!\left(\frac{\mathbf{Q}\mathbf{K}^\top}{\sqrt{d\_k}}\right) \mathbf{V},
 \end{aligned}$$
 with the softmax applied row-wise over the $M$ keys. The output has shape $\mathbb{R}^{N \times d\_v}$.
 {% end %}
@@ -46,8 +46,8 @@ This is the "scaled" half of the name and is the most easily missed design choic
 {% mathblock(kind="proposition", name="Variance of the unscaled dot product", id="dot-variance") %}
 Let $\mathbf{q}, \mathbf{k} \in \mathbb{R}^{d\_k}$ have independent entries with mean zero and variance one. Then
 $$\begin{aligned}
-\mathbb{E}\!\left[\mathbf{q}^\top \mathbf{k}\right] &= 0, \\\\
-\mathrm{Var}\!\left(\mathbf{q}^\top \mathbf{k}\right) &= d\_k.
+\mathbb{E}\\!\left[\mathbf{q}^\top \mathbf{k}\right] &= 0, \\\\
+\mathrm{Var}\\!\left(\mathbf{q}^\top \mathbf{k}\right) &= d\_k.
 \end{aligned}$$
 {% end %}
 
@@ -615,7 +615,7 @@ The catch is that we don't know what tokens to verify, since the autoregressive 
 Let $p$ be the target model's next-token distribution and $q$ the draft model's. Suppose the draft proposes a token $\tilde{x} \sim q(\cdot)$. Accept $\tilde{x}$ with probability $\min(1,\, p(\tilde{x}) / q(\tilde{x}))$. If rejected, sample a replacement $x$ from the **residual distribution**
 $$\begin{aligned}
 p\_{\text{res}}(x)
-&= \frac{\max\!\big(0,\, p(x) - q(x)\big)}{\sum\_{x'} \max\!\big(0,\, p(x') - q(x')\big)}.
+&= \frac{\max\\!\big(0,\, p(x) - q(x)\big)}{\sum\_{x'} \max\\!\big(0,\, p(x') - q(x')\big)}.
 \end{aligned}$$
 The accepted (or replacement) token is distributed exactly according to $p$.
 {% end %}

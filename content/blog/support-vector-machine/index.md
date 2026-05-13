@@ -300,7 +300,7 @@ Substituting the three identities back into the Lagrangian eliminates $\mathbf{w
 {% mathblock(kind="proof", name="(dual derivation)", id="svm-dual-proof") %}
 Plug each KKT identity from {{ eqref(id="kkt-stationarity") }} into {{ eqref(id="svm-lagrangian") }}. The slack term collapses, $C \sum\_i \xi\_i - \sum\_i \alpha\_i \xi\_i - \sum\_i \beta\_i \xi\_i = \sum\_i \xi\_i (C - \alpha\_i - \beta\_i) = 0$, using $\alpha\_i + \beta\_i = C$. The bias term collapses, $-b \sum\_i \alpha\_i y\_i = 0$, using $\sum\_i \alpha\_i y\_i = 0$. The two remaining $\mathbf{w}$-dependent terms become
 $$\begin{aligned}
-& \tfrac{1}{2} \lVert \mathbf{w} \rVert\_2^2 - \mathbf{w}^{\top} \!\!\sum\_i \alpha\_i y\_i \mathbf{x}\_i \\
+& \tfrac{1}{2} \lVert \mathbf{w} \rVert\_2^2 - \mathbf{w}^{\top} \\!\\!\sum\_i \alpha\_i y\_i \mathbf{x}\_i \\
 &= \tfrac{1}{2} \lVert \mathbf{w} \rVert\_2^2 - \lVert \mathbf{w} \rVert\_2^2 \\
 &= -\tfrac{1}{2} \sum\_{i,j} \alpha\_i \alpha\_j y\_i y\_j \mathbf{x}\_i^{\top} \mathbf{x}\_j,
 \end{aligned}$$
@@ -347,7 +347,7 @@ Run sub-gradient descent with step size $\eta\_t = c / \sqrt{t}$ from $\boldsymb
 Let $\bar{\boldsymbol{\theta}}\_T = \tfrac{1}{T} \sum\_{t=1}^{T} \boldsymbol{\theta}\_t$ be the running average. Then
 $$\begin{aligned}
 J(\bar{\boldsymbol{\theta}}\_T) - J(\boldsymbol{\theta}^{\ast})
-&\leq O\!\left(\frac{G\, \lVert \boldsymbol{\theta}\_0 - \boldsymbol{\theta}^{\ast} \rVert\_2}{\sqrt{T}}\right).
+&\leq O\\!\left(\frac{G\, \lVert \boldsymbol{\theta}\_0 - \boldsymbol{\theta}^{\ast} \rVert\_2}{\sqrt{T}}\right).
 \end{aligned}$$
 {% end %}
 
@@ -362,7 +362,7 @@ Pegasos does exploit more structure (strong convexity in $\mathbf{w}$) and achie
 {% mathblock(kind="proposition", name="Pegasos convergence", id="pegasos-converge") %}
 Run Pegasos {{ eqref(id="pegasos-update") }} on the regularised hinge cost with $\lambda$-strong convexity and step size $\eta\_t = 1/(\lambda t)$.
 After $T$ iterations,
-$$\mathbb{E}[J(\bar{\mathbf{w}}\_T)] - J(\mathbf{w}^{\ast}) \leq O\!\left(\frac{\log T}{\lambda T}\right),$$
+$$\mathbb{E}[J(\bar{\mathbf{w}}\_T)] - J(\mathbf{w}^{\ast}) \leq O\\!\left(\frac{\log T}{\lambda T}\right),$$
 where the expectation is over the random sampling of indices.
 {% end %}
 

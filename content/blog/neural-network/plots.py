@@ -1,10 +1,12 @@
 #!/usr/bin/env -S uv run
 # /// script
 # requires-python = ">=3.12"
-# dependencies = ["numpy", "matplotlib"]
+# dependencies = ["numpy", "matplotlib", "jax"]
 # ///
 """Generate plots for the neural network blog post."""
 
+import jax
+import jax.numpy as jnp
 import numpy as np
 import matplotlib.pyplot as plt
 
@@ -219,7 +221,7 @@ fig.tight_layout()
 fig.savefig("optim_curves.svg", bbox_inches="tight")
 plt.close(fig)
 
-# 5. Universal approximation: ReLU MLP fits sin(x) ----------------------------
+# 5. Universal approximation: ReLU MLP fits sin(x) on [-pi, pi], fails outside
 n_u = 200
 x_u = np.linspace(-np.pi, np.pi, n_u).reshape(-1, 1)
 y_u = np.sin(x_u)
@@ -232,21 +234,22 @@ for t in range(1, 6001):
     W2 -= lr * gW2
     b2 -= lr * gb2
 
-x_dense = np.linspace(-np.pi, np.pi, 600).reshape(-1, 1)
+x_dense = np.linspace(-3 * np.pi, 3 * np.pi, 1200).reshape(-1, 1)
 z1 = x_dense @ W1.T + b1
 a1 = np.maximum(0, z1)
 y_hat = a1 @ W2.T + b2
 
 fig, ax = plt.subplots(figsize=(7, 4.2))
-for j in range(W1.shape[0]):
-    contrib = W2[0, j] * a1[:, j] + b2[0] / W1.shape[0]
-    ax.plot(x_dense, contrib, color="gray", lw=0.6, alpha=0.5)
+ax.axvspan(-np.pi, np.pi, color="C2", alpha=0.08, label="training range")
 ax.plot(x_dense, np.sin(x_dense), color="C0", lw=2, label="target $\\sin x$")
-ax.plot(x_dense, y_hat, color="C3", lw=2, ls="--", label="MLP fit")
+ax.plot(x_dense, y_hat, color="C3", lw=2, ls="--", label="MLP prediction")
 ax.set_xlabel("x")
 ax.set_ylabel("y")
-ax.set_title("A wide ReLU layer is a basis: the sum of bumps approximates the target")
-ax.legend()
+ax.set_ylim(-3.5, 3.5)
+ax.set_title(
+    "Wide ReLU MLP fits sin(x) inside the training range; extrapolates linearly outside"
+)
+ax.legend(loc="upper right")
 fig.tight_layout()
 fig.savefig("uat_fit.svg", bbox_inches="tight")
 plt.close(fig)
@@ -306,4 +309,133 @@ ax.set_title("Dropout closes the train/val gap on a small dataset")
 ax.legend(fontsize=8)
 fig.tight_layout()
 fig.savefig("dropout_overfit.svg", bbox_inches="tight")
+plt.close(fig)
+
+
+# 7. PINN: noisy sin(x) data on [-pi, pi] + ODE y'' + y = 0 on [-3pi, 3pi] -----
+jax.config.update("jax_enable_x64", True)
+jax_key = jax.random.PRNGKey(0)
+H1, H2 = 64, 64
+k1, k2, k3, k4, k5 = jax.random.split(jax_key, 5)
+params = (
+    jax.random.normal(k1, (H1,))
+    * 1.5,  # W1: wide spread allows multiple wavelengths in basis
+    jax.random.uniform(
+        k2, (H1,), minval=-jnp.pi, maxval=jnp.pi
+    ),  # b1: shifts span the domain
+    jax.random.normal(k3, (H2, H1)) * jnp.sqrt(1.0 / H1),  # W2
+    jnp.zeros(H2),  # b2
+    jax.random.normal(k4, (H2,)) * jnp.sqrt(1.0 / H2),  # W3 (output)
+    jnp.array(0.0),  # b3
+)
+
+
+def pinn_y(params, x):
+    W1, b1, W2, b2, W3, b3 = params
+    a1 = jnp.tanh(W1 * x + b1)
+    a2 = jnp.tanh(W2 @ a1 + b2)
+    return jnp.sum(W3 * a2) + b3
+
+
+pinn_dy = jax.grad(pinn_y, argnums=1)
+pinn_ddy = jax.grad(pinn_dy, argnums=1)
+pinn_y_v = jax.vmap(pinn_y, in_axes=(None, 0))
+pinn_ddy_v = jax.vmap(pinn_ddy, in_axes=(None, 0))
+
+# noisy observations of sin(x) on the inner range, used as the data term
+n_data = 24
+sigma = 0.15
+x_data_np = np.linspace(-np.pi, np.pi, n_data)
+y_data_np = np.sin(x_data_np) + sigma * rng.normal(size=n_data)
+x_data = jnp.asarray(x_data_np)
+y_data = jnp.asarray(y_data_np)
+
+
+def pinn_loss(params, x_col, x_d, y_d, lam_pde=1.0):
+    res = pinn_ddy_v(params, x_col) + pinn_y_v(params, x_col)
+    pde = jnp.mean(res**2)
+    pred = pinn_y_v(params, x_d)
+    data = jnp.mean((pred - y_d) ** 2)
+    return data + lam_pde * pde
+
+
+pinn_grad = jax.jit(jax.value_and_grad(pinn_loss))
+
+x_col = jnp.linspace(-3 * jnp.pi, 3 * jnp.pi, 512)
+m_state = jax.tree_util.tree_map(jnp.zeros_like, params)
+v_state = jax.tree_util.tree_map(jnp.zeros_like, params)
+b1_a, b2_a, eps = 0.9, 0.999, 1e-8
+for t in range(1, 20001):
+    lr = 2e-3 if t <= 10000 else 5e-4
+    loss_val, grads = pinn_grad(params, x_col, x_data, y_data)
+    m_state = jax.tree_util.tree_map(
+        lambda m, g: b1_a * m + (1 - b1_a) * g, m_state, grads
+    )
+    v_state = jax.tree_util.tree_map(
+        lambda v, g: b2_a * v + (1 - b2_a) * g**2, v_state, grads
+    )
+    bc1, bc2 = 1 - b1_a**t, 1 - b2_a**t
+    params = jax.tree_util.tree_map(
+        lambda p, m, v: p - lr * (m / bc1) / (jnp.sqrt(v / bc2) + eps),
+        params,
+        m_state,
+        v_state,
+    )
+
+# also train a data-only baseline (same architecture and budget, lam_pde = 0)
+params_baseline = (
+    jax.random.normal(k1, (H1,)) * 1.5,
+    jax.random.uniform(k2, (H1,), minval=-jnp.pi, maxval=jnp.pi),
+    jax.random.normal(k3, (H2, H1)) * jnp.sqrt(1.0 / H1),
+    jnp.zeros(H2),
+    jax.random.normal(k4, (H2,)) * jnp.sqrt(1.0 / H2),
+    jnp.array(0.0),
+)
+m_state = jax.tree_util.tree_map(jnp.zeros_like, params_baseline)
+v_state = jax.tree_util.tree_map(jnp.zeros_like, params_baseline)
+for t in range(1, 20001):
+    lr = 2e-3 if t <= 10000 else 5e-4
+    loss_val, grads = pinn_grad(params_baseline, x_col, x_data, y_data, 0.0)
+    m_state = jax.tree_util.tree_map(
+        lambda m, g: b1_a * m + (1 - b1_a) * g, m_state, grads
+    )
+    v_state = jax.tree_util.tree_map(
+        lambda v, g: b2_a * v + (1 - b2_a) * g**2, v_state, grads
+    )
+    bc1, bc2 = 1 - b1_a**t, 1 - b2_a**t
+    params_baseline = jax.tree_util.tree_map(
+        lambda p, m, v: p - lr * (m / bc1) / (jnp.sqrt(v / bc2) + eps),
+        params_baseline,
+        m_state,
+        v_state,
+    )
+
+x_eval = np.linspace(-3 * np.pi, 3 * np.pi, 1200)
+y_pinn = np.array(pinn_y_v(params, jnp.asarray(x_eval)))
+y_baseline = np.array(pinn_y_v(params_baseline, jnp.asarray(x_eval)))
+
+fig, ax = plt.subplots(figsize=(7, 4.2))
+ax.axvspan(-np.pi, np.pi, color="C2", alpha=0.08, label="data range")
+ax.plot(x_eval, np.sin(x_eval), color="C0", lw=2, label="target $\\sin x$")
+ax.plot(
+    x_eval, y_baseline, color="gray", lw=1.5, ls=":", label="data-only MLP (no physics)"
+)
+ax.plot(x_eval, y_pinn, color="C3", lw=2, ls="--", label="PINN (data + ODE)")
+ax.scatter(
+    x_data_np,
+    y_data_np,
+    color="k",
+    s=18,
+    zorder=5,
+    label=f"noisy data ($\\sigma = {sigma}$)",
+)
+ax.set_xlabel("x")
+ax.set_ylabel("y")
+ax.set_ylim(-2.0, 2.0)
+ax.set_title(
+    "PINN denoises inside the data range and extrapolates outside via $y'' + y = 0$"
+)
+ax.legend(loc="upper right", fontsize=8)
+fig.tight_layout()
+fig.savefig("pinn_sin.svg", bbox_inches="tight")
 plt.close(fig)
