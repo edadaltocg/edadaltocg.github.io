@@ -213,24 +213,24 @@ def process(bib_path: Path, fix: bool) -> list[str]:
             problems.append(f"  [{key}] weak match ({score:.2f}): {hit.get('title')!r}")
             continue
         if fix and score >= MATCH_FIX:
-            existing_surnames = {
-                first_surname(a).lower()
-                for a in f.get("author", "").split(" and ")
-                if a
-            }
-            dblp_surnames = {
-                clean_title(s).lower()
-                for s in authors_from_dblp(hit).split(" and ")
-                if s
-            }
-            dblp_surnames = {s.split(",")[0].strip() for s in dblp_surnames}
-            if (
-                existing_surnames
-                and dblp_surnames
-                and existing_surnames.isdisjoint(dblp_surnames)
-            ):
+            existing_first = first_surname(f.get("author", "")).lower()
+            dblp_authors = authors_from_dblp(hit)
+            dblp_first = first_surname(dblp_authors).lower()
+            existing_year = f.get("year", "").strip().strip("{}")
+            dblp_year = str(hit.get("year", ""))
+            year_ok = (
+                not existing_year
+                or not dblp_year
+                or abs(int(existing_year) - int(dblp_year)) <= 1
+            )
+            if existing_first and existing_first != dblp_first:
                 problems.append(
-                    f"  [{key}] dblp match has no overlapping author; skipped"
+                    f"  [{key}] dblp first author {dblp_first!r} != existing {existing_first!r}; skipped"
+                )
+                continue
+            if not year_ok:
+                problems.append(
+                    f"  [{key}] dblp year {dblp_year} too far from existing {existing_year}; skipped"
                 )
                 continue
             new = render_entry(key, hit)

@@ -35,6 +35,30 @@
     overflow-x: auto;
     overflow-y: hidden;
     padding: 0.5em 0;
+    /* Smooth momentum scroll on iOS. */
+    -webkit-overflow-scrolling: touch;
+    /* Force a thin always-visible scrollbar in Firefox so the user
+       knows the equation extends beyond the viewport. Mobile browsers
+       hide native scrollbars by default until the user actively
+       scrolls, which leaves the equation looking simply truncated. */
+    scrollbar-width: thin;
+    scrollbar-color: var(--text-light, #888) transparent;
+  }
+
+  /* WebKit (Safari, Chrome on iOS/Android): force a thin persistent
+     scrollbar on the equation scroll container. */
+  .katex-display::-webkit-scrollbar {
+    height: 6px;
+    -webkit-appearance: none;
+  }
+
+  .katex-display::-webkit-scrollbar-thumb {
+    background-color: var(--text-light, #888);
+    border-radius: 3px;
+  }
+
+  .katex-display::-webkit-scrollbar-track {
+    background: transparent;
   }
 
   .katex-display > .katex {
