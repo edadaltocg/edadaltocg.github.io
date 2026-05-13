@@ -438,3 +438,101 @@ For memory, the dominant terms are $\mathbf{X}$ and $\mathbf{U}$, each of size $
 {% end %}
 
 This is more than QR (the same $O(N D^2)$ leading term plus an extra $O(D^3)$ for the diagonalisation). But SVD is the most numerically robust option and the only one that handles rank deficiency cleanly. As a rule of thumb, use QR when $\mathbf{X}$ is known to have full column rank, and SVD otherwise.
+
+## Regularisation
+
+The closed-form solution {{ eqref(id="normal-solution") }} is unbiased and minimises the training MSE exactly, but it has two failure modes that show up the moment we leave the textbook setting.
+
+The first is multicollinearity. When two or more features are nearly linear combinations of one another, $\mathbf{X}^{\top} \mathbf{X}$ becomes nearly singular. The condition number explodes, the entries of $(\mathbf{X}^{\top} \mathbf{X})^{-1}$ blow up, and the optimal coefficients $\hat{\boldsymbol{\theta}}^{\ast}$ swing wildly in response to tiny changes in $\mathbf{y}$. Two features that are individually informative might receive a huge positive weight and a huge negative weight that nearly cancel: the model fits the training data, but generalises poorly and is impossible to interpret.
+
+The second is overfitting in high dimensions. When $D$ is comparable to or larger than $N$, the design matrix has full row rank but not full column rank, so infinitely many parameter vectors achieve zero training error. Without further information the optimiser picks one of them, and that choice is dictated by noise rather than signal. The model memorises the training set and fails on new inputs.
+
+Both pathologies share a common root: the likelihood treats every direction in parameter space symmetrically, so it cannot distinguish "the data prefers this $\boldsymbol{\theta}$" from "the data is indifferent and noise picked this $\boldsymbol{\theta}$". The fix is to introduce a prior preference for simple models. We add a regularisation term $\Omega(\boldsymbol{\theta})$ to the cost that penalises complex parameter vectors:
+
+{% equation(id="reg-cost") %}
+\hat{\theta}^{\ast} = \argmin_{\theta} \big[ J(\theta) + \lambda\, \Omega(\theta) \big]
+{% end %}
+
+The hyperparameter $\lambda \geq 0$ controls the trade-off. Setting $\lambda = 0$ recovers ordinary least squares, while $\lambda \to \infty$ shrinks $\boldsymbol{\theta}$ towards zero regardless of the data. Intermediate values trade a small increase in bias for a large decrease in variance, the classic _bias-variance trade-off_.
+
+{% mathblock(kind="note", name="Regularisation as a prior", id="reg-prior") %}
+Regularisation has a clean Bayesian interpretation. Instead of maximising the likelihood, we maximise the posterior $Pr(\boldsymbol{\theta} \mid \mathbf{X}, \mathbf{y}) \propto Pr(\mathbf{y} \mid \mathbf{X}, \boldsymbol{\theta})\, Pr(\boldsymbol{\theta})$. Taking the negative log of both sides converts the product into the sum $J(\boldsymbol{\theta}) + \lambda\, \Omega(\boldsymbol{\theta})$, where $\Omega = -\log Pr(\boldsymbol{\theta})$ is the negative log-prior (up to a constant). A Gaussian prior $\boldsymbol{\theta} \sim \mathcal{N}(\mathbf{0}, \tau^2 \mathbf{I})$ yields the squared-$\ell\_2$ penalty (ridge); a Laplace prior $\boldsymbol{\theta} \sim \mathrm{Lap}(\mathbf{0}, b)$ yields the $\ell\_1$ penalty (LASSO).
+{% end %}
+
+The choice of $\Omega$ encodes _what kind_ of simplicity we prefer. The two canonical choices are the squared $\ell\_2$ norm and the $\ell\_1$ norm, leading to ridge regression and the LASSO respectively.
+
+### Ridge Regression
+
+Ridge regression penalises the squared $\ell\_2$ norm of the parameters:
+
+{% equation(id="ridge-cost") %}
+J_{\text{ridge}}(\theta) = \frac{1}{N} \lVert \mathbf{y} - \mathbf{X}\theta \rVert_2^2 + \lambda\, \lVert \theta \rVert_2^2
+{% end %}
+
+The penalty $\lVert \boldsymbol{\theta} \rVert\_2^2 = \sum\_j \theta\_j^2$ pulls every coefficient towards zero, with the strongest pull on the largest coefficients. Because both terms are convex quadratics, the sum is also a convex quadratic and admits a closed-form solution.
+
+Setting the gradient to zero:
+
+{% equation(id="ridge-gradient") %}
+\nabla_\theta J_{\text{ridge}} = \frac{2}{N} \big( \mathbf{X}^{\top} \mathbf{X}\, \theta - \mathbf{X}^{\top} \mathbf{y} \big) + 2 \lambda\, \theta = \mathbf{0}
+{% end %}
+
+Rearranging gives the regularised normal equations:
+
+{% equation(id="ridge-normal") %}
+\big( \mathbf{X}^{\top} \mathbf{X} + N \lambda\, \mathbf{I} \big)\, \theta = \mathbf{X}^{\top} \mathbf{y}
+{% end %}
+
+The matrix on the left is always invertible whenever $\lambda > 0$, regardless of whether $\mathbf{X}$ has full column rank. Adding $N\lambda\, \mathbf{I}$ shifts every eigenvalue of $\mathbf{X}^{\top} \mathbf{X}$ upward by $N\lambda$, so the smallest eigenvalue goes from possibly zero to at least $N\lambda$. The closed-form solution is:
+
+{% equation(id="ridge-solution") %}
+\hat{\theta}_{\text{ridge}}^{\ast} = \big( \mathbf{X}^{\top} \mathbf{X} + N \lambda\, \mathbf{I} \big)^{-1} \mathbf{X}^{\top} \mathbf{y}
+{% end %}
+
+To see what ridge does geometrically, substitute the SVD $\mathbf{X} = \mathbf{U} \boldsymbol{\Sigma} \mathbf{V}^{\top}$ from {{ eqref(id="svd-factorisation") }}. After simplification (using $\mathbf{V}^{\top} \mathbf{V} = \mathbf{I}$ and $\mathbf{U}^{\top} \mathbf{U} = \mathbf{I}$):
+
+{% equation(id="ridge-svd") %}
+\hat{\theta}_{\text{ridge}}^{\ast} = \mathbf{V}\, \mathrm{diag}\!\left( \frac{\sigma_i}{\sigma_i^2 + N\lambda} \right)\, \mathbf{U}^{\top} \mathbf{y}
+{% end %}
+
+Compare this to the unregularised pseudoinverse solution {{ eqref(id="svd-solution") }}, which uses the diagonal entries $1/\sigma\_i$. Ridge replaces $1/\sigma\_i$ with $\sigma\_i / (\sigma\_i^2 + N\lambda)$. For large singular values $\sigma\_i \gg \sqrt{N\lambda}$ the two factors are nearly identical, ie, well-determined directions are barely touched. For small singular values $\sigma\_i \ll \sqrt{N\lambda}$, ridge replaces a numerically explosive $1/\sigma\_i$ with the gentle factor $\sigma\_i / (N\lambda)$, ie, poorly-determined directions are smoothly damped towards zero. Ridge is, in this sense, a continuous version of the truncated SVD discussed earlier.
+
+{% mathblock(kind="proposition", name="Ridge shrinks but never zeroes", id="ridge-shrinks") %}
+For any finite $\lambda > 0$ and any index $i$ with $\sigma\_i > 0$, the corresponding ridge coefficient in the rotated basis $\mathbf{V}^{\top} \boldsymbol{\theta}$ is strictly between zero and the unregularised value. No coefficient is exactly zero unless the data forces it.
+{% end %}
+
+This last property matters in practice: ridge produces dense parameter vectors. Every feature receives a small but non-zero weight. If the goal is variable selection rather than just prediction, ridge is the wrong tool.
+
+### LASSO Regression
+
+The LASSO (least absolute shrinkage and selection operator) replaces the squared $\ell\_2$ penalty with the $\ell\_1$ norm:
+
+{% equation(id="lasso-cost") %}
+J_{\text{lasso}}(\theta) = \frac{1}{N} \lVert \mathbf{y} - \mathbf{X}\theta \rVert_2^2 + \lambda\, \lVert \theta \rVert_1
+{% end %}
+
+where $\lVert \boldsymbol{\theta} \rVert\_1 = \sum\_j |\theta\_j|$. This single change in the penalty has consequences far out of proportion to its size.
+
+The first consequence is the loss of differentiability. The function $|\theta\_j|$ is not differentiable at $\theta\_j = 0$, so the cost function has a kink along every coordinate axis. The first-order optimality condition is no longer "gradient equals zero" but a subgradient inclusion:
+
+{% equation(id="lasso-subgradient") %}
+\frac{2}{N} \mathbf{X}^{\top} (\mathbf{X} \theta - \mathbf{y}) + \lambda\, \partial \lVert \theta \rVert_1 \ni \mathbf{0}
+{% end %}
+
+where the subdifferential of $|\theta\_j|$ is $\\{\mathrm{sign}(\theta\_j)\\}$ when $\theta\_j \neq 0$ and the closed interval $[-1, 1]$ when $\theta\_j = 0$. There is no closed-form solution for general $\mathbf{X}$, with one important exception.
+
+When the columns of $\mathbf{X}$ are orthonormal, the LASSO decouples coordinate by coordinate, and each component is given by the soft-thresholding operator:
+
+{% equation(id="soft-threshold") %}
+\hat{\theta}_j^{\,\text{lasso}} = \mathrm{sign}\!\big(\hat{\theta}_j^{\,\text{ols}}\big)\, \big(\, |\hat{\theta}_j^{\,\text{ols}}| - \lambda \,\big)_+
+{% end %}
+
+where $(z)\_+ = \max(z, 0)$ and $\hat{\theta}\_j^{\,\text{ols}}$ is the unregularised coefficient. Each coefficient is shrunk towards zero by exactly $\lambda$, and any coefficient whose unregularised magnitude is smaller than $\lambda$ is set to zero exactly. Compare this with ridge in the same orthonormal setting, which scales every coefficient by $1/(1+\lambda)$ and never zeroes anything.
+
+The general (non-orthonormal) case is solved iteratively. The two dominant approaches are _coordinate descent_, which cycles through the parameters and applies soft-thresholding to one at a time while holding the others fixed, and _proximal gradient methods_ such as ISTA and FISTA, which alternate a gradient step on the smooth quadratic part with a soft-thresholding step on the $\ell\_1$ part. Both converge to the global minimum because the cost is convex.
+
+{% mathblock(kind="note", name="Why the L1 penalty produces sparsity", id="lasso-geometry") %}
+The geometric explanation is the shape of the unit ball. The constraint region $\\{\boldsymbol{\theta} : \lVert \boldsymbol{\theta} \rVert\_1 \leq t\\}$ is a hyper-octahedron with corners on the coordinate axes, where multiple coefficients vanish simultaneously. The level sets of the residual sum of squares are ellipsoids, and the optimum sits where the smallest such ellipsoid first touches the constraint region. Generically that contact happens at a corner, so the solution has many zero coefficients. The ridge ball $\\{\boldsymbol{\theta} : \lVert \boldsymbol{\theta} \rVert\_2 \leq t\\}$ is a smooth sphere with no corners, so the contact point almost never lies on a coordinate axis.
+{% end %}
+
+This sparsity makes the LASSO double as a feature-selection procedure: fitting a single model produces both the coefficients and an automatic shortlist of relevant variables. The cost is that the resulting estimator is biased in a way ridge is not (large coefficients are still shrunk by $\lambda$ even when the data strongly supports them), and that the selected support can be unstable when features are highly correlated. A common remedy is the _elastic net_, which uses the convex combination $\alpha\, \lVert \boldsymbol{\theta} \rVert\_1 + (1-\alpha)\, \lVert \boldsymbol{\theta} \rVert\_2^2$ to inherit the sparsity of LASSO while retaining the grouping behaviour of ridge.
