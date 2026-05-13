@@ -17,7 +17,7 @@ Consider the following problem.
 We want to predict a binary output $y \in \\{0, 1\\}$ from a single input $x \in \mathbb{R}$ using a model $f\_{\theta}:\mathbb{R} \to (0, 1)$ with parameters vector $\boldsymbol{\theta}$.
 The output now represents class membership rather than a real-valued quantity, so the model should return the probability that the example belongs to the positive class, $Pr(y=1 \mid x)$.
 A bare linear function $\theta\_0 + \theta\_1 x$ ranges over all of $\mathbb{R}$ and is therefore unsuitable on its own. We need to squash it into the unit interval.
-The standard choice is the **sigmoid** (logistic) function:
+The standard choice is the **sigmoid** (logistic) function, named for its S-shaped graph (sigmoid means "shaped like the Greek letter sigma, $\varsigma$"):
 
 {% equation(id="sigmoid-def") %}
 \sigma(z) = \frac{1}{1 + e^{-z}}, \qquad \sigma:\mathbb{R} \to (0, 1)
@@ -75,7 +75,7 @@ The two cases collapse into a single expression: when $y\_i = 1$ the second fact
 \end{aligned}
 {% end %}
 
-This is the **binary cross-entropy** (BCE), or log-loss, criterion.
+This is the **binary cross-entropy** (BCE), or log-loss, criterion. The name comes from information theory: the cross-entropy $H(q, p) = -\sum\_y q(y) \log p(y)$ measures the average number of bits (or nats) needed to encode samples from a true distribution $q$ using a code optimised for an estimated distribution $p$. Minimising it pulls the model's $p$ towards the data's $q$, with the minimum reached when they coincide. The way to keep this in your head is that the loss measures _surprise_: the cost of each example is the number of bits the model needs to write down the true label given how confident it was in advance, and a perfect model is never surprised.
 
 ### Loss and Cost Functions
 
@@ -332,7 +332,7 @@ so the update collapses to:
 \boldsymbol{\theta}_{t+1} = (\mathbf{X}^{\top} \mathbf{S}_{t}\, \mathbf{X})^{-1}\, \mathbf{X}^{\top} \mathbf{S}_{t}\, \mathbf{z}_{t}
 {% end %}
 
-This is exactly the [normal equations](/blog/linear-regression/) of a **weighted least-squares** problem with design matrix $\mathbf{X}$, target $\mathbf{z}\_t$, and per-sample weights $\mathbf{S}\_t$ (i.e., the closed-form solution to $\min\_{\boldsymbol{\theta}} \lVert \mathbf{S}\_t^{1/2} (\mathbf{z}\_t - \mathbf{X} \boldsymbol{\theta}) \rVert\_2^2$). Each Newton step on the BCE cost is therefore one weighted least-squares solve, with both the weights and the target re-derived from the current $\boldsymbol{\theta}\_t$. This is the **iteratively reweighted least squares** (IRLS) algorithm.
+This is exactly the [normal equations](/blog/linear-regression/) of a **weighted least-squares** problem with design matrix $\mathbf{X}$, target $\mathbf{z}\_t$, and per-sample weights $\mathbf{S}\_t$ (i.e., the closed-form solution to $\min\_{\boldsymbol{\theta}} \lVert \mathbf{S}\_t^{1/2} (\mathbf{z}\_t - \mathbf{X} \boldsymbol{\theta}) \rVert\_2^2$). Each Newton step on the BCE cost is therefore one weighted least-squares solve, with both the weights and the target re-derived from the current $\boldsymbol{\theta}\_t$. This is the **iteratively reweighted least squares** (IRLS) algorithm: logistic regression is, in the end, linear regression run again and again until the weights agree with the predictions they produce.
 
 The working response has a nice interpretation. $\mathbf{X} \boldsymbol{\theta}\_t$ is the current vector of linear scores, and $\mathbf{S}\_t^{-1} (\mathbf{y} - \mathbf{p}\_t)$ is a Newton-style correction in score-space. We divide the residual $\mathbf{y} - \mathbf{p}\_t$ by the local sigmoid slope $p\_i (1 - p\_i)$ to convert "off by this much in probability" into "off by this much in score". IRLS then solves a regression problem against this corrected target.
 
@@ -350,7 +350,7 @@ Memory splits between the design matrix $\mathbf{X}$ at $O(N D)$ and the dense G
 
 For $D$ in the tens of thousands (text classification, genomics, any setting where features outnumber a comfortable Gram matrix), neither time nor memory is acceptable. The $D^3$ flop term and the $D^2$ dense matrix become the bottleneck even for a single iteration. **L-BFGS** (limited-memory Broyden-Fletcher-Goldfarb-Shanno) is the standard alternative and is what production solvers reach for first.{% sidenote(id="lbfgs-default") %}It is the default solver for `LogisticRegression` in scikit-learn and the workhorse behind most generalised linear model packages.{% end %}
 
-L-BFGS belongs to the **quasi-Newton** family. It imitates Newton's method by maintaining an implicit approximation $\mathbf{B}\_t \approx \mathbf{H}\_t^{-1}$ of the inverse Hessian, but constructs it from gradient differences alone (no second derivatives are ever computed). The full BFGS update would store and update a dense $(D+1) \times (D+1)$ matrix, which defeats the purpose. The "limited-memory" variant keeps only the last $m$ pairs of curvature information $\\{(\mathbf{s}\_k, \mathbf{y}\_k)\\}\_{k=t-m}^{t-1}$, where:
+L-BFGS belongs to the **quasi-Newton** family ("quasi" meaning _almost_ or _resembling_, since these methods follow Newton's recipe of rescaling the gradient by inverse curvature without ever paying the price of computing second derivatives). The short version is Newton without the Hessian bill: most of the convergence speed of Newton's method, without ever having to write down a second derivative. It imitates Newton's method by maintaining an implicit approximation $\mathbf{B}\_t \approx \mathbf{H}\_t^{-1}$ of the inverse Hessian, but constructs it from gradient differences alone (no second derivatives are ever computed). The full BFGS update would store and update a dense $(D+1) \times (D+1)$ matrix, which defeats the purpose. The "limited-memory" variant keeps only the last $m$ pairs of curvature information $\\{(\mathbf{s}\_k, \mathbf{y}\_k)\\}\_{k=t-m}^{t-1}$, where:
 
 {% equation(id="lbfgs-pairs") %}
 \mathbf{s}_k = \boldsymbol{\theta}_{k+1} - \boldsymbol{\theta}_k, \qquad \mathbf{y}_k = \nabla J(\boldsymbol{\theta}_{k+1}) - \nabla J(\boldsymbol{\theta}_k)
@@ -443,6 +443,92 @@ L-BFGS without strong convexity (e.g., unregularised BCE on full-rank, non-separ
 
 {% mathblock(kind="warning", name="Numerical pitfalls", id="logreg-warning") %}
 Two issues bite in practice. **Sigmoid saturation:** when $|z|$ is large, $\sigma(z)$ is numerically indistinguishable from $0$ or $1$ and the naive BCE loss returns $\log 0 = -\infty$. The fix is to combine the sigmoid and the log into a single stable expression. For example, $\log \sigma(z) = -\log(1 + e^{-z})$ computed via `log1p` and a sign-aware branch, or the standard `binary_cross_entropy_with_logits` primitive that takes the linear score directly. **Linearly separable data:** when the two classes can be separated by a hyperplane, the MLE is unbounded. Pushing $\lVert \boldsymbol{\theta} \rVert \to \infty$ along the separating direction drives the loss to zero, the Hessian becomes singular at the limit, and IRLS diverges. The standard remedy is to add an $\ell\_{2}$ penalty $\frac{\lambda}{2} \lVert \boldsymbol{\theta} \rVert\_{2}^{2}$ to the cost (ridge, weight decay), which keeps the Hessian positive definite for any $\lambda > 0$.
+{% end %}
+
+## Regularisation
+
+Three issues motivate adding a penalty term to the BCE cost. On linearly separable data the MLE diverges along the separating direction. On high-dimensional data with many features but few samples, the unregularised model overfits its training set badly. And when features are correlated, the unregularised parameters have huge variance from one resampling of the data to the next, even though predictions barely change. All three are fixed by replacing the cost with a penalised version:
+
+{% equation(id="reg-cost") %}
+J_{\lambda}(\boldsymbol{\theta}) = J(\boldsymbol{\theta}) + \lambda\, R(\boldsymbol{\theta})
+{% end %}
+
+where $R$ is a penalty function and $\lambda > 0$ controls the trade-off between fitting the data and keeping $\boldsymbol{\theta}$ small. The choice of $R$ shapes the optimum.
+
+### MAP Interpretation
+
+The penalty has a clean Bayesian reading as a **maximum a posteriori** (MAP) estimate. To see this it helps to first contrast MAP with the maximum likelihood (MLE) view we used to derive the unregularised cost.
+
+Maximum likelihood asks one question: which $\boldsymbol{\theta}$ makes the observed data most probable? It treats the parameters as a fixed but unknown quantity. The data is the only source of information, the prior is implicitly uniform (every $\boldsymbol{\theta}$ is a priori equally plausible), and the answer is whatever value maximises $Pr(\mathcal{D} \mid \boldsymbol{\theta})$. With infinite data this works well, but with finite data the answer can be extreme. On a separable dataset the MLE for logistic regression literally runs to infinity, because there is always a direction along which pushing $\lVert \boldsymbol{\theta} \rVert$ further makes the labelled examples even more probable.
+
+MAP asks a different question: what is the most probable value of $\boldsymbol{\theta}$ _given_ the observed data? It treats $\boldsymbol{\theta}$ as a random variable and combines two pieces of information through Bayes' rule, the **likelihood** $Pr(\mathcal{D} \mid \boldsymbol{\theta})$ (how well does this $\boldsymbol{\theta}$ explain the data) and the **prior** $Pr(\boldsymbol{\theta})$ (how plausible is this $\boldsymbol{\theta}$ before seeing any data):
+
+{% equation(id="map-bayes") %}
+Pr(\boldsymbol{\theta} \mid \mathcal{D}) \propto Pr(\mathcal{D} \mid \boldsymbol{\theta}) \cdot Pr(\boldsymbol{\theta})
+{% end %}
+
+The MAP estimate is the mode of the posterior, $\hat{\boldsymbol{\theta}}^{\mathrm{MAP}} = \argmax\_{\boldsymbol{\theta}} Pr(\boldsymbol{\theta} \mid \mathcal{D})$. Taking the negative log of both sides turns the product into a sum and the maximisation into a minimisation, exactly the same trick we used to go from likelihood to NLL:
+
+{% equation(id="map-nll") %}
+\hat{\boldsymbol{\theta}}^{\mathrm{MAP}} = \argmin\_{\boldsymbol{\theta}}\, \Big[\, -\log Pr(\mathcal{D} \mid \boldsymbol{\theta}) - \log Pr(\boldsymbol{\theta}) \,\Big]
+{% end %}
+
+The first term is $N$ times the BCE cost {{ eqref(id="bce-cost-multi") }}, identical to the MLE objective. The second term is new. It is the regularisation penalty, and its shape is determined by the choice of prior. A Gaussian prior on $\boldsymbol{\theta}$ produces an $\ell_2$ penalty (ridge); a Laplace prior produces an $\ell_1$ penalty (Lasso). The strength $\lambda$ controls how much weight you give the prior relative to the likelihood.
+
+Two ways to read the difference. **Probabilistically:** MLE assumes you know nothing about $\boldsymbol{\theta}$ before looking at the data, so the posterior is just the rescaled likelihood and the mode coincides with the MLE. MAP encodes a belief that $\boldsymbol{\theta}$ should be small (or sparse, or smooth, depending on the prior), and trades a bit of fit-to-data for that belief. **Asymptotically:** as $N \to \infty$ the likelihood term dominates and $\hat{\boldsymbol{\theta}}^{\mathrm{MAP}} \to \hat{\boldsymbol{\theta}}^{\mathrm{MLE}}$, so the prior matters most when data is scarce. **Practically:** MLE asks "what value fits the data?", MAP asks "what value fits the data _and_ respects what I already believe is reasonable?". Regularisation is the mechanism for that second clause.
+
+A subtle point is that MAP is still a _point_ estimate, not a full Bayesian treatment. A genuine Bayesian computes the posterior $Pr(\boldsymbol{\theta} \mid \mathcal{D})$ and integrates predictions over it, getting both an answer and a distribution of plausible answers. MAP collapses that distribution to its mode. It is the cheapest way to incorporate a prior, and it is what the standard regularised logistic regression is doing under the hood.
+
+### Ridge ($\ell_2$)
+
+The intuition is shrinkage. Penalising the squared norm of $\boldsymbol{\theta}$ pulls every coefficient toward zero, trading a small amount of bias for a large reduction in variance. The model fits the training set slightly worse but generalises better, especially when features are noisy or weakly informative. Geometrically, the level sets of $\lVert \boldsymbol{\theta} \rVert_2^2$ are spheres around the origin, so the optimum lives at the point where the BCE contours first touch a sphere, gently nudging every coordinate inward. The squared $\ell_2$ norm is the formal expression of this idea:
+
+{% equation(id="ridge-cost") %}
+J_{\lambda}^{\mathrm{ridge}}(\boldsymbol{\theta}) = J(\boldsymbol{\theta}) + \frac{\lambda}{2} \lVert \boldsymbol{\theta} \rVert_2^2
+{% end %}
+
+Under the MAP reading this corresponds to a zero-mean isotropic Gaussian prior $\boldsymbol{\theta} \sim \mathcal{N}(\mathbf{0}, \tau^2 \mathbf{I})$ with $\lambda = 1/(N \tau^2)$. The penalty is smooth and strictly convex, so the regularised cost stays smooth and inherits a strong-convexity modulus $\mu \geq \lambda$ regardless of $\mathbf{X}$.
+
+The gradient and Hessian pick up clean linear and constant terms:
+
+{% equation(id="ridge-grad") %}
+\nabla_{\boldsymbol{\theta}} J_{\lambda}^{\mathrm{ridge}} = \frac{1}{N}\, \mathbf{X}^{\top}(\mathbf{p} - \mathbf{y}) + \lambda\, \boldsymbol{\theta}, \qquad \nabla_{\boldsymbol{\theta}}^{2} J_{\lambda}^{\mathrm{ridge}} = \frac{1}{N}\, \mathbf{X}^{\top} \mathbf{S}\, \mathbf{X} + \lambda\, \mathbf{I}
+{% end %}
+
+The $\lambda \mathbf{I}$ term lifts every eigenvalue of the Hessian by $\lambda$, so the matrix is uniformly positive definite even on rank-deficient or separable data. IRLS, gradient descent, and L-BFGS all work without modification. Convention often skips the bias term $\theta\_0$ from the penalty so the prior does not pull the intercept toward zero.
+
+### Lasso ($\ell_1$)
+
+The intuition shifts from shrinking everything a little to **switching some features off entirely**. Lasso says: assume only a handful of the $D$ features actually drive the prediction, and let the optimiser pick which ones by setting the rest to exactly zero. This matters when features are cheap to collect but expensive to maintain or interpret, when domain experts want a short shortlist of predictors to reason about, or when the problem genuinely has a sparse underlying structure (text classification with thousands of words, gene expression with thousands of probes). The penalty is the $\ell_1$ norm:
+
+{% equation(id="lasso-cost") %}
+J_{\lambda}^{\mathrm{lasso}}(\boldsymbol{\theta}) = J(\boldsymbol{\theta}) + \lambda\, \lVert \boldsymbol{\theta} \rVert_1
+{% end %}
+
+Under MAP this is a zero-mean Laplace (double-exponential) prior on each coordinate of $\boldsymbol{\theta}$. Geometrically, the level sets of $\lVert \boldsymbol{\theta} \rVert_1$ are diamonds (cross-polytopes in higher dimensions) with sharp corners on every coordinate axis. When the BCE contours first meet such a diamond they almost always touch at a corner, where some coordinates of $\boldsymbol{\theta}$ are exactly zero. That is the geometric source of sparsity: corners attract the optimum, and the corners sit on the axes. Ridge has no corners, so it never produces exact zeros.
+
+The cost is non-differentiable at those kinks, so smooth solvers like IRLS and L-BFGS no longer apply directly. The standard alternatives are **proximal gradient methods** (ISTA and its accelerated variant FISTA), which take a gradient step on the smooth BCE part and then apply a soft-thresholding operator that shrinks each coordinate of $\boldsymbol{\theta}$ toward zero by $\eta \lambda$, zeroing out anything below that threshold. **Coordinate descent** is the other standard choice and is what `glmnet` uses: cycle through coordinates one at a time, updating each via the closed-form solution to the one-dimensional sub-problem. A patched L-BFGS variant called **OWL-QN** also handles $\ell_1$ by tracking the sub-gradient along each axis.
+
+### Elastic Net
+
+The intuition starts from a known weakness of Lasso. When two features carry nearly the same signal (e.g., temperature in Celsius and Fahrenheit, two correlated gene probes, two synonyms in a bag-of-words model), Lasso picks one, zeros the other, and the choice flips arbitrarily across resamples of the data. The model is still accurate, but the picked-feature set is unstable, which is bad if the model's purpose is to tell you _which_ features matter. A second weakness shows up when the number of features $D$ exceeds the number of samples $N$: Lasso saturates and selects at most $N$ features, even if the true sparse subset is larger.
+
+Elastic net, introduced by Zou and Hastie (2005), fixes both by adding a small $\ell_2$ piece on top of the $\ell_1$ penalty:
+
+{% equation(id="elastic-net-cost") %}
+J_{\lambda, \alpha}^{\mathrm{en}}(\boldsymbol{\theta}) = J(\boldsymbol{\theta}) + \lambda\, \Big[\, \alpha\, \lVert \boldsymbol{\theta} \rVert_1 + \frac{1 - \alpha}{2}\, \lVert \boldsymbol{\theta} \rVert_2^2 \,\Big]
+{% end %}
+
+with mixing parameter $\alpha \in [0, 1]$. At $\alpha = 0$ this reduces to ridge, at $\alpha = 1$ to Lasso. Intermediate values give a penalty whose level sets look like rounded diamonds: they still have corners on the axes (so sparsity survives), but the sides bulge outward (so correlated features get pulled together rather than apart).
+
+The name comes from a fishing-net analogy used in the original paper. Imagine a stretchable net cast over the feature space. The $\ell_1$ part holds the net taut along the coordinate axes, snapping coefficients to zero when they fall below threshold (the **selection** behaviour). The $\ell_2$ part makes the net **elastic**: when several correlated features lie near each other, the net stretches and catches them as a group rather than letting one snap to take all the signal. Hence "elastic net": a sparse selector that does not shatter under correlation.
+
+In concrete terms, you reach for elastic net whenever you want Lasso's sparsity but Lasso alone behaves badly. The two giveaway signs: heavily correlated features in the design matrix (genomics, NLP, sensor arrays with overlapping fields of view), or $D \gg N$ regimes where you suspect more than $N$ features matter. Solvers are the same as for Lasso (coordinate descent, proximal methods), since the $\ell_1$ kink dominates the smoothness story.
+
+{% mathblock(kind="note", name="Choosing the penalty", id="reg-pick") %}
+The defaults are easy. Reach for **ridge** when you want a stable, well-conditioned optimisation that fixes separability and overfitting without changing the feature set. Reach for **Lasso** when you specifically want sparsity, either because you believe the true model has few active features or because you want feature selection as a by-product of fitting. Reach for **elastic net** when features are correlated and Lasso alone is unstable.
+
+The penalty strength $\lambda$ is a hyperparameter, almost always chosen by cross-validation over a logarithmically spaced grid. Standard practice is to standardise the features (zero mean, unit variance) before regularising, since the penalty treats every coordinate symmetrically and unscaled features would otherwise be penalised in proportion to their natural variance. The intercept $\theta\_0$ is typically excluded from the penalty.
 {% end %}
 
 ## Multinomial Logistic Regression

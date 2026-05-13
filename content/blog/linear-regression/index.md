@@ -266,7 +266,7 @@ Taking the gradient with respect to $\boldsymbol{\theta}$ and setting it to zero
 \nabla_{\boldsymbol{\theta}} J = \frac{2}{N} \left( \mathbf{X}^{\top} \mathbf{X}\, \boldsymbol{\theta} - \mathbf{X}^{\top} \mathbf{y} \right) = \mathbf{0}
 {% end %}
 
-Rearranging gives the _normal equations_:
+Rearranging gives the _normal equations_, so named because they say the residual $\mathbf{y} - \mathbf{X}\boldsymbol{\theta}$ is _normal_ (perpendicular) to every column of $\mathbf{X}$, ie, the fitted values $\mathbf{X}\boldsymbol{\theta}$ are the orthogonal projection of $\mathbf{y}$ onto the column space of $\mathbf{X}$:
 
 {% equation(id="normal-equations") %}
 \mathbf{X}^{\top} \mathbf{X}\, \boldsymbol{\theta} = \mathbf{X}^{\top} \mathbf{y}
@@ -278,7 +278,7 @@ When $\mathbf{X}^{\top} \mathbf{X} \in \mathbb{R}^{(D+1) \times (D+1)}$ is inver
 \hat{\boldsymbol{\theta}}^{\ast} = (\mathbf{X}^{\top} \mathbf{X})^{-1} \mathbf{X}^{\top} \mathbf{y}
 {% end %}
 
-The matrix $(\mathbf{X}^{\top} \mathbf{X})^{-1} \mathbf{X}^{\top}$ is the _Moore-Penrose pseudoinverse_ of $\mathbf{X}$, often written $\mathbf{X}^{+}$. The univariate result of the previous section is recovered as the special case $D = 1$.
+The matrix $(\mathbf{X}^{\top} \mathbf{X})^{-1} \mathbf{X}^{\top}$ is the _Moore-Penrose pseudoinverse_ of $\mathbf{X}$, often written $\mathbf{X}^{+}$. The "pseudo" prefix signals that we use it like an inverse even though $\mathbf{X}$ is rectangular and has no true inverse; it reduces to $\mathbf{X}^{-1}$ whenever the latter exists, and otherwise returns the minimum-norm least-squares solution. The univariate result of the previous section is recovered as the special case $D = 1$.
 
 {% mathblock(kind="proposition", name="Convexity of the multivariate cost", id="cost-convex") %}
 The cost $J(\boldsymbol{\theta}) = \frac{1}{N} \lVert \mathbf{y} - \mathbf{X}\boldsymbol{\theta} \rVert_{2}^{2}$ is convex in $\boldsymbol{\theta}$, and strictly convex when $\mathbf{X}$ has full column rank.
@@ -294,7 +294,7 @@ In practice, one rarely forms $(\mathbf{X}^{\top} \mathbf{X})^{-1}$ explicitly. 
 
 #### QR Factorisation
 
-Any matrix $\mathbf{X} \in \mathbb{R}^{N \times (D+1)}$ with full column rank admits a _thin QR factorisation_:
+Any matrix $\mathbf{X} \in \mathbb{R}^{N \times (D+1)}$ with full column rank admits a _thin QR factorisation_, where the letters stand for an orthogonal matrix $\mathbf{Q}$ and a right (upper) triangular matrix $\mathbf{R}$:
 
 {% equation(id="qr-factorisation") %}
 \mathbf{X} = \mathbf{Q} \mathbf{R}
@@ -381,7 +381,7 @@ The QR factorisation that produces $\mathbf{R}$ in the first place dominates the
 
 #### Singular Value Decomposition
 
-When $\mathbf{X}$ is rank-deficient (collinear features, or $N < D+1$), $\mathbf{R}$ has zeros on the diagonal and the QR approach breaks down. The _singular value decomposition_ handles this case gracefully:
+When $\mathbf{X}$ is rank-deficient (collinear features, or $N < D+1$), $\mathbf{R}$ has zeros on the diagonal and the QR approach breaks down. The _singular value decomposition_ handles this case gracefully. Its name comes from the singular values $\sigma\_i$, which measure how far the matrix is from being singular along each principal direction: a $\sigma\_i$ near zero is a direction where $\mathbf{X}$ collapses information, ie, a direction in which $\mathbf{X}$ behaves singularly. A useful picture is that the SVD reads $\mathbf{X}$ as a sequence of axes (the singular vectors) and a stretching strength along each axis (the singular value), so $\mathbf{X}$ becomes "rotate, stretch, rotate again".
 
 {% equation(id="svd-factorisation") %}
 \mathbf{X} = \mathbf{U} \boldsymbol{\Sigma} \mathbf{V}^{\top}
@@ -463,7 +463,7 @@ The choice of $\Omega$ encodes _what kind_ of simplicity we prefer. The two cano
 
 ### Ridge Regression
 
-Ridge regression penalises the squared $\ell\_2$ norm of the parameters:
+Ridge regression penalises the squared $\ell\_2$ norm of the parameters. The name comes from the diagonal "ridge" the penalty adds to $\mathbf{X}^{\top}\mathbf{X}$ in the normal equations: visualising the eigenvalues of $\mathbf{X}^{\top}\mathbf{X}$ as a row of bars, $\lambda \mathbf{I}$ raises every bar by the same amount, lifting flat spots into a clearly positive ridge that we can safely invert. Reach for it when features are collinear or $D \approx N$ and the unregularised solution is unstable.
 
 {% equation(id="ridge-cost") %}
 J_{\text{ridge}}(\theta) = \frac{1}{N} \lVert \mathbf{y} - \mathbf{X}\theta \rVert_2^2 + \lambda\, \lVert \theta \rVert_2^2
@@ -505,7 +505,7 @@ This last property matters in practice: ridge produces dense parameter vectors. 
 
 ### LASSO Regression
 
-The LASSO (least absolute shrinkage and selection operator) replaces the squared $\ell\_2$ penalty with the $\ell\_1$ norm:
+The LASSO (least absolute shrinkage and selection operator) replaces the squared $\ell\_2$ penalty with the $\ell\_1$ norm. The acronym is also a literal image of what the method does: it lassos a small set of relevant variables and ties the rest to zero, returning a sparse model. Use it when you suspect only a handful of features really matter and want feature selection baked into the fit.
 
 {% equation(id="lasso-cost") %}
 J_{\text{lasso}}(\theta) = \frac{1}{N} \lVert \mathbf{y} - \mathbf{X}\theta \rVert_2^2 + \lambda\, \lVert \theta \rVert_1
@@ -535,4 +535,4 @@ The general (non-orthonormal) case is solved iteratively. The two dominant appro
 The geometric explanation is the shape of the unit ball. The constraint region $\\{\boldsymbol{\theta} : \lVert \boldsymbol{\theta} \rVert\_1 \leq t\\}$ is a hyper-octahedron with corners on the coordinate axes, where multiple coefficients vanish simultaneously. The level sets of the residual sum of squares are ellipsoids, and the optimum sits where the smallest such ellipsoid first touches the constraint region. Generically that contact happens at a corner, so the solution has many zero coefficients. The ridge ball $\\{\boldsymbol{\theta} : \lVert \boldsymbol{\theta} \rVert\_2 \leq t\\}$ is a smooth sphere with no corners, so the contact point almost never lies on a coordinate axis.
 {% end %}
 
-This sparsity makes the LASSO double as a feature-selection procedure: fitting a single model produces both the coefficients and an automatic shortlist of relevant variables. The cost is that the resulting estimator is biased in a way ridge is not (large coefficients are still shrunk by $\lambda$ even when the data strongly supports them), and that the selected support can be unstable when features are highly correlated. A common remedy is the _elastic net_, which uses the convex combination $\alpha\, \lVert \boldsymbol{\theta} \rVert\_1 + (1-\alpha)\, \lVert \boldsymbol{\theta} \rVert\_2^2$ to inherit the sparsity of LASSO while retaining the grouping behaviour of ridge.
+This sparsity makes the LASSO double as a feature-selection procedure: fitting a single model produces both the coefficients and an automatic shortlist of relevant variables. The cost is that the resulting estimator is biased in a way ridge is not (large coefficients are still shrunk by $\lambda$ even when the data strongly supports them), and that the selected support can be unstable when features are highly correlated. A common remedy is the _elastic net_, named after a fishing net that stretches between two extremes: it uses the convex combination $\alpha\, \lVert \boldsymbol{\theta} \rVert\_1 + (1-\alpha)\, \lVert \boldsymbol{\theta} \rVert\_2^2$ to inherit the sparsity of LASSO while retaining the grouping behaviour of ridge.
