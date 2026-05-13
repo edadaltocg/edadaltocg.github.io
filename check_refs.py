@@ -6,8 +6,9 @@
 """Check or auto-fix every references.bib against dblp.org.
 
 Usage:
-  uv run check_refs.py          # report problems
-  uv run check_refs.py --fix    # rewrite matched entries from dblp metadata
+  uv run check_refs.py              # report problems
+  uv run check_refs.py --fix        # fill in entries that are missing required fields
+  uv run check_refs.py --force-fix  # also overwrite entries that already look complete
 """
 
 import re
@@ -183,7 +184,7 @@ def render_entry(key: str, info: dict) -> str:
     return f"@{etype}{{{key},\n{body}\n}}"
 
 
-def process(bib_path: Path, fix: bool) -> list[str]:
+def process(bib_path: Path, fix: bool, force: bool) -> list[str]:
     text = bib_path.read_text()
     problems: list[str] = []
     replacements: list[tuple[re.Match, str]] = []
@@ -194,6 +195,9 @@ def process(bib_path: Path, fix: bool) -> list[str]:
             missing.append(venue_field)
         if missing:
             problems.append(f"  [{key}] missing: {', '.join(missing)}")
+        # Skip dblp lookup entirely if entry is already complete and not in --force mode.
+        if fix and not force and not missing:
+            continue
         title = clean_title(f.get("title", ""))
         if not title:
             continue
@@ -213,9 +217,9 @@ def process(bib_path: Path, fix: bool) -> list[str]:
             problems.append(f"  [{key}] weak match ({score:.2f}): {hit.get('title')!r}")
             continue
         if fix and score >= MATCH_FIX:
-            existing_first = first_surname(f.get("author", "")).lower()
+            existing_first = clean_title(first_surname(f.get("author", ""))).lower()
             dblp_authors = authors_from_dblp(hit)
-            dblp_first = first_surname(dblp_authors).lower()
+            dblp_first = clean_title(first_surname(dblp_authors)).lower()
             existing_year = f.get("year", "").strip().strip("{}")
             dblp_year = str(hit.get("year", ""))
             year_ok = (
@@ -249,15 +253,17 @@ def process(bib_path: Path, fix: bool) -> list[str]:
 
 
 def main() -> int:
-    fix = "--fix" in sys.argv
+    fix = "--fix" in sys.argv or "--force-fix" in sys.argv
+    force = "--force-fix" in sys.argv
     bibs = sorted(p for p in ROOT.rglob("references.bib") if "public/" not in str(p))
     if not bibs:
         print("no references.bib files found")
         return 0
     rc = 0
     for b in bibs:
-        print(f"checking {b.relative_to(ROOT)}{' (--fix)' if fix else ''}")
-        probs = process(b, fix)
+        mode = " (--force-fix)" if force else " (--fix)" if fix else ""
+        print(f"checking {b.relative_to(ROOT)}{mode}")
+        probs = process(b, fix, force)
         if probs:
             rc = 1
             print("\n".join(probs))
