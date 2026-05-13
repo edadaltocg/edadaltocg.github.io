@@ -63,6 +63,11 @@ The hard-margin SVM is therefore the constrained quadratic program
 
 The samples for which the constraint holds with equality are called **support vectors**, named because they alone _support_ (in the load-bearing sense) the optimal hyperplane: they are the only points that touch the margin and, as we will see in the dual, the only points whose data actually shapes the solution. Removing any non-support point leaves the boundary untouched.
 
+<figure>
+<img src="hard_margin.svg" alt="Two-dimensional linearly separable data with the maximum-margin hyperplane, dashed margin lines, and support vectors circled.">
+<figcaption>The hard-margin SVM picks the hyperplane that sits as far as possible from the closest points. Only the circled support vectors determine its position.</figcaption>
+</figure>
+
 {% mathblock(kind="proposition", name="Existence and uniqueness of the hard-margin solution", id="hard-margin-prop") %}
 The program {{ eqref(id="hard-margin") }} has a unique optimal $\theta\_1^{\ast}$ whenever the data is linearly separable, and is infeasible otherwise.
 {% end %}
@@ -101,6 +106,11 @@ The per-sample term is the **hinge loss**:
 {% end %}
 
 It is zero whenever the score lands on the correct side of the margin ($y z \geq 1$), grows linearly into the margin and across the boundary, and has a non-differentiable kink at $y z = 1$. The name comes from the shape of its graph: a flat zero arm out to the right that bends sharply at $y z = 1$ and then drops linearly to the left, like a hinge swinging open.
+
+<figure>
+<img src="loss_comparison.svg" alt="Hinge, binary cross-entropy, and 0-1 losses plotted against margin yz on a single axes.">
+<figcaption>Hinge is exactly zero past $yz = 1$; BCE keeps pulling forever; the 0-1 loss is the discontinuous target both surrogates relax.</figcaption>
+</figure>
 
 {% mathblock(kind="note", name="Hinge versus binary cross-entropy", id="hinge-vs-bce") %}
 The two losses solve the same binary classification problem but disagree on what counts as a "good enough" prediction.
@@ -155,6 +165,11 @@ J(\mathbf{w}, b) = \tfrac{1}{2}\, \lVert \mathbf{w} \rVert_2^2 + \frac{C}{N} \su
 {% end %}
 
 The factor of $1/N$ is a normalisation choice that makes the trade-off independent of the dataset size; some references absorb it into $C$ or write the penalty as $\lambda \lVert \mathbf{w} \rVert\_2^2 / 2$ with $\lambda = 1/(NC)$.
+
+<figure>
+<img src="soft_margin_C.svg" alt="Three side-by-side panels of the soft-margin boundary for small, medium, and large C values on overlapping classes.">
+<figcaption>Small $C$ tolerates many margin violations and prefers a wide margin; large $C$ refuses to violate constraints and tracks the data tightly.</figcaption>
+</figure>
 
 ### Sub-gradient of the Cost
 
@@ -256,7 +271,9 @@ The KKT complementary-slackness conditions classify each sample by where its $\a
 **Sequential Minimal Optimisation** (SMO){{ reference(key="platt1998smo") }} is a coordinate-ascent method for {{ eqref(id="svm-dual") }} that exploits a clever observation.
 The "minimal" in the name refers to the working set: the equality constraint $\sum\_i \alpha\_i y\_i = 0$ means we cannot update a single $\alpha\_i$ in isolation (changing one breaks the constraint), so a pair is the smallest possible working set that can move while keeping the equality satisfied.
 SMO updates a pair $(\alpha\_p, \alpha\_q)$ at a time, using the constraint to express $\alpha\_q$ as a function of $\alpha\_p$, then minimising the resulting one-dimensional quadratic in $\alpha\_p$.
-The per-pair sub-problem has a closed-form solution after clipping to the box $[0, C]^2$.
+The per-pair sub-problem has a closed-form solution after clipping to the box $[0, C]^2$. The whole pair update is short enough to read in one go:
+
+{{ include_code(path="content/blog/support-vector-machine/plots.py", syntax="python", start=12, end=31) }}
 
 {% mathblock(kind="note", name="Cost analysis (per SMO step and per epoch)", id="smo-cost") %}
 Per pair update: time $O(N)$ (kernel-cache hit) or $O(N D)$ (cold), memory dominated by the kernel cache.
@@ -272,6 +289,11 @@ LIBSVM caches a configurable subset; a typical default holds $\sim$200 MB regard
 {% end %}
 
 In practice one does not form $\mathbf{w}$ explicitly during SMO. The decision rule is evaluated through the dual representation $\mathbf{w} = \sum\_i \alpha\_i y\_i \mathbf{x}\_i$, which leads naturally into the kernel trick.
+
+<figure>
+<img src="dual_alphas.svg" alt="Bar plot of the dual coefficients alpha_i across all training samples; only a handful are non-zero, those few are highlighted.">
+<figcaption>Most $\alpha_i$ are exactly zero; only the support vectors carry weight in the dual sum.</figcaption>
+</figure>
 
 ### Convergence Guarantees
 
@@ -371,7 +393,14 @@ f(\mathbf{x}) = \mathrm{sign}\!\left( \sum_{i \in \mathrm{SV}} \alpha_i\, y_i\, 
 {% end %}
 
 where the sum runs over the support set $\mathrm{SV} = \\{i : \alpha\_i > 0\\}$.
-The evaluation is sparse in the support vectors and never touches the implicit feature map.
+The evaluation is sparse in the support vectors and never touches the implicit feature map. In code, prediction is one row of the kernel between the query point and the training set, multiplied by the signed dual coefficients:
+
+{{ include_code(path="content/blog/support-vector-machine/plots.py", syntax="python", start=33, end=36) }}
+
+<figure>
+<img src="kernel_compare.svg" alt="Two side-by-side panels: linear-kernel SVM fails to separate the two moons, RBF-kernel SVM carves them out cleanly.">
+<figcaption>Same data, two kernels: the linear kernel cannot separate the moons, but the RBF kernel sees them as linearly separable in its implicit feature space.</figcaption>
+</figure>
 
 {% mathblock(kind="note", name="Representer theorem", id="representer-note") %}
 The identity $\mathbf{w}^{\ast} = \sum\_i \alpha\_i y\_i \phi(\mathbf{x}\_i)$ is a special case of a more general result, the **representer theorem**{{ reference(key="kimeldorf1971representer") }}{{ reference(key="scholkopf2001generalized") }}.
@@ -391,6 +420,11 @@ _Prediction._ Evaluating the decision rule {{ eqref(id="kernel-decision") }} cos
 _Memory._ The Gram matrix at $N \times N$ is the bottleneck and blocks naive kernel SVMs above $N \sim 10^5$ on commodity hardware.
 **Random Fourier features**{{ reference(key="rahimi2007random") }} and the **Nyström approximation**{{ reference(key="williams2001nystrom") }} (the latter named after the Nyström method for numerically solving integral equations: it samples $R \ll N$ landmark inputs and reconstructs the full Gram matrix from a low-rank factorisation of the $R \times R$ block on those landmarks) sidestep this by approximating $k(\mathbf{x}, \mathbf{x}') \approx \phi\_R(\mathbf{x})^{\top} \phi\_R(\mathbf{x}')$ for an explicit $R$-dimensional feature map $\phi\_R$, after which a linear SVM solver suffices.
 {% end %}
+
+<figure>
+<img src="kernel_cache_growth.svg" alt="Log-log plot comparing the O(N^2) memory of the full kernel Gram matrix against the O(N R) memory of the Nystr\u00f6m approximation, with an 8 GB reference line.">
+<figcaption>The full Gram matrix grows quadratically and crosses any reasonable RAM budget at $N \sim 10^5$; Nyström keeps memory linear.</figcaption>
+</figure>
 
 ## Multiclass SVM
 
