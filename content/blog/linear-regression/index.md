@@ -18,6 +18,15 @@ We want to predict a single scalar output $y \in \mathbb{R}$ from a single input
 We assume the relationship between inputs and outputs is non-deterministic, ie, we cannot model it in closed form easily.
 So, we will take a data-driven approach.
 Our goal is then finding the parameters of the best possible linear model that represents this mapping.
+A linear model in $x$ takes the form:
+
+{% equation(id="linear-model") %}
+f\_\theta(x) = \theta_0 + \theta_1 x
+{% end %}
+
+where $\theta_0$ is the intercept (or bias) and $\theta_1$ is the slope, so $\boldsymbol{\theta} = (\theta_0, \theta_1)$.
+
+### Maximum Likelihood Estimation
 
 For this task, we have collected a supervised dataset of input/output pairs denoted $\mathcal{D}\=\\{(x\_i, y\_i)\\}\_{i=1}^N$.
 We can view the relationship between inputs and outputs through its conditional probability distribution $Pr(y\mid x)$.
@@ -28,7 +37,7 @@ Hence, let's pick the model parameters $\theta$ so that they maximise the joint 
 This is the maximum likelihood{% sidenote(id="likelihood") %}The expression $Pr(y \mid x)$ can represent either a probability or a likelihood depending on which argument is considered free: it is a probability when viewed as a function of $y$ with $x$ fixed, and a likelihood when viewed as a function of the model parameters with $y$ fixed.{% end %} principle:
 
 {% equation(id="mle-joint") %}
-\hat{\theta}^\* = \argmax\_\theta \Big[ Pr\big(y_1, y_2, \ldots, y_N \mid x_1, x_2, \ldots, x_N, \theta\big)\Big]
+\hat{\theta}^{\ast} = \argmax\_\theta \Big[ Pr\big(y_1, y_2, \ldots, y_N \mid x_1, x_2, \ldots, x_N, \theta\big)\Big]
 {% end %}
 
 You might look into this equation and have no clue how to solve it. And you are right, without further assumptions this joint distribution is intractable. Luckily, we can make one assumption that will simplify our lives a lot.
@@ -47,8 +56,10 @@ Pr\big(y_1, \ldots, y_N \mid x_1, \ldots, x_N, \theta\big) = \overset{N}{\unders
 Substituting back into our objective, we arrive at
 
 {% equation(id="mle") %}
-\hat{\theta}^\* = \argmax*\theta \Bigg[\overset{N}{\underset{i=1}{\Pi}} Pr\big(y_i | f*\theta(x_i)\big)\Bigg]
+\hat{\theta}^{\ast} = \argmax*\theta \Bigg[\overset{N}{\underset{i=1}{\Pi}} Pr\big(y_i | f*\theta(x_i)\big)\Bigg]
 {% end %}
+
+### The Log-Likelihood
 
 As you may have noticed, this equation does not look convenient to optimise symbolically or numerically.
 Probabilities lie between 0 and 1, and multiplying several of them may vanish very quickly, making it hard to represent with floating-point arithmetic due to its limited precision.
@@ -58,7 +69,7 @@ By applying it to {{ eqref(id="mle") }}, we obtain:{% sidenote(id="log-product")
 
 {% equation(id="mll") %}
 \begin{aligned}
-\hat{\theta}^\* &= \argmax*\theta \log \Bigg[\overset{N}{\underset{i=1}{\Pi}} Pr\big(y_i | f*\theta(x*i)\big)\Bigg] \\
+\hat{\theta}^{\ast} &= \argmax*\theta \log \Bigg[\overset{N}{\underset{i=1}{\Pi}} Pr\big(y_i | f*\theta(x*i)\big)\Bigg] \\
 &= \argmax*\theta \Bigg[\overset{N}{\underset{i=1}{\sum}} \log Pr\big(y_i | f_\theta(x_i)\big)\Bigg]
 \end{aligned}
 {% end %}
@@ -68,10 +79,13 @@ This is called the maximum log-likelihood criterion. Unlike the product of proba
 In machine learning, by convention, learning problems are formulated as a minimisation of a loss function. To convert our maximisation into a minimisation, it suffices to multiply the objective by $-1$ and change $\argmax$ to $\argmin$:
 
 {% equation(id="nll") %}
-\hat{\theta}^\* = \argmin*\theta \Bigg[-\overset{N}{\underset{i=1}{\sum}} \log Pr\big(y_i | f*\theta(x_i)\big)\Bigg]
+\hat{\theta}^{\ast} = \argmin*\theta \Bigg[-\overset{N}{\underset{i=1}{\sum}} \log Pr\big(y_i | f*\theta(x_i)\big)\Bigg]
 {% end %}
 
 This is known as the negative log-likelihood (NLL) loss.
+
+### Choosing a Distribution
+
 Before we elaborate what loss functions are, let's solve this problem by picking a suitable distribution.
 Consider the univariate normal distribution. It has support $y \in \mathbb{R}$ and parameters $\mu \in \mathbb{R}$ and $\sigma^2 \in \mathbb{R}^+$, ie, $\phi = (\mu, \sigma^2)$.
 We can rewrite $Pr(y_i \mid x_i, \phi)$ as:
@@ -84,7 +98,7 @@ In this simplified version, we let the model predict the mean $\mu_i = f_\theta(
 
 {% equation(id="nll-gaussian") %}
 \begin{aligned}
-\hat{\theta}^\* &= \argmin*\theta \Bigg[-\overset{N}{\underset{i=1}{\sum}} \log \frac{1}{\sqrt{2\pi\sigma^2}} \exp\left(-\frac{(y_i - f*\theta(x*i))^2}{2\sigma^2}\right)\Bigg] \\
+\hat{\theta}^{\ast} &= \argmin*\theta \Bigg[-\overset{N}{\underset{i=1}{\sum}} \log \frac{1}{\sqrt{2\pi\sigma^2}} \exp\left(-\frac{(y_i - f*\theta(x*i))^2}{2\sigma^2}\right)\Bigg] \\
 &= \argmin*\theta \Bigg[-\overset{N}{\underset{i=1}{\sum}} \left(-\frac{1}{2}\log(2\pi\sigma^2) - \frac{(y_i - f_\theta(x_i))^2}{2\sigma^2}\right)\Bigg] \\
 &= \argmin*\theta \Bigg[\overset{N}{\underset{i=1}{\sum}} \frac{(y_i - f*\theta(x_i))^2}{2\sigma^2} + \frac{N}{2}\log(2\pi\sigma^2)\Bigg]
 \end{aligned}
@@ -93,10 +107,12 @@ In this simplified version, we let the model predict the mean $\mu_i = f_\theta(
 Since $\sigma^2$ is constant with respect to $\theta$, both $\frac{1}{2\sigma^2}$ and $\frac{N}{2}\log(2\pi\sigma^2)$ are constants that do not affect the $\argmin$. We can drop them:
 
 {% equation(id="mse") %}
-\hat{\theta}^\* = \argmin*\theta \Bigg[\overset{N}{\underset{i=1}{\sum}} (y_i - f*\theta(x_i))^2\Bigg]
+\hat{\theta}^{\ast} = \argmin*\theta \Bigg[\overset{N}{\underset{i=1}{\sum}} (y_i - f*\theta(x_i))^2\Bigg]
 {% end %}
 
 This is the mean squared error (MSE) criterion.{% sidenote(id="mse-note") %}Strictly speaking, the MSE divides by $N$: $\frac{1}{N}\sum_i (y_i - f_\theta(x_i))^2$. Since $N$ is a constant, it does not change the $\argmin$.{% end %}
+
+### Loss and Cost Functions
 
 {% mathblock(kind="definition", name="Loss function", id="loss") %}
 A loss function $\ell(y, \hat{y})$ measures the discrepancy between a predicted value $\hat{y}$ and the true value $y$.
@@ -140,15 +156,17 @@ A cost function $J(\theta)$ is the average loss over the training data: $J(\thet
 We can now dissect {{ eqref(id="mse") }} into these two components. The individual loss is the squared error $\ell(y_i, \hat{y}_i) = (y_i - \hat{y}_i)^2$, and the cost function is its average over the training set:
 
 {% equation(id="mse-cost") %}
-\hat{\theta}^\* = \argmin*\theta J(\theta) = \argmin*\theta \frac{1}{N} \overset{N}{\underset{i=1}{\sum}} (y*i - f*\theta(x_i))^2
+\hat{\theta}^{\ast} = \argmin*\theta J(\theta) = \argmin*\theta \frac{1}{N} \overset{N}{\underset{i=1}{\sum}} (y*i - f*\theta(x_i))^2
 {% end %}
+
+### Point Estimation
 
 You may have noticed that our model $f$ no longer predicts $y$ directly, but the mean $\mu$ of the normal distribution over $y$.
 At inference time, however, we want a single best prediction given the inputs. This is called a _point estimate_.
 A natural choice is the mode of the predicted distribution, i.e., the value of $y$ that maximizes the likelihood:
 
 {% equation(id="point-estimate") %}
-\hat{y} = \argmax*y Pr\!\left(y \mid f*{\hat{\theta}^\*}(x), \sigma^2\right)
+\hat{y} = \argmax*y Pr\!\left(y \mid f*{\hat{\theta}^{\ast}}(x), \sigma^2\right)
 {% end %}
 
 For the normal distribution, the mode coincides with the mean $\mu$. Therefore $\hat{y} = f_{\hat{\theta}^*}(x)$, and the model's output can be used directly as the point estimate.
@@ -164,3 +182,50 @@ $$\argmax_y Pr(y \mid \mu, \sigma^2) = \argmax_y \left(-\frac{(y - \mu)^2}{2\sig
 
 The function $(y - \mu)^2$ is a convex quadratic with a unique minimum. Setting its derivative to zero: $\frac{d}{dy}(y - \mu)^2 = 2(y - \mu) = 0$, which gives $y = \mu$. $\square$
 {% end %}
+
+### Closed-Form Solution
+
+We can now substitute the linear model {{ eqref(id="linear-model") }} into the cost function {{ eqref(id="mse-cost") }}:
+
+{% equation(id="cost-linear") %}
+J(\theta_0, \theta_1) = \frac{1}{N} \overset{N}{\underset{i=1}{\sum}} (y_i - \theta_0 - \theta_1 x_i)^2
+{% end %}
+
+Since $J$ is a convex quadratic in $(\theta_0, \theta_1)$, it has a unique global minimum that we can find by setting the partial derivatives to zero.
+
+**Partial derivative with respect to $\theta_0$:**
+
+{% equation(id="dJ-dtheta0") %}
+\frac{\partial J}{\partial \theta_0} = \frac{-2}{N} \overset{N}{\underset{i=1}{\sum}} (y_i - \theta_0 - \theta_1 x_i) = 0
+{% end %}
+
+Expanding the sum and dividing by $N$:
+
+{% equation(id="theta0-solution") %}
+\theta_0^{\ast} = \bar{y} - \theta_1^{\ast}\, \bar{x}
+{% end %}
+
+where $\bar{x} = \frac{1}{N}\sum_{i=1}^N x_i$ and $\bar{y} = \frac{1}{N}\sum_{i=1}^N y_i$ are the sample means. This tells us the intercept adjusts so that the regression line passes through the point $(\bar{x}, \bar{y})$.
+
+**Partial derivative with respect to $\theta_1$:**
+
+{% equation(id="dJ-dtheta1") %}
+\frac{\partial J}{\partial \theta_1} = \frac{-2}{N} \overset{N}{\underset{i=1}{\sum}} x_i\,(y_i - \theta_0 - \theta_1 x_i) = 0
+{% end %}
+
+Expanding and substituting {{ eqref(id="theta0-solution") }}:
+
+{% equation(id="theta1-derivation") %}
+\begin{aligned}
+\overset{N}{\underset{i=1}{\sum}} x_i\, y_i - (\bar{y} - \theta_1^{\ast}\, \bar{x}) \overset{N}{\underset{i=1}{\sum}} x_i - \theta_1^{\ast} \overset{N}{\underset{i=1}{\sum}} x_i^2 &= 0 \\
+\overset{N}{\underset{i=1}{\sum}} x_i\, y_i - N\bar{x}\bar{y} + \theta_1^{\ast}\!\left(N\bar{x}^2 - \overset{N}{\underset{i=1}{\sum}} x_i^2\right) &= 0
+\end{aligned}
+{% end %}
+
+Solving for $\theta_1^{\ast}$ and recognising that $\sum_i x_i y_i - N\bar{x}\bar{y} = \sum_i (x_i - \bar{x})(y_i - \bar{y})$ and $\sum_i x_i^2 - N\bar{x}^2 = \sum_i (x_i - \bar{x})^2$, we obtain:
+
+{% equation(id="theta1-solution") %}
+\theta_1^{\ast} = \frac{\overset{N}{\underset{i=1}{\sum}} (x_i - \bar{x})(y_i - \bar{y})}{\overset{N}{\underset{i=1}{\sum}} (x_i - \bar{x})^2}
+{% end %}
+
+The numerator is the sample covariance between $x$ and $y$ (up to a factor of $N$), and the denominator is the sample variance of $x$. Together, {{ eqref(id="theta0-solution") }} and {{ eqref(id="theta1-solution") }} give the unique closed-form solution for the optimal parameters of univariate linear regression under the MSE criterion.
