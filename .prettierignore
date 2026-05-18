@@ -9,3 +9,15 @@ static/syntax-theme-dark.css
 static/syntax-theme-light.css
 static/manifest.min.json
 
+# Math-heavy blog posts. Prettier mangles LaTeX subscripts inside Zola
+# `equation` shortcode bodies (e.g. `\theta_{t+1}` becomes `\theta*{t+1}`) and
+# breaks KaTeX rendering. Format these by hand.
+content/blog/linear-regression/index.md
+content/blog/logistic-regression/index.md
+content/blog/neural-network/index.md
+content/blog/convolutional-network/index.md
+content/blog/recurrent-neural-network/index.md
+content/blog/support-vector-machine/index.md
+content/blog/transformer/index.md
+content/blog/algorithms-and-data-structures/index.md
+

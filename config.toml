@@ -1,5 +1,5 @@
 # The URL the site will be built for
-base_url = "https://edadaltocg.github.io/"
+base_url = "https://edadaltocg.com/"
 
 default_language = "en"
 
@@ -25,6 +25,36 @@ taxonomies = [
   { name = "tags", feed = true },
 ]
 
+[languages.fr]
+title = "Ed's"
+generate_feeds = true
+build_search_index = true
+taxonomies = [{ name = "categories", feed = true }, { name = "tags", feed = true }]
+
+[languages.es]
+title = "Ed's"
+generate_feeds = true
+build_search_index = true
+taxonomies = [{ name = "categories", feed = true }, { name = "tags", feed = true }]
+
+[languages.it]
+title = "Ed's"
+generate_feeds = true
+build_search_index = true
+taxonomies = [{ name = "categories", feed = true }, { name = "tags", feed = true }]
+
+[languages.pt]
+title = "Ed's"
+generate_feeds = true
+build_search_index = true
+taxonomies = [{ name = "categories", feed = true }, { name = "tags", feed = true }]
+
+[languages.zh]
+title = "Ed's"
+generate_feeds = true
+build_search_index = false
+taxonomies = [{ name = "categories", feed = true }, { name = "tags", feed = true }]
+
 
 [markdown]
 # Whether to do syntax highlighting
@@ -33,8 +63,8 @@ highlight_code = true
 # Synthax hightlight
 highlight_theme = "css"
 highlight_themes_css = [
-  { theme = "base16-ocean-dark", filename = "syntax-theme-dark.css" },
-  { theme = "base16-ocean-light", filename = "syntax-theme-light.css" },
+  { theme = "ayu-dark", filename = "syntax-theme-dark.css" },
+  { theme = "ayu-light", filename = "syntax-theme-light.css" },
 ]
 
 # Whether external links are to be opened in a new tab
@@ -65,7 +95,7 @@ links = [
   { title = "home", href = "/" },
   { title = "publications", href = "/publications" },
   # { title = "bio", href = "/bio" },
-  # { title = "blog", href = "/blog" },
+  { title = "blog", href = "/blog" },
   { title = "projects", href = "/projects" },
   { title = "teaching", href = "/teaching" },
   { title = "news", href = "/news" },
@@ -76,7 +106,7 @@ footer_menu = [
   # { title = "home", href = "/" },
   { title = "publications", href = "/publications" },
   # { title = "bio", href = "/bio" },
-  # { title = "blog", href = "/blog" },
+  { title = "blog", href = "/blog" },
   { title = "projects", href = "/projects" },
   { title = "teaching", href = "/teaching" },
   { title = "news", href = "/news" },

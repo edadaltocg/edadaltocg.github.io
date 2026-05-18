@@ -10,8 +10,11 @@ install:
   brew install zola pre-commit
   pre-commit install
 
+plots:
+  uv run generate_plots.py
+
 build:
-  zola build
+  just plots && zola build
 
 preview:
   zola serve --open
@@ -38,3 +41,6 @@ optimize_media:
 
 lint:
   pre-commit run --all-files --verbose
+
+check-refs *args:
+  uv run check_refs.py {{args}}

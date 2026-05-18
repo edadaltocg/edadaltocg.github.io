@@ -1,0 +1,48 @@
+{% extends "page.html" %}
+
+{% block title %}Fz | {{ page.title }}{% endblock title %}
+
+{% block after_header %}
+<nav>
+  <a href="{{ config.base_url }}blog">{{ trans(key="back_blog") }}</a>
+</nav>
+{% endblock after_header %}
+
+{% block begin_article %}
+{% set blog = get_section(path="blog/_index.md") %}
+<ol>
+{% for post in blog.pages %}
+{% if post.permalink != page.permalink %}
+<li>
+  <a href="{{ post.permalink }}"><strong>{{ post.title }}</strong></a>
+  {% if post.description %} &mdash; <small>{{ post.description }}</small>{% endif %}
+  {% if post.toc %}
+  <ol>
+    {% for h2 in post.toc %}
+    <li>
+      <a href="{{ h2.permalink | safe }}">{{ h2.title }}</a>
+      {% if h2.children %}
+      <ol>
+        {% for h3 in h2.children %}
+        <li>
+          <a href="{{ h3.permalink | safe }}">{{ h3.title }}</a>
+          {% if h3.children %}
+          <ol>
+            {% for h4 in h3.children %}
+            <li><a href="{{ h4.permalink | safe }}">{{ h4.title }}</a></li>
+            {% endfor %}
+          </ol>
+          {% endif %}
+        </li>
+        {% endfor %}
+      </ol>
+      {% endif %}
+    </li>
+    {% endfor %}
+  </ol>
+  {% endif %}
+</li>
+{% endif %}
+{% endfor %}
+</ol>
+{% endblock begin_article %}

@@ -25,17 +25,50 @@
   integrity="sha256-4O4pS1SH31ZqrSO2A/2QJTVjTPqVe+jnYgOWUVr7EEc=" crossorigin="anonymous"></script>
 
 <style>
-  .katex-display>.katex {
-    display: inline-block;
+  /* Wide display equations should scroll horizontally inside their own
+     box on narrow screens instead of overflowing the page. The scroll
+     container must be `.katex-display` (the outer block); putting
+     overflow on the inner `.katex` lets KaTeX's centred layout still
+     poke past the right margin on mobile. */
+  .katex-display {
     max-width: 100%;
     overflow-x: auto;
     overflow-y: hidden;
+    padding: 0.5em 0;
+    /* Smooth momentum scroll on iOS. */
+    -webkit-overflow-scrolling: touch;
+    /* Force a thin always-visible scrollbar in Firefox so the user
+       knows the equation extends beyond the viewport. Mobile browsers
+       hide native scrollbars by default until the user actively
+       scrolls, which leaves the equation looking simply truncated. */
+    scrollbar-width: thin;
+    scrollbar-color: var(--text-light, #888) transparent;
+  }
+
+  /* WebKit (Safari, Chrome on iOS/Android): force a thin persistent
+     scrollbar on the equation scroll container. */
+  .katex-display::-webkit-scrollbar {
+    height: 6px;
+    -webkit-appearance: none;
+  }
+
+  .katex-display::-webkit-scrollbar-thumb {
+    background-color: var(--text-light, #888);
+    border-radius: 3px;
+  }
+
+  .katex-display::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .katex-display > .katex {
+    display: inline-block;
+    max-width: none;
     white-space: nowrap;
+    text-align: initial;
   }
 
   .katex {
-    width: 100%;
-    white-space: normal;
     text-indent: 0;
   }
 </style>
