@@ -344,7 +344,7 @@ where $\mathbf{Q} \in \mathbb{R}^{N \times (D+1)}$ has orthonormal columns ($\ma
 
 In code, the entire QR-based solver fits in three lines, and the design matrix $\mathbf{X}$ never has to be squared:
 
-{{ include_code(path="content/blog/linear-regression/plots.py", syntax="python", start=12, end=16) }} Substituting into the normal equations {{ eqref(id="normal-equations") }}:
+{{ include_code(path="content/blog/linear-regression/plots.py", syntax="python", start=13, end=17) }} Substituting into the normal equations {{ eqref(id="normal-equations") }}:
 
 {% equation(id="qr-normal") %}
 \begin{aligned}
@@ -601,7 +601,7 @@ where $(z)\_+ = \max(z, 0)$ and $\hat{\theta}\_j^{\,\text{ols}}$ is the unregula
 
 In code, the soft-thresholding operator is a one-liner that the formula above only hints at:
 
-{{ include_code(path="content/blog/linear-regression/plots.py", syntax="python", start=18, end=21) }}
+{{ include_code(path="content/blog/linear-regression/plots.py", syntax="python", start=19, end=22) }}
 
 The general (non-orthonormal) case is solved iteratively. The two dominant approaches are _coordinate descent_, which cycles through the parameters and applies soft-thresholding to one at a time while holding the others fixed, and _proximal gradient methods_ such as ISTA and FISTA, which alternate a gradient step on the smooth quadratic part with a soft-thresholding step on the $\ell\_1$ part. Both converge to the global minimum because the cost is convex.
 

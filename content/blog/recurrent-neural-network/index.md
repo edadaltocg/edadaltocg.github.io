@@ -50,7 +50,7 @@ The standard activation choice is $\phi = \tanh$, which keeps $\mathbf{h}\_t$ bo
 
 The forward pass over a length-$T$ sequence is a single Python loop:
 
-{{ include_code(path="content/blog/recurrent-neural-network/plots.py", syntax="python", start=15, end=22) }}
+{{ include_code(path="content/blog/recurrent-neural-network/plots.py", syntax="python", start=14, end=22) }}
 
 Two design choices deserve names. **One-to-many** networks emit an output at every time step (sequence labelling, language modelling). **Many-to-one** networks emit a single output after the last step ($\mathbf{y} = \mathbf{W}\_y\, \mathbf{h}\_T + \mathbf{c}$, classification of an entire sentence). The forward pass is identical in both; the only difference is whether the output head is applied at every $t$ or only at $t = T$.
 
@@ -155,7 +155,7 @@ The proof differentiates {{ eqref(id="rnn-pre") }} and {{ eqref(id="rnn-out") }}
 
 The complete BPTT loop fits in twenty lines of NumPy:
 
-{{ include_code(path="content/blog/recurrent-neural-network/plots.py", syntax="python", start=25, end=46) }}
+{{ include_code(path="content/blog/recurrent-neural-network/plots.py", syntax="python", start=24, end=46) }}
 
 {% mathblock(kind="note", name="Cost of one BPTT pass", id="rnn-cost") %}
 Time is $O\big(B T\, (d\_{\text{hid}}^{2} + d\_{\text{hid}} d\_{\text{in}} + d\_{\text{hid}} d\_{\text{out}})\big)$ for a batch of size $B$ and sequence length $T$, dominated by the $T$ matrix multiplications by $\mathbf{W}\_h$ in each direction. Memory is $O(B T d\_{\text{hid}})$ to cache the hidden states for the backward pass, linear in the sequence length. **Truncated BPTT** runs the forward pass on the full sequence but backpropagates only $k$ steps at a time, capping the memory at $O(B k d\_{\text{hid}})$ at the cost of biased gradients for dependencies longer than $k$. Typical choices are $k \in [32, 256]$, balancing memory against the longest dependency the model can learn.

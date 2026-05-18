@@ -315,7 +315,7 @@ The "minimal" in the name refers to the working set: the equality constraint $\s
 SMO updates a pair $(\alpha\_p, \alpha\_q)$ at a time, using the constraint to express $\alpha\_q$ as a function of $\alpha\_p$, then minimising the resulting one-dimensional quadratic in $\alpha\_p$.
 The per-pair sub-problem has a closed-form solution after clipping to the box $[0, C]^2$. The whole pair update is short enough to read in one go:
 
-{{ include_code(path="content/blog/support-vector-machine/plots.py", syntax="python", start=12, end=31) }}
+{{ include_code(path="content/blog/support-vector-machine/plots.py", syntax="python", start=13, end=32) }}
 
 {% mathblock(kind="note", name="Cost analysis (per SMO step and per epoch)", id="smo-cost") %}
 Per pair update: time $O(N)$ (kernel-cache hit) or $O(N D)$ (cold), memory dominated by the kernel cache.
@@ -440,7 +440,7 @@ f(\mathbf{x}) = \mathrm{sign}\!\left( \sum_{i \in \mathrm{SV}} \alpha_i\, y_i\, 
 where the sum runs over the support set $\mathrm{SV} = \\{i : \alpha\_i > 0\\}$.
 The evaluation is sparse in the support vectors and never touches the implicit feature map. In code, prediction is one row of the kernel between the query point and the training set, multiplied by the signed dual coefficients:
 
-{{ include_code(path="content/blog/support-vector-machine/plots.py", syntax="python", start=33, end=36) }}
+{{ include_code(path="content/blog/support-vector-machine/plots.py", syntax="python", start=34, end=37) }}
 
 <figure>
 <img src="kernel_compare.svg" alt="Two side-by-side panels: linear-kernel SVM fails to separate the two moons, RBF-kernel SVM carves them out cleanly.">

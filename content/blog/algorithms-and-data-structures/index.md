@@ -199,7 +199,7 @@ Dijkstra's correctness relies on non-negative weights. With a negative edge, a l
 
 A\* (pronounced "A-star") is Dijkstra augmented with a _heuristic_ that estimates the remaining cost to the goal. Where Dijkstra expands vertices in order of distance from the source, A\* expands them in order of $f(n) = g(n) + h(n)$, with $g(n)$ the actual distance from the source (same as Dijkstra's tentative distance) and $h(n)$ a heuristic estimate of the distance from $n$ to the goal. When $h$ is informative, A\* explores far fewer vertices than Dijkstra by ignoring those whose total estimated cost is clearly suboptimal.
 
-{{ include_code(path="content/blog/algorithms-and-data-structures/plots.py", syntax="python", start=261, end=291) }}
+{{ include_code(path="content/blog/algorithms-and-data-structures/plots.py", syntax="python", start=261, end=293) }}
 
 The example operates on a 4-connected grid with unit edge costs and an obstacle layout. The heuristic is _Manhattan distance_, $|r\_1 - r\_2| + |c\_1 - c\_2|$, which is the true minimum number of grid steps between two cells when no obstacles intervene and movement is restricted to the four cardinal directions.
 
@@ -220,13 +220,13 @@ There are two flavours, both computing the same answer. _Top-down_ (memoisation)
 
 The Fibonacci numbers illustrate the technique with no algorithmic content of their own:
 
-{{ include_code(path="content/blog/algorithms-and-data-structures/plots.py", syntax="python", start=293, end=314) }}
+{{ include_code(path="content/blog/algorithms-and-data-structures/plots.py", syntax="python", start=295, end=316) }}
 
 The naive recursion computes $F\_n$ in $\Theta(\phi^n)$ time where $\phi = (1 + \sqrt{5}) / 2 \approx 1.618$, because the recursion tree has approximately $F\_n$ leaves and $F\_n$ grows like $\phi^n$. Memoising reduces this to $O(n)$ time and $O(n)$ space, because each of the $n + 1$ subproblems is computed once. The tabulated `fib_tab` further shaves space to $O(1)$ by keeping only the rolling pair $(F\_{i - 1}, F\_i)$ instead of the whole table. The $O(n)$ time is itself dominated by the $O(\log n)$ multiplications of $n$-digit numbers, so the wall-clock cost is technically $O(n^2)$ in arbitrary precision; we usually pretend integer arithmetic is $O(1)$.
 
 The 0/1 knapsack problem is the standard worked example of "real" DP. Given $n$ items with weights $w\_i$ and values $v\_i$, and a capacity $W$, choose a subset (each item taken at most once, hence "0/1") that maximises total value subject to total weight at most $W$.
 
-{{ include_code(path="content/blog/algorithms-and-data-structures/plots.py", syntax="python", start=316, end=326) }}
+{{ include_code(path="content/blog/algorithms-and-data-structures/plots.py", syntax="python", start=318, end=328) }}
 
 The table entry `dp[i][c]` holds the best value achievable using items $1$ through $i$ with capacity $c$. The recurrence is "either skip item $i$ (inherit `dp[i - 1][c]`), or take it (gain $v\_i$ and lose $w\_i$ of capacity, going to `dp[i - 1][c - w_i] + v_i`)". The table has $(n + 1)(W + 1)$ entries each filled in $O(1)$ time, giving $O(n W)$ time and space. A 1D space optimisation iterates `c` from `W` down to `w_i` and writes back into the same row, dropping the cost to $O(W)$ memory.
 
@@ -236,7 +236,7 @@ $O(n W)$ looks polynomial, but $W$ enters as a numerical value, not as a bit-len
 
 The longest common subsequence (LCS) of two strings $x$ and $y$ is the longest string that appears as a subsequence (not necessarily contiguous) of both. It is the heart of `diff` tools, biological sequence alignment, and spell-checkers that rank suggestions by edit similarity.
 
-{{ include_code(path="content/blog/algorithms-and-data-structures/plots.py", syntax="python", start=328, end=347) }}
+{{ include_code(path="content/blog/algorithms-and-data-structures/plots.py", syntax="python", start=330, end=349) }}
 
 The entry `dp[i][j]` is the LCS length of the prefixes `x[:i]` and `y[:j]`. The recurrence is "if the last characters match, the LCS is one longer than the LCS of the strings without that character; otherwise it is the better of dropping the last character of $x$ or of $y$". The table is $(m + 1)(n + 1)$ entries, each filled in $O(1)$, giving $O(m n)$ time and space. Reconstructing the LCS itself walks the table from the bottom-right corner back to the origin, choosing at each step the predecessor that produced the current cell's value, which costs an additional $O(m + n)$ time and produces the string in reverse.
 

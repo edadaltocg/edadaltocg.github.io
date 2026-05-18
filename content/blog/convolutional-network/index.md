@@ -200,7 +200,7 @@ The pre-activation gradient $\boldsymbol{\delta}^{(\ell-1)}$ then comes from the
 
 The complete forward and gradient computations for a valid 2D convolution fit in twenty-odd lines of NumPy, with three nested loops over the output positions:
 
-{{ include_code(path="content/blog/convolutional-network/plots.py", syntax="python", start=15, end=39) }}
+{{ include_code(path="content/blog/convolutional-network/plots.py", syntax="python", start=14, end=41) }}
 
 {% mathblock(kind="note", name="Cost of one conv forward + backward", id="conv-cost") %}
 For a layer with input shape $H \times W \times C\_{\text{in}}$, kernel $k \times k$, and $C\_{\text{out}}$ output channels at stride $1$, the time per example is $O(H W k^{2} C\_{\text{in}} C\_{\text{out}})$ for the forward pass and the same for the backward pass: each output position pays a $k^{2} C\_{\text{in}} C\_{\text{out}}$ multiply-add, and the gradient computation has the same shape. Activation memory is $O(B H W C)$ summed over layers, dominated by the early high-resolution feature maps. Memory is the practical constraint that pushes practitioners toward strided convs and aggressive channel reduction in early layers.

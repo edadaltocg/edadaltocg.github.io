@@ -250,7 +250,7 @@ The three propositions collapse into a single algorithm. Run a forward pass, cac
 
 For a 2-layer ReLU regressor with MSE loss, the entire forward + backward pass fits in eleven lines of NumPy:
 
-{{ include_code(path="content/blog/neural-network/plots.py", syntax="python", start=12, end=23) }}
+{{ include_code(path="content/blog/neural-network/plots.py", syntax="python", start=15, end=26) }}
 
 {% mathblock(kind="note", name="Cost of one forward + backward pass", id="bp-cost") %}
 Time is $O\\!\left(B \sum\_{\ell=1}^{L} d\_\ell\, d\_{\ell-1}\right)$ for a batch of size $B$, dominated by the $L$ matrix multiplications in each direction. Memory is $O\\!\left(B \sum\_{\ell=0}^{L} d\_\ell\right)$ to cache activations for the backward pass, plus $O(P)$ to hold the parameter gradients. The backward pass costs roughly twice the forward pass, since each layer produces two products (one against $\mathbf{a}^{(\ell-1)}$ and one against $\boldsymbol{\delta}^{(\ell+1)}$) instead of one. Activation memory is the practical bottleneck for very deep or wide networks, and **gradient checkpointing** (recomputing a subset of activations on the backward pass instead of caching them) trades extra computation for lower memory.
@@ -443,7 +443,7 @@ The intuition for the second-moment term is that $\sqrt{\hat{\mathbf{v}}\_t}$ ap
 
 In code the whole update is six lines, with the bias correction visible directly:
 
-{{ include_code(path="content/blog/neural-network/plots.py", syntax="python", start=25, end=32) }}
+{{ include_code(path="content/blog/neural-network/plots.py", syntax="python", start=28, end=35) }}
 
 <figure>
 <img src="optim_curves.svg" alt="Training-loss curves on a small regression for SGD, momentum, and Adam.">

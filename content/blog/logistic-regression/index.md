@@ -379,7 +379,7 @@ This is exactly the [normal equations](/blog/linear-regression/) of a **weighted
 
 In code, the entire Newton step is a handful of lines, and "weighted least squares" is visible directly in the final `np.linalg.solve`:
 
-{{ include_code(path="content/blog/logistic-regression/plots.py", syntax="python", start=17, end=25) }}
+{{ include_code(path="content/blog/logistic-regression/plots.py", syntax="python", start=18, end=26) }}
 
 The working response has a nice interpretation. $\mathbf{X} \boldsymbol{\theta}\_t$ is the current vector of linear scores, and $\mathbf{S}\_t^{-1} (\mathbf{y} - \mathbf{p}\_t)$ is a Newton-style correction in score-space. We divide the residual $\mathbf{y} - \mathbf{p}\_t$ by the local sigmoid slope $p\_i (1 - p\_i)$ to convert "off by this much in probability" into "off by this much in score". IRLS then solves a regression problem against this corrected target.
 
