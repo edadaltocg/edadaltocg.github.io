@@ -74,9 +74,9 @@
 {%- endfor %}
 {%- endif %}
 
-{% if config.markdown.highlight_code and config.markdown.highlight_theme == "css" %}
-<link id="syntax-dark" rel="stylesheet" type="text/css" href="/syntax-theme-dark.css" media="(prefers-color-scheme: dark)" />
-<link id="syntax-light" rel="stylesheet" type="text/css" href="/syntax-theme-light.css" media="(prefers-color-scheme: light)" />
+{% if config.markdown.highlighting and config.markdown.highlighting.style == "class" %}
+<link id="syntax-dark" rel="stylesheet" type="text/css" href="/giallo-dark.css" media="(prefers-color-scheme: dark)" />
+<link id="syntax-light" rel="stylesheet" type="text/css" href="/giallo-light.css" media="(prefers-color-scheme: light)" />
 <script>
 (function() {
   var t = localStorage.getItem('theme');
