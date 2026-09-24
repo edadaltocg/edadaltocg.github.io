@@ -1,18 +1,9 @@
 {#- Social Icons #}
 <nav class="tpad">
-  <div>
+  <div class="footer-bar">
+    <div class="social-icons">
     {%- if config.generate_feeds and config.extra.feed -%}
     {%- for feed in config.feed_filenames -%}
-
-    <!-- {%- if feed is containing('atom') -%} -->
-    <!-- <a type="application/atom+xml" href="{{ get_url(path=feed, trailing_slash=false, lang=lang) | safe }}" -->
-    <!--   target="_blank" title="{{ config.title }} Atom Feed"><i class="fas fa-rss" -->
-    <!--     title="{{ config.title }} Atom Feed"></i></a>{% endif -%} -->
-    <!-- {%- if feed is containing('rss') -%} -->
-    <!-- <a type="application/rss+xml" href="{{ get_url(path=feed, trailing_slash=false, lang=lang) | safe }}" -->
-    <!--   target="_blank" title="{{ config.title }} RSS Feed"><i class="fas fa-rss" -->
-    <!--     title="{{ config.title }} RSS Feed"></i></a>{% endif -%} -->
-
     {%- endfor -%}
     {%- endif -%}
 
@@ -120,6 +111,80 @@
             d="M121.037 298.667c23.968-50.453 75.392-85.334 134.963-85.334s110.995 34.881 134.963 85.334H121.037z" />
         </svg></i>
     </a>
+    </div>
+    <div class="footer-controls">
+      <button id="theme-toggle" class="icon-btn" title="Toggle theme" aria-label="Toggle theme">
+        <i class="fas fa-moon"></i>
+      </button>
+      <button id="lang-toggle" class="icon-btn" title="Language: {{ lang | upper }}" aria-label="Language">
+        <i class="fas fa-globe"></i> <span style="font-size: 0.8em;">{{ lang | upper }}</span>
+      </button>
+    </div>
   </div>
 </nav>
+<script>
+(function() {
+  var btn = document.getElementById('theme-toggle');
+  var icon = btn.querySelector('i');
+  var html = document.documentElement;
+
+  function getEffectiveTheme() {
+    var explicit = html.getAttribute('data-theme');
+    if (explicit) return explicit;
+    return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+  }
+
+  function updateIcon() {
+    var theme = getEffectiveTheme();
+    icon.className = theme === 'dark' ? 'fas fa-sun' : 'fas fa-moon';
+  }
+
+  function updateSyntax(theme) {
+    var d = document.getElementById('syntax-dark');
+    var l = document.getElementById('syntax-light');
+    if (!d || !l) return;
+    if (theme === 'dark') { d.media = 'all'; l.media = 'not all'; }
+    else { d.media = 'not all'; l.media = 'all'; }
+  }
+
+  btn.addEventListener('click', function() {
+    var isDark = getEffectiveTheme() === 'dark';
+    var newTheme = isDark ? 'light' : 'dark';
+    html.setAttribute('data-theme', newTheme);
+    localStorage.setItem('theme', newTheme);
+    updateSyntax(newTheme);
+    updateIcon();
+  });
+
+  updateIcon();
+  window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', updateIcon);
+})();
+
+(function() {
+  var langBtn = document.getElementById('lang-toggle');
+  if (!langBtn) return;
+  var langs = ['en', 'fr', 'es', 'it', 'pt', 'zh'];
+  var defaultLang = 'en';
+
+  function currentLang() {
+    var seg = window.location.pathname.split('/').filter(Boolean)[0];
+    return langs.indexOf(seg) !== -1 ? seg : defaultLang;
+  }
+
+  function pathWithoutLang() {
+    var parts = window.location.pathname.split('/').filter(Boolean);
+    if (langs.indexOf(parts[0]) !== -1) parts.shift();
+    return '/' + parts.join('/');
+  }
+
+  langBtn.addEventListener('click', function() {
+    var cur = currentLang();
+    var next = langs[(langs.indexOf(cur) + 1) % langs.length];
+    var rest = pathWithoutLang();
+    if (rest === '/') rest = '';
+    var target = next === defaultLang ? (rest || '/') : ('/' + next + rest);
+    window.location.pathname = target;
+  });
+})();
+</script>
 {#- End of social partial -#}

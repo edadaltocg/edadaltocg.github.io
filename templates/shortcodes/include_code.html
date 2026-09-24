@@ -1,0 +1,16 @@
+{%- set code = load_data(path=path) -%}
+{%- if start is defined and end is defined -%}
+{%- set lines = code | split(pat="\n") -%}
+{%- set code = lines | slice(start=start, end=end) | join(sep="\n") -%}
+{%- endif -%}
+{%- set code = code | trim_end -%}
+{%- set lang = syntax | default(value="") -%}
+{# Wrap in a fenced markdown block and run through the markdown filter so
+   Zola's syntax highlighter (configured in config.toml) emits the
+   per-token <span class="z-..."> tags the syntax-theme CSS expects.
+   Without this round-trip the code is plain text in a <pre> and no
+   colours are applied even though the theme stylesheet is loaded. #}
+{%- set fenced = "```" ~ lang ~ "
+" ~ code ~ "
+```" -%}
+{{ fenced | markdown | safe }}

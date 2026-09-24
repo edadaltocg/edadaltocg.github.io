@@ -1,0 +1,14 @@
+<a class="eq-ref" href="#eq-{{ id }}"></a><script>
+if (!window._eqrefInit) {
+  window._eqrefInit = true;
+  document.addEventListener('DOMContentLoaded', function() {
+    var eqs = document.querySelectorAll('.equation');
+    var map = {};
+    eqs.forEach(function(eq, i) { map[eq.id] = i + 1; });
+    document.querySelectorAll('.eq-ref').forEach(function(a) {
+      var n = map[a.getAttribute('href').substring(1)];
+      if (n) a.textContent = 'Eq. (' + n + ')';
+    });
+  });
+}
+</script>
