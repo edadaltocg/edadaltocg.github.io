@@ -66,22 +66,14 @@ links = [
   { title = "publications", href = "/publications" },
   # { title = "bio", href = "/bio" },
   # { title = "blog", href = "/blog" },
-  { title = "projects", href = "/projects" },
-  { title = "teaching", href = "/teaching" },
-  { title = "news", href = "/news" },
   { title = "contact", href = "/contact" },
-  { title = "cv", href = "/cv" },
 ]
 footer_menu = [
   # { title = "home", href = "/" },
   { title = "publications", href = "/publications" },
   # { title = "bio", href = "/bio" },
   # { title = "blog", href = "/blog" },
-  { title = "projects", href = "/projects" },
-  { title = "teaching", href = "/teaching" },
-  { title = "news", href = "/news" },
   { title = "contact", href = "/contact" },
-  { title = "cv", href = "/cv" },
 ]
 enable_katex = true
 logo_home_link = "/"
@@ -93,8 +85,8 @@ github = "edadaltocg"
 linkedin = "edadaltocg"
 # bluesky = "edadaltocg"
 # twitter = "dadalto_eduardo"
-docker = "edadaltocg"      #https://hub.docker.com/repositories/edadaltocg"
-huggingface = "edadaltocg"
+# docker = "edadaltocg"
+# huggingface = "edadaltocg"
 feed = true                # this adds the RSS feed icon in the footer.
 
 # Icons

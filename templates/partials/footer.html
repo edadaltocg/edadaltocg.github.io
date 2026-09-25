@@ -6,9 +6,6 @@
           {{ trans(key="home") }}
         </a>
       </li>
-    </ul>
-    <p>{{ trans(key="menu") }}</p>
-    <ul class="styless-list">
       {% for menu_item in config.extra.footer_menu %}
       <li>
         <a href="{{ menu_item.href }}" {% if menu_item.title %} {% endif %}>
