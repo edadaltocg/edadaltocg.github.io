@@ -7,7 +7,7 @@ default_language = "en"
 compile_sass = true
 
 # Whether to build a search index to be used later on by a JavaScript library
-build_search_index = true
+build_search_index = false
 generate_feeds = true
 generate_sitemap = true
 generate_robots_txt = true
@@ -27,16 +27,6 @@ taxonomies = [
 
 
 [markdown]
-# Whether to do syntax highlighting
-# Theme can be customised by setting the `highlight_theme` variable to a theme supported by Zola
-highlight_code = true
-# Synthax hightlight
-highlight_theme = "css"
-highlight_themes_css = [
-  { theme = "base16-ocean-dark", filename = "syntax-theme-dark.css" },
-  { theme = "base16-ocean-light", filename = "syntax-theme-light.css" },
-]
-
 # Whether external links are to be opened in a new tab
 # If this is true, a `rel="noopener"` will always automatically be added for security reasons
 external_links_target_blank = true
@@ -48,6 +38,10 @@ external_links_no_follow = false
 external_links_no_referrer = false
 
 lazy_async_image = true
+
+[markdown.highlighting]
+light_theme = "github-light"
+dark_theme = "github-dark"
 
 [search] # Options specific to elasticlunr search.
 # index format can be: elasticlunr_json or elasticlunr_javascript or fuse_json
@@ -66,22 +60,14 @@ links = [
   { title = "publications", href = "/publications" },
   # { title = "bio", href = "/bio" },
   # { title = "blog", href = "/blog" },
-  { title = "projects", href = "/projects" },
-  { title = "teaching", href = "/teaching" },
-  { title = "news", href = "/news" },
   { title = "contact", href = "/contact" },
-  { title = "cv", href = "/cv" },
 ]
 footer_menu = [
   # { title = "home", href = "/" },
   { title = "publications", href = "/publications" },
   # { title = "bio", href = "/bio" },
   # { title = "blog", href = "/blog" },
-  { title = "projects", href = "/projects" },
-  { title = "teaching", href = "/teaching" },
-  { title = "news", href = "/news" },
   { title = "contact", href = "/contact" },
-  { title = "cv", href = "/cv" },
 ]
 enable_katex = true
 logo_home_link = "/"
@@ -93,9 +79,9 @@ github = "edadaltocg"
 linkedin = "edadaltocg"
 # bluesky = "edadaltocg"
 # twitter = "dadalto_eduardo"
-docker = "edadaltocg"      #https://hub.docker.com/repositories/edadaltocg"
-huggingface = "edadaltocg"
-feed = true                # this adds the RSS feed icon in the footer.
+# docker = "edadaltocg"
+# huggingface = "edadaltocg"
+feed = true # this adds the RSS feed icon in the footer.
 
 # Icons
 fontawesome = "https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css"
