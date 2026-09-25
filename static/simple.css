@@ -92,6 +92,7 @@ body {
   margin: 0 auto;
   max-width: 50rem;
   padding: 0 1rem;
+  box-sizing: border-box;
   overflow-x: hidden;
   word-break: break-word;
   overflow-wrap: break-word;
@@ -157,8 +158,8 @@ nav a.current:hover {
 }
 
 footer {
-  margin-top: 4rem;
-  padding: 2rem 0rem 1.5rem 0rem;
+  margin-top: auto;
+  padding: 1.5rem 0rem 1.5rem 0rem;
   color: var(--text-light);
   font-size: 0.9rem;
   /* text-align: center; */

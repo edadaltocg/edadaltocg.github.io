@@ -59,6 +59,23 @@ div.logo {
   padding: 5px 0;
 }
 
+footer .styless-list li {
+  padding: 5px 0;
+}
+
+footer .styless-list a {
+  font-size: 1.15rem;
+  font-weight: 600;
+  color: var(--accent);
+  text-decoration: none;
+  transition: opacity 0.15s ease-in-out;
+}
+
+footer .styless-list a:hover {
+  text-decoration: underline;
+  opacity: 0.8;
+}
+
 .search-button {
   background-color: transparent;
   border: none;

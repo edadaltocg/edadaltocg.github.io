@@ -1,5 +1,5 @@
 <footer>
-  <div style="margin: 108px 0;">
+  <div>
     <ul class="styless-list">
       <li>
         <a href="/">
@@ -14,25 +14,8 @@
       </li>
       {% endfor %}
     </ul>
-    <p>{{ trans(key="Search") }}</p>
-    <div class="search-container">
-      <div style="position: relative; display: flex; align-items: center;">
-        <input type="text" id="search" placeholder="" style="padding-right: 30px;">
-        <!-- Adjust padding compensation -->
-        <i class="fas fa-search" style="position: absolute; right: 10px; pointer-events: none;"
-          aria-label="Search Icon"></i>
-      </div>
-    </div>
-    <div class="search-results">
-      <div class="search-results__items"></div>
-    </div>
-
   </div>
   <div>
     {% include "partials/social.html" %}
   </div>
-  <!-- <div> -->
-  <!--   <p>Eduardo Dadalto &copy; 2024 -->
-  <!--   </p> -->
-  <!-- </div> -->
 </footer>
