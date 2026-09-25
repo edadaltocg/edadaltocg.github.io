@@ -81,7 +81,7 @@ linkedin = "edadaltocg"
 # twitter = "dadalto_eduardo"
 # docker = "edadaltocg"
 # huggingface = "edadaltocg"
-feed = true                # this adds the RSS feed icon in the footer.
+feed = true # this adds the RSS feed icon in the footer.
 
 # Icons
 fontawesome = "https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css"
